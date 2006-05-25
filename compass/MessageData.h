@@ -2,9 +2,9 @@
  * Combines various mote datatypes into a generic MessageData type.
  */
 
-#include "MoteCommand.h"
-#include "RawData.h"
-#include "WaveletData.h"
+includes MoteCommand
+includes RawData
+includes WaveletData
 
 union MessageData
 {

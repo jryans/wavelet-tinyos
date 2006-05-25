@@ -52,7 +52,7 @@ implementation {
     TimerC, PhotoTemp, UARTComm as Comm, TransceiverC, MsgSndRcv, Voltage;
   
   Main.StdControl -> BasicRoutingM.StdControl;
-  Main.StdControl -> SensorToLeds.StdControl;
+  //Main.StdControl -> SensorToLeds.StdControl;
   Main.StdControl -> MsgSndRcv.StdControl;
   Main.StdControl -> SenseToSensor.StdControl;
   Main.StdControl -> TransceiverC;
