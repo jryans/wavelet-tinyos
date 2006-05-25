@@ -512,7 +512,9 @@ double node20_coeff[3][7] = {{0,0,0,0,0,0,0},{0,0,0,0,0,0,0},{0,0,0,0,0,0,0}};
     {
       next_addr = routing_table[TOS_LOCAL_ADDRESS][dest_addr];
       delaySendMessage(measurements, source, next_addr, dest_addr, hops, msg_type);  
-    }           
+    }
+    
+    return SUCCESS;           
   }
   
   
