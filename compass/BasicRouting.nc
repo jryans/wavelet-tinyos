@@ -48,8 +48,9 @@ configuration BasicRouting {
 }
 
 implementation {
-  components Main, BasicRoutingM, SensorToLeds, SenseToSensor, 
-    TimerC, PhotoTemp, UARTComm as Comm, TransceiverC, MsgSndRcv, Voltage;
+	// components SensorToLeds
+  components Main, BasicRoutingM, SenseToSensor, 
+    TimerC, PhotoTemp, TransceiverC, MsgSndRcv, Voltage;
   
   Main.StdControl -> BasicRoutingM.StdControl;
   //Main.StdControl -> SensorToLeds.StdControl;
@@ -71,7 +72,7 @@ implementation {
   
   BasicRoutingM.SensorTimer -> SenseToSensor.SensorTimer;  
   BasicRoutingM.RadioOut -> MsgSndRcv.SensorIn;
-  BasicRoutingM.LedOut -> SensorToLeds.SensorOutput;
+ // BasicRoutingM.LedOut -> SensorToLeds.SensorOutput;
   BasicRoutingM.UARTOut -> MsgSndRcv.UARTIn;
   BasicRoutingM.Transceiver -> TransceiverC.Transceiver[AM_SIMPLECMDMSG];
   

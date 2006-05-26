@@ -7,7 +7,7 @@ includes MessageData;
 interface BareMessageIn
 {
 	/**
-	 * receive is signaled when a new message arrives with the type mType
+	 * receive is signaled when a new message arrives
 	 */
-	event result_t receive(MessageData msg, uint8_t mType);
+	event result_t receive(struct MessageData msg);
 }

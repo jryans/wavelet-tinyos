@@ -7,7 +7,7 @@
 
 includes MessageData;
 
-module LedMessageM {
+module LedControlM {
   uses interface Leds;
 
   provides interface BareMessageOut as LedData;
@@ -24,11 +24,13 @@ implementation
     return SUCCESS;
   }
 
-  command result_t StdControl.start() {
+  command result_t StdControl.start() 
+  {
     return SUCCESS;
   }
 
-  command result_t StdControl.stop() {
+  command result_t StdControl.stop() 
+  {
     return SUCCESS;
   }
   
@@ -39,14 +41,13 @@ implementation
   }
 
   
-  command result_t LedData.send(MessageData msg, uint8_t mType, int8_t mDest)
+  command result_t LedData.send(struct MessageData msg, int8_t mDest)
   {
-    // The red LED is for the least significant bit, and the yellow LED is for the most significant bit
-    
-    if (mType == RAWDATA || mType == WAVELETDATA)
+    if (msg.type == RAWDATA || msg.type == WAVELETDATA)
     {
 	    uint16_t intVal;
-	    mType == RAWDATA ? intVal = msg.raw.value[0] : intVal = msg.wavelet.value[0];
+	    msg.type == RAWDATA ? (intVal = msg.data.raw.value[0]) 
+	    					: (intVal = msg.data.wavelet.value[0]);
 	    
 	    if (intVal & 1) 
 	      call Leds.redOn();

@@ -6,16 +6,39 @@ includes MoteCommand
 includes RawData
 includes WaveletData
 
-union MessageData
+struct MessageData
 {
-	MoteCommand moteCmd;
-	RawData raw;
-	WaveletData wavelet;
+	int8_t src;
+	uint8_t type;
+	
+	union
+	{
+		MoteCommand moteCmd;
+		RawData raw;
+		WaveletData wavelet;
+	} data;
 };
-
+  
 enum  // Identifies the type of data stored
 {
-	MOTECOMMAND = 1,
-	RAWDATA = 2,
-	WAVELETDATA = 3
+	MOTECOMMAND,
+	RAWDATA,
+	WAVELETDATA
+};
+
+enum  // Identifies special message destinations
+{
+	SINK = -2,
+	BROADCAST = -1
+};
+
+enum  // Types of transceivers in use
+{
+	UART,
+	RADIO
+};
+
+enum
+{
+	UART_RETRIES = 2
 };

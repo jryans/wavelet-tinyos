@@ -12,7 +12,7 @@ enum   // Commands that can be sent
 	WAVELET = 6
 };
 
-typedef struct MoteCommand
+typedef struct
 {
 	int8_t seqno;   // the sequence number of this command; we use this in flooding to make sure we
                   // don't keep broadcasting the same commands over and over

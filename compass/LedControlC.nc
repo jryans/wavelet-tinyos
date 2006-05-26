@@ -6,15 +6,15 @@
  **/
 
 
-configuration LedMessageC
+configuration LedControlC
 {
   provides interface BareMessageOut as LedData;
 }
 implementation
 {
-  components LedMessageM, LedsC, Main;
+  components LedControlM, LedsC, Main;
 
-  LedData = LedMessageM;
-  Main.StdControl -> LedMessageM;
-  LedMessageM.Leds -> LedsC;
+  LedData = LedControlM;
+  Main.StdControl -> LedControlM;
+  LedControlM.Leds -> LedsC;
 }

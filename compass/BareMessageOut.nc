@@ -7,9 +7,9 @@ includes MessageData;
 interface BareMessageOut
 {
 	/**
-	 * Sends message data of the type mType to destination mDest
+	 * Sends message data to destination mDest
 	 */
-	command result_t send(MessageData msg, uint8_t mType, int8_t mDest);
+	command result_t send(struct MessageData msg, int8_t mDest);
 	
 	/**
 	 * sendDone is signaled when the send has completed
