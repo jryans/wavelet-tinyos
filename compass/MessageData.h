@@ -9,6 +9,7 @@ includes WaveletData
 struct MessageData
 {
 	int8_t src;
+	int8_t dest;
 	uint8_t type;
 	
 	union

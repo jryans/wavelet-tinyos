@@ -18,9 +18,6 @@ implementation
   command result_t StdControl.init()
   {
     call Leds.init();
-    call Leds.redOff();
-    call Leds.yellowOff();
-    call Leds.greenOff();
     return SUCCESS;
   }
 
@@ -45,24 +42,11 @@ implementation
   {
     if (msg.type == RAWDATA || msg.type == WAVELETDATA)
     {
+	    // For raw and wavelet data, display the 3 LSBs
 	    uint16_t intVal;
 	    msg.type == RAWDATA ? (intVal = msg.data.raw.value[0]) 
 	    					: (intVal = msg.data.wavelet.value[0]);
-	    
-	    if (intVal & 1) 
-	      call Leds.redOn();
-	    else 
-	      call Leds.redOff();
-	    
-	    if (intVal & 2) 
-	      call Leds.greenOn();
-	    else 
-	      call Leds.greenOff();
-	    
-	    if (intVal & 4) 
-	      call Leds.yellowOn();
-	    else 
-	      call Leds.yellowOff();
+	    call Leds.set((uint8_t)(intVal & 0x7));
     }
     
     post outputDone();

@@ -62,7 +62,7 @@ implementation
   }
 
   /**
-   * Signalled when the previous packet has been sent.
+   * Signaled when the previous packet has been sent.
    * Notifies the application the message was sent.
    * @return Always returns SUCCESS.
    */
@@ -82,8 +82,15 @@ implementation
     return m;
   }
   
+  /**
+   * A message was received over the UART.
+   * Passes the message on to the application.
+   * @return Returns the TOS_MsgPtr for reuse.
+   */
   event TOS_MsgPtr UART.receiveUart(TOS_MsgPtr m)
   {
+  	struct MessageData *msg = (struct MessageData *)m->data;
+  	signal In.receive(msg);
     return m;
   }
 }
