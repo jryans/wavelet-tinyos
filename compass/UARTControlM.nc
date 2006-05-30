@@ -44,7 +44,7 @@ implementation
   {
     if (retries <= 0)
     {
-    	dbg(DBG_USR1, "Unable to send message to UART!");
+    	dbg(DBG_USR1, "Unable to send message to UART!\n");
     	return;
     }
     
@@ -53,7 +53,7 @@ implementation
       struct MessageData *msg = (struct MessageData *)message->data;
       msg = &data[msgNum];
     } else {
-      dbg(DBG_USR1, "Unable to allocate message to UART!");
+      dbg(DBG_USR1, "Unable to allocate message to UART!\n");
       post attemptSend(msgNum, retries--);
     }
 

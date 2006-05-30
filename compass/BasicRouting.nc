@@ -55,7 +55,7 @@ implementation {
   Main.StdControl -> BasicRoutingM.StdControl;
   //Main.StdControl -> SensorToLeds.StdControl;
   Main.StdControl -> MsgSndRcv.StdControl;
-  Main.StdControl -> SenseToSensor.StdControl;
+ // Main.StdControl -> SenseToSensor.StdControl;
   Main.StdControl -> TransceiverC;
   Main.StdControl -> TimerC;
   
@@ -63,10 +63,10 @@ implementation {
   SenseToSensor.Timer -> TimerC.Timer[unique("Timer")];
   SenseToSensor.LightOutput -> BasicRoutingM.LightIn;  
   SenseToSensor.TempOutput -> BasicRoutingM.TempIn;  
-  SenseToSensor.LightADC-> PhotoTemp.ExternalPhotoADC;
-  SenseToSensor.TempADC-> PhotoTemp.ExternalTempADC;
-  SenseToSensor.LightControl -> PhotoTemp.PhotoStdControl;
-  SenseToSensor.TempControl -> PhotoTemp.TempStdControl; 
+//  SenseToSensor.LightADC-> PhotoTemp.ExternalPhotoADC;
+//  SenseToSensor.TempADC-> PhotoTemp.ExternalTempADC;
+//  SenseToSensor.LightControl -> PhotoTemp.PhotoStdControl;
+//  SenseToSensor.TempControl -> PhotoTemp.TempStdControl; 
   
   MsgSndRcv.SensorOut -> BasicRoutingM.RadioIn;  
   
@@ -77,6 +77,6 @@ implementation {
   BasicRoutingM.Transceiver -> TransceiverC.Transceiver[AM_SIMPLECMDMSG];
   
   /* For use with the battery measurement */
-  BasicRoutingM.VoltageControl->Voltage.StdControl;
-  BasicRoutingM.VoltageADC->Voltage.ADC;
+  //BasicRoutingM.VoltageControl->Voltage.StdControl;
+  //BasicRoutingM.VoltageADC->Voltage.ADC;
 }

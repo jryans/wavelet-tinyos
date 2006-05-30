@@ -1,146 +1,117 @@
 // Portions of this code created by The Moters (Fall 2005 - Spring 2006)
 
 /**
- * This application takes data readings from the sensor 
- * (light and temperature) to store on a mote.
+ * This application takes data readings from various sensors,
+ * caches their values, and sends out the most recent set of data.
  */
+ 
+includes Sensors;
+includes MessageData;
 
-module SenseToSensor
+module SensorControlM
 {
   provides 
   {
-    interface StdControl;
-    interface Timer as SensorTimer;
+  	interface StdControl;
+    interface BareMessageIn as SensorData;
   }
   
   uses
   {
-    interface StdControl as TempControl;
-    interface StdControl as LightControl;
     interface ADC as TempADC;
     interface ADC as LightADC;
+    interface ADC as VoltADC;
+    interface StdControl as TempControl;
+    interface StdControl as LightControl;
+    interface StdControl as VoltControl;
     interface Timer;
-    interface SensorOutput as TempOutput;
-    interface SensorOutput as LightOutput;
   }
 }
 
 implementation
 {
- uint16_t curr_temp;
- uint16_t curr_light;
- uint8_t lsb_data;
- uint8_t msb_data;
- uint16_t counter = 0;
-
- command result_t StdControl.init()
- {
-  call TempControl.init();
-  call LightControl.init();
+  uint16_t last_val[NUM_SENSORS];
   
-  return SUCCESS;
- }
-
- command result_t StdControl.start()
- {
-   // the timer will filre ever 100 ms
-  call Timer.start(TIMER_REPEAT, 100);
-
-  return SUCCESS;
- }
-
- command result_t StdControl.stop()
- {
-   call Timer.stop();
-   
-   return SUCCESS;
- }
-
- task void tempTask()
- {
-   uint16_t tCopy[5] = {0,0,0,0,0};
-   tCopy[0] = curr_temp;
-   call TempOutput.output(tCopy, 0x0000, 0x0000, 0x0000, 0x0000, SENSOR_MSG); 
- }
-
- task void lightTask()
- {
-   uint16_t lCopy[5] = {0,0,0,0,0};
-   lCopy[0] = curr_light;
-   call LightOutput.output(lCopy, 0x0000, 0x0000, 0x0000, 0x0000, SENSOR_MSG); 
- }
- 
- event result_t Timer.fired()
- {  
-   // every minute we get the temperature data (one minute has passed when our 100 ms timer has fired 60 times)
-   if(counter < 599)
+  command result_t StdControl.init()
+  {
+    if (TOS_LOCAL_ADDRESS != 0)
     {
-      counter = counter + 1;
+      call TempControl.init();
+      call LightControl.init();
+      call VoltControl.init();
     }
-    else
+  
+    return SUCCESS;
+  }
+
+  command result_t StdControl.start()
+  {
+    if (TOS_LOCAL_ADDRESS != 0)
     {
-      if(TOS_LOCAL_ADDRESS != 0)
-      {
-        call TempADC.getData();
-      }
-      counter = 0;
+      call TempControl.start();
+      call LightControl.start();
+      call VoltControl.start();
+  
+      call Timer.start(TIMER_REPEAT, SAMPLE_TIME);
     }
-    signal SensorTimer.fired();
-   
-  return SUCCESS;
- }
 
- async event result_t TempADC.dataReady(uint16_t data)
- {
-  atomic
-  {
-   lsb_data = (uint8_t) data;
-   msb_data = (uint8_t) (data >> 8);
-   curr_temp = data;
+    return SUCCESS;
   }
-  
-  // we can't have the light and temperature sensors going at the same time, so once we're
-  // done with temperature, start light
-  call TempControl.stop();
-  call LightADC.getData();
-  post tempTask();
-  
-  return SUCCESS;
- }
- 
- async event result_t LightADC.dataReady(uint16_t data)
- {
-  atomic
-  {
-   lsb_data = (uint8_t) data;
-   msb_data = (uint8_t) (data >> 8);
-   curr_light = data;
-  }
-  call LightControl.stop();
-  post lightTask();
-  
-  return SUCCESS;
- }
 
- event result_t TempOutput.outputComplete(result_t success) 
+  command result_t StdControl.stop()
   {
+    if (TOS_LOCAL_ADDRESS != 0)
+    {
+      call Timer.stop();
+    
+      call TempControl.stop();
+      call LightControl.stop();
+      call VoltControl.stop();
+    }
+    
     return SUCCESS;
   }
  
- event result_t LightOutput.outputComplete(result_t success) 
-  {
+  /**
+   * Each time the timer fires, the most recent set of data is sent off
+   * immediately and then a new set of values is read to the cache. This
+   * means that the samples will be delayed by SAMPLE_TIME ms.
+   */
+  event result_t Timer.fired()
+  {  
+    struct MessageData msg;
+    uint8_t i;
+    msg.src = TOS_LOCAL_ADDRESS;
+    msg.dest = TOS_LOCAL_ADDRESS;
+    for (i = 0; i <= NUM_SENSORS - 1; i++)
+      msg.raw.value[i] = last_val[i];
+    dbg(DBG_USR1, "Values read from sensors: Light = %i, Temp = %i, Volt = %i\n",
+        (int)last_val[LIGHT], (int)last_val[TEMP], (int)last_val[VOLT]);
+    signal SensorData.receive(msg);
+    TempADC.getData();
+    LightADC.getData();
+    VoltADC.getData();
+   
     return SUCCESS;
   }
-  
-// Functions to deal with new Timer  
-  command result_t SensorTimer.start(char type, uint32_t interval) 
+
+  async event result_t TempADC.dataReady(uint16_t data)
   {
-    return call Timer.start(type, interval);
-  }
-  command result_t SensorTimer.stop() {
-    return call Timer.stop();
+    last_val[TEMP] = data;
+    return SUCCESS;
   }
  
+  async event result_t LightADC.dataReady(uint16_t data)
+  {
+    last_val[LIGHT] = data; 
+    return SUCCESS;
+  }
+
+  async event result_t VoltADC.dataReady(uint16_t data)
+  {
+    last_val[VOLT] = data; 
+    return SUCCESS;
+  }
 }
 
  
