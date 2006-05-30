@@ -2,9 +2,9 @@
  * Combines various mote datatypes into a generic MessageData type.
  */
 
-includes MoteCommand
-includes RawData
-includes WaveletData
+includes MoteCommand;
+includes RawData;
+includes WaveletData;
 
 struct MessageData
 {

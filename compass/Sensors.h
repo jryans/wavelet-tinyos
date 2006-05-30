@@ -3,6 +3,12 @@
  */
 
 enum {
-	TEMP = 1,
-	LIGHT = 2
+	TEMP = 0,
+	LIGHT = 1,
+	VOLTAGE = 2  // WT not currently done on voltage values
+};
+
+enum {
+  NUM_SENSORS = 3,
+  WT_SENSORS = 2
 };
