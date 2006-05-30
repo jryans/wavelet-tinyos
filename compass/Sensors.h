@@ -2,6 +2,9 @@
  * A static sensor list is used to assign array slot of each sensor.
  */
 
+#ifndef _SENSORS_H
+#define _SENSORS_H
+
 // Gives array indices for each sensor type
 enum {
 	TEMP = 0,
@@ -19,3 +22,5 @@ enum {
 enum {
 	SAMPLE_TIME = 500
 };
+
+#endif // _SENSORS_H

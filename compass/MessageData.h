@@ -2,9 +2,12 @@
  * Combines various mote datatypes into a generic MessageData type.
  */
 
-includes MoteCommand;
-includes RawData;
-includes WaveletData;
+#ifndef _MESSAGEDATA_H
+#define _MESSAGEDATA_H
+
+#include "MoteCommand.h"
+#include "RawData.h"
+#include "WaveletData.h"
 
 struct MessageData
 {
@@ -43,3 +46,5 @@ enum
 {
 	UART_RETRIES = 2
 };
+
+#endif // _MESSAGEDATA_H 

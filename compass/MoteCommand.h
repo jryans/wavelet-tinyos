@@ -2,6 +2,9 @@
  * Defines the data carried in a MoteCommand message.
  */
 
+#ifndef _MOTECOMMAND_H
+#define _MOTECOMMAND_H
+
 enum   // Commands that can be sent
 {
 	YELLOW_LED_ON = 1,
@@ -19,5 +22,4 @@ typedef struct
 	uint8_t action; // the number of the command to be executed
 } MoteCommand;
 
-
-
+#endif // _MOTECOMMAND_H
