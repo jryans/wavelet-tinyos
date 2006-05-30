@@ -4,7 +4,7 @@
 
 includes MessageData;
 
-interface BareMessageIn
+interface MessageIn
 {
 	/**
 	 * receive is signaled when a new message arrives

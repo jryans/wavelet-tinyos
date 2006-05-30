@@ -9,8 +9,8 @@ includes MessageData;
 
 configuration UARTControlC
 {
-  provides interface BareMessageOut as Out;
-  provides interface BareMessageIn as In;
+  provides interface MessageOut as Out;
+  provides interface MessageIn as In;
 }
 implementation
 {

@@ -5,7 +5,7 @@
 
 configuration SensorControlC
 {
-  provides interface BareMessageIn as SensorData;
+  provides interface MessageIn as SensorData;
 }
 
 implementation

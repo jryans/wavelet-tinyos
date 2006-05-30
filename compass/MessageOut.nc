@@ -4,7 +4,7 @@
 
 includes MessageData;
 
-interface BareMessageOut
+interface MessageOut
 {
 	/**
 	 * Sends message data to destination mDest

@@ -13,8 +13,8 @@ module UARTControlM
     interface Transceiver as UART;
   }
   provides {
-    interface BareMessageOut as Out;
-    interface BareMessageIn as In;
+    interface MessageOut as Out;
+    interface MessageIn as In;
   }
 }
 

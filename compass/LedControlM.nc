@@ -2,7 +2,7 @@
 
 /**
  * This application implements the functionality of its configuration.  It sends data 
- * from the BareMessage type to the Leds.  We use this for debugging and demos.
+ * from the Message type to the Leds.  We use this for debugging and demos.
  **/
 
 includes MessageData;
@@ -10,7 +10,7 @@ includes MessageData;
 module LedControlM {
   uses interface Leds;
 
-  provides interface BareMessageOut as LedData;
+  provides interface MessageOut as LedData;
   provides interface StdControl;
 }
 implementation

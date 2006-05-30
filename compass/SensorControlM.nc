@@ -13,7 +13,7 @@ module SensorControlM
   provides 
   {
   	interface StdControl;
-    interface BareMessageIn as SensorData;
+    interface MessageIn as SensorData;
   }
   
   uses
