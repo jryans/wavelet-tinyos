@@ -22,6 +22,19 @@ struct MessageData
 		WaveletData wavelet;
 	} data;
 } __attribute__ ((packed));
+
+typedef struct MessageData *msgPtr;
+
+struct _msgEntry
+{
+  struct MessageData aMsg;
+  uint8_t refs; // Tracks how many components 
+  uint8_t poster; // ID of the component that posted the message
+  result_t finalAns;
+  bool sent;
+);
+
+typedef struct _msgEntry *msgEntry;
   
 enum  // Identifies the type of data stored
 {
@@ -34,6 +47,15 @@ enum  // Identifies special message destinations
 {
 	SINK = -2,
 	ALL_NODES = -1
+};
+
+enum  // Identifies components for the Postmaster
+{
+  PM_APP,
+  PM_SENSOR,
+  PM_LED,
+  PM_UART,
+  PM_NET
 };
 
 enum  // Types of transceivers in use
