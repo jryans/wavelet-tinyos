@@ -9,15 +9,15 @@ includes MessageData;
 
 configuration UARTControlC
 {
-  provides interface MessageOut as Out;
+  //provides interface MessageOut as Out;
   provides interface MessageIn as In;
 }
 implementation
 {
   components UARTControlM, TransceiverC, Main;
 
-  Out = UARTControlM;
+ // Out = UARTControlM;
   In = UARTControlM;
-  Main.StdControl -> TransceiverC[UART];
-  UARTControlM.Transceiver -> TransceiverC[UART];
+  Main.StdControl -> TransceiverC;
+  UARTControlM.UART -> TransceiverC.Transceiver[TR_UART];
 }

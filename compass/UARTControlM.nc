@@ -22,7 +22,9 @@ implementation
 {
   struct MessageData data[2]; // A two elements queue for outgoing messages.  Expand this?
   uint8_t freeData = 0;
-  TOS_MsgPtr *message;
+  TOS_MsgPtr message;
+  
+  void attemptSend(uint8_t msgNum, uint8_t retries); // make into a task!
   
   command result_t Out.send(struct MessageData msg, int8_t mDest) 
   {
@@ -32,7 +34,7 @@ implementation
 		atomic
 		{
 			data[freeData] = msg;
-			post attemptSend(freeData, UART_RETRIES);
+			attemptSend(freeData, UART_RETRIES);
 			freeData ^= 0x1;
 		}
 		return SUCCESS;
@@ -40,7 +42,7 @@ implementation
 	return FAIL;
   }
 
-  task void attemptSend(uint8_t msgNum, uint8_t retries) 
+  void attemptSend(uint8_t msgNum, uint8_t retries) 
   {
     if (retries <= 0)
     {
@@ -48,17 +50,17 @@ implementation
     	return;
     }
     
-    if ( (message = call DataMsg.requestWrite()) != NULL ) 
+    if ( (message = call UART.requestWrite()) != NULL ) 
     {
       struct MessageData *msg = (struct MessageData *)message->data;
       msg = &data[msgNum];
     } else {
       dbg(DBG_USR1, "Unable to allocate message to UART!\n");
-      post attemptSend(msgNum, retries--);
+      attemptSend(msgNum, retries--);
     }
 
-    if (call DataMsg.sendUart(sizeof(struct MessageData)) == FAIL)
-      post attemptSend(msgNum, retries--);
+    if (call UART.sendUart(sizeof(struct MessageData)) == FAIL)
+      attemptSend(msgNum, retries--);
   }
 
   /**
@@ -68,7 +70,7 @@ implementation
    */
   event result_t UART.uartSendDone(TOS_MsgPtr sent, result_t result) 
   {
-  	signal Out.sendDone(result);
+  	//signal Out.sendDone(result);
     return SUCCESS;
   }
   
@@ -90,7 +92,8 @@ implementation
   event TOS_MsgPtr UART.receiveUart(TOS_MsgPtr m)
   {
   	struct MessageData *msg = (struct MessageData *)m->data;
-  	signal In.receive(msg);
+  	dbg(DBG_USR1, "Got a message: type %i action %i", msg->type, msg->data.moteCmd.cmd);
+  	signal In.receive(*msg);
     return m;
   }
 }

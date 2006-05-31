@@ -39,20 +39,16 @@
  */
 
 includes AM;
-includes Bcast;
+includes BroadcastPack;
 
-/**
- * 
- **/
-module BcastM {
+module BroadcastM {
   provides {
     interface StdControl;
-    interface Receive[uint8_t id];
+    interface MessageIn;
   }
   uses {
-    interface StdControl as SubControl;
-    interface ReceiveMsg[uint8_t id];
-    interface SendMsg[uint8_t id];
+    interface Transceiver as Radio;
+    interface Transceiver as UART;
   }
 }
 
@@ -99,15 +95,15 @@ implementation {
    rebroadcast once.
 */
 
-  static void FwdBcast(TOS_BcastMsg *pRcvMsg, uint8_t Len, uint8_t id) {
-    TOS_BcastMsg *pFwdMsg;
+  static void FwdBcast(struct BroadcastPack *pRcvMsg, uint8_t Len, uint8_t id) {
+    struct BroadcastPack *pFwdMsg;
     
     if (((iFwdBufHead + 1) % FWD_QUEUE_SIZE) == iFwdBufTail) {
       // Drop message if forwarding queue is full.
       return;
     }
     
-    pFwdMsg = (TOS_BcastMsg *) &FwdBuffer[iFwdBufHead].data; //forward_packet.data;
+    pFwdMsg = (struct BroadcastPack *) &FwdBuffer[iFwdBufHead].data; //forward_packet.data;
     
     memcpy(pFwdMsg,pRcvMsg,Len);
 
@@ -123,15 +119,15 @@ implementation {
 
   command result_t StdControl.init() {
     initialize();
-    return call SubControl.init();
+    return SUCCESS;
   }
 
   command result_t StdControl.start() {
-    return call SubControl.start();
+    return SUCCESS;
   }
 
   command result_t StdControl.stop() {
-    return call SubControl.stop();
+    return SUCCESS;
   }
 
   event result_t SendMsg.sendDone[uint8_t id](TOS_MsgPtr pMsg, result_t success) {

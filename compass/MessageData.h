@@ -21,7 +21,7 @@ struct MessageData
 		RawData raw;
 		WaveletData wavelet;
 	} data;
-};
+} __attribute__ ((packed));
   
 enum  // Identifies the type of data stored
 {
@@ -33,13 +33,13 @@ enum  // Identifies the type of data stored
 enum  // Identifies special message destinations
 {
 	SINK = -2,
-	BROADCAST = -1
+	ALL_NODES = -1
 };
 
 enum  // Types of transceivers in use
 {
-	UART,
-	RADIO
+	TR_UART,
+	TR_RADIO
 };
 
 enum

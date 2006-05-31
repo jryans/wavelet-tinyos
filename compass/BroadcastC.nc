@@ -38,15 +38,31 @@
  * @author Ryan Stinnett
  */
 
-#ifndef _BROADCASTPACK_H
-#define _BROADCASTPACK_H
+includes BroadcastPack;
 
-#include "AM.h"
+configuration BroadcastC {
 
-struct BroadcastPack
-{
-  int16_t seqno;
-  uint8_t data[(TOSH_DATA_LENGTH-2)];
-} __attribute__ ((packed));
+  provides {
+    interface StdControl;
+    interface MessageIn;
+  }
 
-#endif /* _BROADCASTPACK_H */
+  uses {
+    interface Transceiver;
+  }
+
+}
+
+implementation {
+  components BcastM,  GENERICCOMMPROMISCUOUS as Comm, QueuedSend;
+
+  StdControl = BcastM;
+  Receive = BcastM;
+
+  ReceiveMsg = BcastM;
+
+  BcastM.SubControl -> QueuedSend.StdControl;
+  BcastM.SubControl -> Comm;
+  BcastM.SendMsg -> QueuedSend.SendMsg;
+
+}
