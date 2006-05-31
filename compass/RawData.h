@@ -9,7 +9,7 @@
 
 typedef struct
 {
-	uint16_t value[NUM_SENSORS]		// Holds one value for each sensor listed in Sensors.h
+	uint16_t value[NUM_SENSORS];		// Holds one value for each sensor listed in Sensors.h
 } RawData;
 
 #endif // _RAWDATA_H

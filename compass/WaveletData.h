@@ -9,7 +9,7 @@
 
 typedef struct 
 {
-	uint16_t value[WT_SENSORS]		// Holds one value for each sensor (only two sensors for now)
+	uint16_t value[WT_SENSORS];		// Holds one value for each sensor (only two sensors for now)
 } WaveletData;
 
 #endif // _WAVELETDATA_H

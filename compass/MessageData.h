@@ -47,4 +47,4 @@ enum
 	UART_RETRIES = 2
 };
 
-#endif // _MESSAGEDATA_H 
+#endif // _MESSAGEDATA_H
