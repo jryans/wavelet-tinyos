@@ -41,12 +41,11 @@
 #ifndef _BROADCASTPACK_H
 #define _BROADCASTPACK_H
 
-#include "AM.h"
+#include "MessageData.h"
 
-struct BroadcastPack
-{
+struct BroadcastPack {
   int16_t seqno;
-  uint8_t data[(TOSH_DATA_LENGTH-2)];
+  msgData data;
 } __attribute__ ((packed));
 
 #endif /* _BROADCASTPACK_H */

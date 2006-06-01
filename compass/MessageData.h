@@ -24,19 +24,7 @@ struct MessageData
 } __attribute__ ((packed));
 
 typedef struct MessageData *msgPtr;
-
-struct _msgEntry
-{
-  struct MessageData aMsg;
-  uint8_t refs; // Tracks how many components 
-  uint8_t poster; // ID of the component that posted the message
-  uint8_t receiver; // ID of the components to send to
-  result_t finalAns;
-  bool sent;
-  bool complete;
-);
-
-typedef struct _msgEntry *msgEntry;
+typedef struct MessageData msgData;
   
 enum  // Identifies the type of data stored
 {
@@ -59,12 +47,6 @@ enum  // Identifies components for the Postmaster
   PM_UART = 8,
   PM_NET = 16,
   PM_MAX = 16
-};
-
-enum  // Types of transceivers in use
-{
-	TR_UART,
-	TR_RADIO
 };
 
 enum

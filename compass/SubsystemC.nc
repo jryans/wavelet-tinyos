@@ -1,17 +1,12 @@
-// Portions of this code created by The Moters (Fall 2005 - Spring 2006)
-
 /**
- * This application sends data from the MessageOut type to the Leds.  We use this for debugging and 
- * demos.
- **/
-
+ * Links together the networking system components and presents them as a
+ * simple, tidy package to applications.
+ * @author Ryan Stinnett
+ */
 
 configuration SubsystemC {
+  provides interface Message;
 }
-implementation
-{
-  components LedControlC, Main, UARTControlC, DelugeC;
-
-  Main.StdControl -> DelugeC;
-  LedControlC.LedData -> UARTControlC.In;
+implementation {
+  // Broadcast and Unicast
 }

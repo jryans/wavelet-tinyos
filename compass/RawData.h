@@ -7,8 +7,7 @@
  
 #include "Sensors.h"
 
-typedef struct
-{
+typedef struct {
 	uint16_t value[NUM_SENSORS];		// Holds one value for each sensor listed in Sensors.h
 } RawData;
 
