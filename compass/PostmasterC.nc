@@ -6,12 +6,14 @@
  **/
 
 
-configuration SubsystemC {
+configuration PostmasterC {
 }
 implementation
 {
-  components LedControlC, Main, UARTControlC, DelugeC;
+  components LedControlM, LedsC, Main, UARTControlC, DelugeC;
 
   Main.StdControl -> DelugeC;
-  LedControlC.LedData -> UARTControlC.In;
+  LedControlM.LedData -> UARTControlC.In;
+  Main.StdControl -> LedControlM;
+  LedControlM.Leds -> LedsC;
 }

@@ -30,8 +30,10 @@ struct _msgEntry
   struct MessageData aMsg;
   uint8_t refs; // Tracks how many components 
   uint8_t poster; // ID of the component that posted the message
+  uint8_t receiver; // ID of the components to send to
   result_t finalAns;
   bool sent;
+  bool complete;
 );
 
 typedef struct _msgEntry *msgEntry;
@@ -51,11 +53,12 @@ enum  // Identifies special message destinations
 
 enum  // Identifies components for the Postmaster
 {
-  PM_APP,
-  PM_SENSOR,
-  PM_LED,
-  PM_UART,
-  PM_NET
+  PM_APP = 1,
+  PM_SENSOR = 2,
+  PM_LED = 4,
+  PM_UART = 8,
+  PM_NET = 16,
+  PM_MAX = 16
 };
 
 enum  // Types of transceivers in use

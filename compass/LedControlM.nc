@@ -31,14 +31,7 @@ implementation
   {
     return SUCCESS;
   }
-  
-
-//  task void outputDone()
-//  {
-//    signal LedData.sendDone(SUCCESS);
-//  }
-
-  
+    
   event result_t LedData.receive(struct MessageData msg)
   {
   	dbg(DBG_USR1, "Received a message at LED: type %i action %i", msg.type, msg.data.moteCmd.cmd);
@@ -78,9 +71,6 @@ implementation
 	  	break;
 	  }	
     } 
-    
-    //post outputDone();
-
     return SUCCESS;
   }
 }

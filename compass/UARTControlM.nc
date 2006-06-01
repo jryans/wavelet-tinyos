@@ -70,7 +70,7 @@ implementation
    */
   event result_t UART.uartSendDone(TOS_MsgPtr sent, result_t result) 
   {
-  	//signal Out.sendDone(result);
+  	signal Out.sendDone(result);
     return SUCCESS;
   }
   
@@ -92,7 +92,7 @@ implementation
   event TOS_MsgPtr UART.receiveUart(TOS_MsgPtr m)
   {
   	struct MessageData *msg = (struct MessageData *)m->data;
-  	dbg(DBG_USR1, "Got a message: type %i action %i", msg->type, msg->data.moteCmd.cmd);
+  	dbg(DBG_USR1, "UART Receive: type %i action %i", msg->type, msg->data.moteCmd.cmd);
   	signal In.receive(*msg);
     return m;
   }
