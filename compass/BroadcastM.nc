@@ -34,48 +34,53 @@
  
 /**
  * I converted the TinyOS library Bcast to a version that makes use of the
- * Transceiver library. - JRS
+ * Transceiver library and makes use of its queue abilities, rather than
+ * implementing another one of its own. - JRS
  * @author Ryan Stinnett
  */
 
 includes AM;
-includes BroadcastPack;
+includes IOPack;
 
 module BroadcastM {
   provides {
     interface StdControl;
-    interface MessageIn;
+    interface Message;
   }
-  uses {
-    interface Transceiver as Radio;
-    interface Transceiver as UART;
-  }
+  uses interface Transceiver as IO;
 }
 
 implementation {
+  
+  #if 0
+  typedef uint8_t bPack;
+  #endif
 
-  enum {
-    FWD_QUEUE_SIZE = 4
-  };
+//  enum {
+//    FWD_QUEUE_SIZE = 4
+//  };
 
-  int16_t BcastSeqno;
-  TOS_Msg FwdBuffer[FWD_QUEUE_SIZE];
-  uint8_t iFwdBufHead, iFwdBufTail;
+  //int16_t bcastSeqno;
+  uint8_t bcastSeqno;
+  TOS_MsgPtr tmpPtr;
+  uint8_t len = sizeof(bPack);
+//  TOS_Msg FwdBuffer[FWD_QUEUE_SIZE];
+//  uint8_t iFwdBufHead, iFwdBufTail;
 
   /***********************************************************************
    * Initialization 
    ***********************************************************************/
 
   static void initialize() {
-    iFwdBufHead = iFwdBufTail = 0;
-    BcastSeqno = 0;
+   // iFwdBufHead = iFwdBufTail = 0;
+    bcastSeqno = 0;
   }
 
   /***********************************************************************
    * Internal functions
    ***********************************************************************/
 
-  static bool newBcast(int16_t proposed) {
+  static bool newBcast(uint8_t proposed) {
     /*	This handles sequence space wrap-around. Overlow/Underflow makes
      * the result below correct ( -, 0, + ) for any a, b in the sequence
      * space. Results:	result	implies
@@ -83,34 +88,51 @@ implementation {
      *			  0 	 a = b
      *			  + 	 a > b
      */
-    if ((proposed - BcastSeqno) > 0) {
-      BcastSeqno++;
+    if ((proposed - bcastSeqno) > 0) {
+      bcastSeqno++;
       return TRUE;
     } else {
       return FALSE;
     }
   }
 
-/* Each unique broadcast wave is signaled to application and
-   rebroadcast once.
-*/
-
-  static void FwdBcast(struct BroadcastPack *pRcvMsg, uint8_t Len, uint8_t id) {
-    struct BroadcastPack *pFwdMsg;
+  /* Each unique broadcast wave is signaled to application and
+   * rebroadcast once.
+   */
+  static void FwdBcast(bPack *pRcvMsg) {
+    bPack *pFwdMsg;
     
-    if (((iFwdBufHead + 1) % FWD_QUEUE_SIZE) == iFwdBufTail) {
+   // if (((iFwdBufHead + 1) % FWD_QUEUE_SIZE) == iFwdBufTail) {
       // Drop message if forwarding queue is full.
+     // return;
+   // }
+    if ((tmpPtr = call IO.requestWrite()) != NULL) { // Gets a new TOS_MsgPtr
+      pFwdMsg = (bPack *)tmpPtr->data;
+    } else {
+      dbg(DBG_USR1, "Bcast: Couldn't get a new TOS_MsgPtr! (seqno 0x%x)\n", pRcvMsg->seqno);
       return;
     }
-    
-    pFwdMsg = (struct BroadcastPack *) &FwdBuffer[iFwdBufHead].data; //forward_packet.data;
-    
-    memcpy(pFwdMsg,pRcvMsg,Len);
+    memcpy(pFwdMsg,pRcvMsg,len);  
+    dbg(DBG_USR1, "Bcast: FwdMsg (seqno 0x%x) sending...\n", pFwdMsg->seqno);
+    call IO.sendRadio(TOS_BCAST_ADDR, len); 
+  }
+  
+  /**
+   * All received messages come here, since the medium is unimportant.
+   */
+  static TOS_MsgPtr receive(TOS_MsgPtr pMsg) {
+    if (pMsg->addr == TOS_BCAST_ADDR) {
+      bPack *pBCMsg = (bPack *)pMsg->data;
+      
 
-    dbg(DBG_USR1, "Bcast: FwdMsg (seqno 0x%x)\n", pFwdMsg->seqno);
-    if (call SendMsg.send[id](TOS_BCAST_ADDR, Len, &FwdBuffer[iFwdBufHead]) == SUCCESS) {
-      iFwdBufHead++; iFwdBufHead %= FWD_QUEUE_SIZE;
+      dbg(DBG_USR1, "Bcast: Msg rcvd, seq 0x%02x\n", pBCMsg->seqno);
+
+      if (newBcast(pBCMsg->seqno)) {
+        FwdBcast(pBCMsg);
+        signal Message.receive(pBCMsg->data);
+      }
     }
+    return pMsg;
   }
 
   /***********************************************************************
@@ -130,31 +152,59 @@ implementation {
     return SUCCESS;
   }
 
-  event result_t SendMsg.sendDone[uint8_t id](TOS_MsgPtr pMsg, result_t success) {
-    if (pMsg == &FwdBuffer[iFwdBufTail]) {
-      iFwdBufTail++; iFwdBufTail %= FWD_QUEUE_SIZE;
+  /**
+   * Sends message data to the network
+   * TODO: Can't initiate broadcasts on a mote yet.
+   */
+  command result_t Message.send(msgData msg) {
+    if (msg.dest == ALL_NODES)
+      return FAIL;
+    return SUCCESS;
+  }
+  
+  /**
+   * A message was sent over radio.
+   * @param m - a pointer to the sent message, valid for the duration of the 
+   *     event.
+   * @param result - SUCCESS or FAIL.
+   */
+  event result_t IO.radioSendDone(TOS_MsgPtr m, result_t result) {
+    bPack *pBCMsg = (bPack *)m->data;
+    if (result == SUCCESS) {  
+      dbg(DBG_USR1, "Bcast: FwdMsg (seqno 0x%x) succeeded\n", pBCMsg->seqno);
+    } else {
+      dbg(DBG_USR1, "Bcast: FwdMsg (seqno 0x%x) failed!\n", pBCMsg->seqno);
     }
     return SUCCESS;
   }
-
-  event TOS_MsgPtr ReceiveMsg.receive[uint8_t id](TOS_MsgPtr pMsg) {
-    TOS_BcastMsg *pBCMsg = (TOS_BcastMsg *)pMsg->data;
-    uint16_t Len = pMsg->length - offsetof(TOS_BcastMsg,data);
-
-    dbg(DBG_USR2, "Bcast: Msg rcvd, seq 0x%02x\n", pBCMsg->seqno);
-
-    if (newBcast(pBCMsg->seqno)) {
-      FwdBcast(pBCMsg,pMsg->length,id);
-      signal Receive.receive[id](pMsg,&pBCMsg->data[0],Len);
-    }
-    return pMsg;
-  }
-
-  default event TOS_MsgPtr Receive.receive[uint8_t id](TOS_MsgPtr pMsg, void* payload, 
-						       uint16_t payloadLen) {
-    return pMsg;
+  
+  /**
+   * A message was sent over UART.
+   * @param m - a pointer to the sent message, valid for the duration of the 
+   *     event.
+   * @param result - SUCCESS or FAIL.
+   */
+  event result_t IO.uartSendDone(TOS_MsgPtr m, result_t result) {
+    return SUCCESS; // Broadcasts aren't sent via the UART  
   }
   
+  /**
+   * Received a message over the radio
+   * @param m - the receive message, valid for the duration of the 
+   *     event.
+   */
+  event TOS_MsgPtr IO.receiveRadio(TOS_MsgPtr m) {
+    return receive(m);	
+  }
+  
+  /**
+   * Received a message over UART
+   * @param m - the receive message, valid for the duration of the 
+   *     event.
+   */
+  event TOS_MsgPtr IO.receiveUart(TOS_MsgPtr m) {
+    return receive(m);	
+  }
 }
 
 

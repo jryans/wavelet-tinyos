@@ -44,8 +44,11 @@
 #include "MessageData.h"
 
 struct BroadcastPack {
-  int16_t seqno;
+  //int16_t seqno;
+  uint8_t seqno;
   msgData data;
 } __attribute__ ((packed));
+
+typedef struct BroadcastPack bPack;
 
 #endif /* _BROADCASTPACK_H */

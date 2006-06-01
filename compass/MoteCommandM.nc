@@ -69,4 +69,12 @@ implementation {
     } 
     return SUCCESS;
   }
+  
+  /**
+   * sendDone is signaled when the send has completed
+   * TODO: Responding to commands not yet implemented
+   */
+  event result_t Message.sendDone(result_t result) {
+    return SUCCESS;
+  }
 }

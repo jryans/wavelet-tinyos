@@ -6,14 +6,14 @@
 #define _IOPACK_H
 
 #include "BroadcastPack.h"
+//#include "UnicastPack.h"
 
-union IOPack {
-  BroadcastPack bcast;
-} __attribute__ ((packed));
-
-enum  // Types of transceivers in use
+// Assigns one type for each component that uses Transceiver
+// to prevent conflicts.
+enum  
 {
-  TR_COMPASS = 5
+  TR_BROAD = 5,
+  TR_UNI = 6
 };
 
 #endif // _IOPACK_H

@@ -6,8 +6,12 @@
 
 configuration CompassC {}
 implementation {
-  components LedControlC, Main, UARTControlC, DelugeC;
+  components Main, DelugeC, NetworkC, MoteCommandC;
 
+  /*** Deluge: allows for wireless mote reprogramming ***/
   Main.StdControl -> DelugeC;
-  LedControlC.LedData -> UARTControlC.In;
+  
+  /*** Network: provides broadcast and unicast I/O ***/
+  MoteCommandC.Message -> NetworkC;
+  // Apps and subsystems
 }
