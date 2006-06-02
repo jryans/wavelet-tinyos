@@ -75,19 +75,16 @@ implementation {
   }
   
   /**
-   * All received messages come here, since the medium is unimportant.
+   * Delivers incoming radio messages.
    */
-  static TOS_MsgPtr receive(TOS_MsgPtr pMsg) {
-    uPack *pPack;
-    if (pMsg->addr == TOS_BCAST_ADDR)
-      return pMsg; // Ignore broadcase packets
-    if (pMsg->addr == TOS_LOCAL_ADDRESS) { // This packet is for us
-      pPack = (uPack *)pMsg->data;
+  static TOS_MsgPtr deliver(TOS_MsgPtr pMsg) {
+    uPack *pPack =(uPack *)pMsg->data;
+    if (pPack->data.dest == TOS_LOCAL_ADDRESS) { // This packet is for us
       if (TOS_LOCAL_ADDRESS == 0) { // We are the UART bridge, forward to UART
         fwdUart(pPack);
       } else { // We are a normal mote, send data on to applications
         dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, rcvd\n", TOS_LOCAL_ADDRESS,
-            pFwdPack->data.src, pFwdPack->data.dest);
+            pPack->data.src, pPack->data.dest);
         signal Message.receive(pPack->data);
       }
     } else { // This message is not for us, forward it on.
@@ -162,7 +159,7 @@ implementation {
    *     event.
    */
   event TOS_MsgPtr IO.receiveRadio(TOS_MsgPtr m) {
-    return receive(m);	
+    return deliver(m);	
   }
   
   /**
@@ -171,7 +168,9 @@ implementation {
    *     event.
    */
   event TOS_MsgPtr IO.receiveUart(TOS_MsgPtr m) {
-    return receive(m);	
+    uPack *pPack = (uPack *)m->data;
+    fwdNextHop(pPack, RADIO_RETRIES); // Forward the message via the radio
+    return m;	
   }
 }
 

@@ -108,13 +108,11 @@ implementation {
    * All received messages come here, since the medium is unimportant.
    */
   static TOS_MsgPtr receive(TOS_MsgPtr pMsg) {
-    if (pMsg->addr == TOS_BCAST_ADDR) {
-      bPack *pBCMsg = (bPack *)pMsg->data;
-      dbg(DBG_USR1, "Bcast: Msg rcvd, seq 0x%02x\n", pBCMsg->seqno);
-      if (newBcast(pBCMsg->seqno)) {
-        FwdBcast(pBCMsg);
-        signal Message.receive(pBCMsg->data);
-      }
+    bPack *pBCMsg = (bPack *)pMsg->data;
+    dbg(DBG_USR1, "Bcast: Msg rcvd, seq 0x%02x\n", pBCMsg->seqno);
+    if (newBcast(pBCMsg->seqno)) {
+      FwdBcast(pBCMsg);
+      signal Message.receive(pBCMsg->data);
     }
     return pMsg;
   }

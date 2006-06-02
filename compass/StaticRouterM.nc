@@ -16,7 +16,12 @@ module StaticRouterM {
 implementation {
   uint8_t curState; // Holds the current state of the router.
   
-  int16_t routeTable[13][13]; // FILL THIS IN!
+  int16_t routeTable[5][5] =
+    { { -1, 1, 1, 1, 1 } ,
+      { 0, -1, 2, 3, 2 } ,
+      { 1, 1, -1, 3, 4 } ,
+      { 1, 1, 2, -1, 4 } ,
+      { 3, 3, 2, 3, -1 } };
   
   command result_t StdControl.init() {
     curState = RO_READY;
