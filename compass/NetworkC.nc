@@ -7,11 +7,13 @@
 includes IOPack;
 
 configuration NetworkC {
-  provides interface Message;
+  provides {
+    interface Message;
+    interface Router;
+  }
 }
 implementation {
-  // Broadcast and Unicast
-  components Main, BroadcastM, TransceiverC;
+  components Main, BroadcastM, UnicastM, StaticRouterM, TransceiverC;
   
   Main.StdControl -> TransceiverC;
   
@@ -19,4 +21,14 @@ implementation {
   Main.StdControl -> BroadcastM;
   BroadcastM.IO -> TransceiverC.Transceiver[TR_BROAD];
   Message = BroadcastM;
+  
+  /*** Unicast ***/
+  UnicastM.IO -> TransceiverC.Transceiver[TR_UNI];
+  UnicastM.Router -> StaticRouterM;
+  Message = UnicastM;
+  
+  /*** Routing ***/
+  Main.StdControl -> StaticRouterM;
+  StaticRouterM.IO -> TransceiverC.Transceiver[TR_ROUTE];
+  Router = StaticRouterM;
 }

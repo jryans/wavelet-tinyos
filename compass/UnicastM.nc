@@ -10,7 +10,6 @@ includes IOPack;
 
 module UnicastM {
   provides {
-    interface StdControl;
     interface Message;
   }
   uses {
@@ -32,6 +31,12 @@ implementation {
    * Internal functions
    ***********************************************************************/
 
+  static result_t newMsg() {
+    if ((tmpPtr = call IO.requestWrite()) == NULL) // Gets a new TOS_MsgPtr
+      return FAIL;
+    return SUCCESS;
+  }
+  
   /**
    * Forwards packets destined for the UART
    */
@@ -63,7 +68,7 @@ implementation {
     memcpy(pFwdPack,pRcvPack,len);
     pFwdPack->hops++;
     pFwdPack->retriesLeft = retries;
-    nextHop = Router.getNextAddr(pFwdPack->data.dest);
+    nextHop = call Router.getNextAddr(pFwdPack->data.dest);
     dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwding to %i, %i retries left...\n", 
         TOS_LOCAL_ADDRESS, pFwdPack->data.src, pFwdPack->data.dest, nextHop, retries);
     call IO.sendRadio(nextHop, len);
@@ -73,10 +78,11 @@ implementation {
    * All received messages come here, since the medium is unimportant.
    */
   static TOS_MsgPtr receive(TOS_MsgPtr pMsg) {
+    uPack *pPack;
     if (pMsg->addr == TOS_BCAST_ADDR)
       return pMsg; // Ignore broadcase packets
     if (pMsg->addr == TOS_LOCAL_ADDRESS) { // This packet is for us
-      uPack *pPack = (uPack *)pMsg->data;
+      pPack = (uPack *)pMsg->data;
       if (TOS_LOCAL_ADDRESS == 0) { // We are the UART bridge, forward to UART
         fwdUart(pPack);
       } else { // We are a normal mote, send data on to applications
@@ -89,28 +95,10 @@ implementation {
     }
     return pMsg;
   }
-  
-  static result_t newMsg() {
-    if ((tmpPtr = call IO.requestWrite()) == NULL) // Gets a new TOS_MsgPtr
-      return FAIL;
-    return SUCCESS;
-  }
 
   /***********************************************************************
    * Commands and events
    ***********************************************************************/
-
-  command result_t StdControl.init() {
-    return SUCCESS;
-  }
-
-  command result_t StdControl.start() {
-    return SUCCESS;
-  }
-
-  command result_t StdControl.stop() {
-    return SUCCESS;
-  }
 
   /**
    * Builds a unicast pack from an input message and sends it on its way.
@@ -121,7 +109,7 @@ implementation {
       return SUCCESS; // Ignore broadcase packets
     if (msg.dest == TOS_LOCAL_ADDRESS)
       return FAIL; // Don't send messages to yourself!
-    if (Router.getStatus() != RO_READY)
+    if (call Router.getStatus() != RO_READY)
       return FAIL; // Router isn't ready, this should be checked before sending
     newPack.data = msg;
     fwdNextHop(&newPack, RADIO_RETRIES); // Send the message

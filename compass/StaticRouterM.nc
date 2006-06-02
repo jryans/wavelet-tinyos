@@ -11,7 +11,7 @@ module StaticRouterM {
     interface StdControl;
     interface Router; 
   }
-  uses interface Transceiver;
+  uses interface Transceiver as IO;
 }
 implementation {
   uint8_t curState; // Holds the current state of the router.
@@ -48,19 +48,19 @@ implementation {
   }
 
   /*** Not needed in StaticRouterM ***/
-  event result_t Transceiver.radioSendDone(TOS_MsgPtr m, result_t result) {
+  event result_t IO.radioSendDone(TOS_MsgPtr m, result_t result) {
     return SUCCESS;
   }
 
-  event result_t Transceiver.uartSendDone(TOS_MsgPtr m, result_t result) {
+  event result_t IO.uartSendDone(TOS_MsgPtr m, result_t result) {
     return SUCCESS;
   }
 
-  event TOS_MsgPtr Transceiver.receiveRadio(TOS_MsgPtr m) {
+  event TOS_MsgPtr IO.receiveRadio(TOS_MsgPtr m) {
     return m;
   }
 
-  event TOS_MsgPtr Transceiver.receiveUart(TOS_MsgPtr m) {
+  event TOS_MsgPtr IO.receiveUart(TOS_MsgPtr m) {
     return m;
   }
 }
