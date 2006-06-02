@@ -11,8 +11,8 @@
 
 struct MessageData
 {
-	int8_t src;
-	int8_t dest;
+	int16_t src;
+	int16_t dest;
 	uint8_t type;
 	
 	union
@@ -35,23 +35,7 @@ enum  // Identifies the type of data stored
 
 enum  // Identifies special message destinations
 {
-	SINK = -2,
 	ALL_NODES = -1
-};
-
-enum  // Identifies components for the Postmaster
-{
-  PM_APP = 1,
-  PM_SENSOR = 2,
-  PM_LED = 4,
-  PM_UART = 8,
-  PM_NET = 16,
-  PM_MAX = 16
-};
-
-enum
-{
-	UART_RETRIES = 2
 };
 
 #endif // _MESSAGEDATA_H

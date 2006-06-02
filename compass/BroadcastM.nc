@@ -56,23 +56,15 @@ implementation {
   typedef uint8_t bPack;
   #endif
 
-//  enum {
-//    FWD_QUEUE_SIZE = 4
-//  };
-
-  //int16_t bcastSeqno;
-  uint8_t bcastSeqno;
+  int16_t bcastSeqno;
   TOS_MsgPtr tmpPtr;
   uint8_t len = sizeof(bPack);
-//  TOS_Msg FwdBuffer[FWD_QUEUE_SIZE];
-//  uint8_t iFwdBufHead, iFwdBufTail;
 
   /***********************************************************************
    * Initialization 
    ***********************************************************************/
 
   static void initialize() {
-   // iFwdBufHead = iFwdBufTail = 0;
     bcastSeqno = 0;
   }
 
@@ -80,7 +72,7 @@ implementation {
    * Internal functions
    ***********************************************************************/
 
-  static bool newBcast(uint8_t proposed) {
+  static bool newBcast(int16_t proposed) {
     /*	This handles sequence space wrap-around. Overlow/Underflow makes
      * the result below correct ( -, 0, + ) for any a, b in the sequence
      * space. Results:	result	implies
@@ -101,11 +93,6 @@ implementation {
    */
   static void FwdBcast(bPack *pRcvMsg) {
     bPack *pFwdMsg;
-    
-   // if (((iFwdBufHead + 1) % FWD_QUEUE_SIZE) == iFwdBufTail) {
-      // Drop message if forwarding queue is full.
-     // return;
-   // }
     if ((tmpPtr = call IO.requestWrite()) != NULL) { // Gets a new TOS_MsgPtr
       pFwdMsg = (bPack *)tmpPtr->data;
     } else {
@@ -123,10 +110,7 @@ implementation {
   static TOS_MsgPtr receive(TOS_MsgPtr pMsg) {
     if (pMsg->addr == TOS_BCAST_ADDR) {
       bPack *pBCMsg = (bPack *)pMsg->data;
-      
-
       dbg(DBG_USR1, "Bcast: Msg rcvd, seq 0x%02x\n", pBCMsg->seqno);
-
       if (newBcast(pBCMsg->seqno)) {
         FwdBcast(pBCMsg);
         signal Message.receive(pBCMsg->data);
