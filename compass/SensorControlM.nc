@@ -28,6 +28,7 @@ module SensorControlM {
 
 implementation {
   uint16_t last_val[NUM_SENSORS];
+  task void readData();
   
   command result_t StdControl.init() {
     if (TOS_LOCAL_ADDRESS != 0) {
@@ -45,6 +46,7 @@ implementation {
       call VoltControl.start();
 
       call Timer.start(TIMER_REPEAT, SAMPLE_TIME);
+      post readData();
     }
     return SUCCESS;
   }
@@ -66,10 +68,14 @@ implementation {
    */
   event result_t Timer.fired()
   {  
-    TempADC.getData();
-    LightADC.getData();
-    VoltADC.getData();
+    post readData();
     return SUCCESS;
+  }
+  
+  task void readData() {
+    call TempADC.getData();
+    call LightADC.getData();
+    call VoltADC.getData();
   }
   
   /**

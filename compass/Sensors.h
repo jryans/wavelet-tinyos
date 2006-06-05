@@ -18,9 +18,9 @@ enum {
   WT_SENSORS = 2
 };
 
-// Time between sensor samples in ms
+// Time between sensor samples in binary ms (1/1024 s)
 enum {
-	SAMPLE_TIME = 500
+	SAMPLE_TIME = 512
 };
 
 #endif // _SENSORS_H
