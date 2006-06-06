@@ -12,7 +12,7 @@ configuration SensorControlC {
 }
 
 implementation {
-  components SensorControlM, PhotoTemp, Voltage, Main;
+  components SensorControlM, PhotoTemp, Voltage, Main, TimerC;
 
   SensorData = SensorControlM;
   Main.StdControl -> SensorControlM;
@@ -22,4 +22,5 @@ implementation {
   SensorControlM.LightControl -> PhotoTemp.PhotoStdControl;
   SensorControlM.TempControl -> PhotoTemp.TempStdControl; 
   SensorControlM.VoltControl -> Voltage.StdControl;
+  SensorControlM.Timer -> TimerC.Timer[unique("Timer")];
 }
