@@ -8,7 +8,6 @@
  */
 
 includes MessageData;
-includes WaveletData;
 includes Sensors;
 
 module WaveletM 
@@ -29,8 +28,9 @@ module WaveletM
 }
 implementation
 { 
-  #if 0
-  typedef struct MessageData msgData;
+  #if 0 // TinyOS Plugin Workaround
+  typedef char msgData;
+  typedef char WaveletLevel;
   #endif
   
   /*** Variables and Constants ***/ 
@@ -38,17 +38,8 @@ implementation
   uint8_t dataSet; // Identifies the current data set number
   uint8_t waitingFor; // Number of motes we are waiting on
   
-  /* Each array has one entry for this mote at index 0 and additional entries for our
-   * neighbors as determined by Ray's MATLAB code.
-   */
-  typedef struct {
-    uint8_t numMotes; // Number of neighbors at this level
-    int16_t neighbors[WT_NEIGHBORS + 1]; // Mote ID
-    WaveletData wt[WT_NEIGHBORS + 1]; // WT value calc'd from raw value and the coeffs
-    float coeffs[WT_NEIGHBORS + 1]; // WT coeffs from MATLAB
-  } wtLevel;
-  
-  wtLevel wtData[WT_LEVELS]; // One of the aboves structs used for each WT level
+  uint8_t numLevels; // Total number of wavelet levels
+  WaveletLevel *level; // Array
   
   // Defines all possible mote states
   enum {
@@ -85,7 +76,7 @@ implementation
       // At startup, retrieve parameters and then begin by reading sensors
       case S_STARTUP: {
         curLevel = 0;
-        dataSet = 0;
+        dataSet = 1;
         // Build coeff reception
         call State.forceState(S_START_DATASET);
         post runState();
@@ -105,16 +96,16 @@ implementation
         break; }
       case S_UPDATING: {
         dbg(DBG_USR1, "Update: DS: %i, L: %i, Sending values to predict nodes...",
-            dataSet, curLevel);
+            dataSet, curLevel + 1);
         sendValuesToNeighbors();
         waitingFor = wtData[curLevel].numMotes;
         dbg(DBG_USR1, "Update: DS: %i, L: %i, Waiting to hear from predict nodes...",
-            dataSet, curLevel);
+            dataSet, curLevel + 1);
         break; }
       case S_PREDICTING: {
         waitingFor = wtData[curLevel].numMotes;
         dbg(DBG_USR1, "Predict: DS: %i, L: %i, Waiting to hear from update nodes...",
-            dataSet, curLevel);
+            dataSet, curLevel + 1);
         break; }  
     /*  case S_CALCULATING: {
         dbg(DBG_USR1, "Calc: DS: %i, L: %i, Calculating new values...",
@@ -123,22 +114,19 @@ implementation
         break; } */
       case S_PREDICTED: {
         dbg(DBG_USR1, "Predict: DS: %i, L: %i, Sending values to update nodes...",
-            dataSet, curLevel);
+            dataSet, curLevel + 1);
         sendValuesToNeighbors();
-        dbg(DBG_USR1, "Predict: DS: %i, L: %i, Level done!",
-            dataSet, curLevel);
+        dbg(DBG_USR1, "Predict: DS: %i, L: %i, Level done!", dataSet, curLevel + 1);
         nextWaveletLevel();
         post runState();
         break; }
       case S_UPDATED: {
-        dbg(DBG_USR1, "Update: DS: %i, L: %i, Level done!",
-            dataSet, curLevel);
+        dbg(DBG_USR1, "Update: DS: %i, L: %i, Level done!", dataSet, curLevel + 1);
         nextWaveletLevel();
         post runState();
         break; }
       case S_DONE: {
-        dbg(DBG_USR1, "Done: DS: %i, Sending final values to base...",
-            dataSet, curLevel);
+        dbg(DBG_USR1, "Done: DS: %i, Sending final values to base...", dataSet);
         sendResultsToBase(); 
         break; }
     }
@@ -181,7 +169,7 @@ implementation
       msg.data.wavelet.value[i] = wtData[curLevel].wt[0].value[i];
     for (mote = 1; mote < wtData[curLevel].numMotes; mote++) {
       dbg(DBG_USR1, "Update: DS: %i, L: %i, Sending values to predict node %i...",
-          dataSet, curLevel, msg.dest);
+          dataSet, curLevel + 1, msg.dest);
       call Message.send(msg);
     }
   }
@@ -193,7 +181,7 @@ implementation
   static void calcNewValues() {
     uint8_t mote, sensor;
     dbg(DBG_USR1, "Calc: DS: %i, L: %i, Calculating new values...",
-        dataSet, curLevel);
+        dataSet, curLevel + 1);
     for (mote = 1; mote < wtData[curLevel].numMotes; mote++) {
       for (sensor = 0; sensor < WT_SENSORS; sensor++)
         wtData[curLevel].wt[0].value[sensor] += wtData[curLevel].wt[mote].value[sensor];
@@ -227,16 +215,14 @@ implementation
       case S_UPDATING: {
         if (result == FAIL)
           dbg(DBG_USR1, "Update: DS: %i, L: %i, Sending values to predict motes failed!",
-              dataSet, curLevel);
+              dataSet, curLevel + 1);
         break; }
       case S_DONE: {
         if (result == SUCCESS) {
-          dbg(DBG_USR1, "Done: DS: %i, Sending final values to base successful",
-              dataSet);
+          dbg(DBG_USR1, "Done: DS: %i, Sending final values to base successful", dataSet);
           call State.toIdle();
         } else {
-          dbg(DBG_USR1, "Done: DS: %i, Sending final values to base failed!",
-              dataSet);
+          dbg(DBG_USR1, "Done: DS: %i, Sending final values to base failed!", dataSet);
         } break; }
     }
     return SUCCESS;
@@ -257,7 +243,7 @@ implementation
             }
             if (mote < wtData[curLevel].numMotes) {
               dbg(DBG_USR1, "Predict: DS: %i, L: %i, Got values from update mote %i",
-                  dataSet, curLevel, mote);
+                  dataSet, curLevel + 1, mote);
               wtData[curLevel].wt[mote] = msg.data.wavelet;
               if (--waitingFor == 0) {
                 calcNewValues();
@@ -266,7 +252,7 @@ implementation
               }             
             } else {
               dbg(DBG_USR1, "Predict: DS: %i, L: %i, BAD NEIGHBOR! Got values from update mote %i",
-                  dataSet, curLevel, mote);
+                  dataSet, curLevel + 1, mote);
             }
           }
           break; }
@@ -278,7 +264,7 @@ implementation
             }
             if (mote < wtData[curLevel].numMotes) {
               dbg(DBG_USR1, "Update: DS: %i, L: %i, Got values from predict mote %i",
-                  dataSet, curLevel, mote);
+                  dataSet, curLevel + 1, mote);
               wtData[curLevel].wt[mote] = msg.data.wavelet;
               if (--waitingFor == 0) {
                 calcNewValues();
@@ -287,7 +273,7 @@ implementation
               }             
             } else {
               dbg(DBG_USR1, "Update: DS: %i, L: %i, BAD NEIGHBOR! Got values from predict mote %i",
-                  dataSet, curLevel, mote);
+                  dataSet, curLevel + 1, mote);
             }
           }
           break; }

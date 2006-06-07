@@ -125,6 +125,8 @@ implementation {
     if (result == SUCCESS) {  
       dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwd to %i succeeded\n", 
           TOS_LOCAL_ADDRESS, pPack->data.src, pPack->data.dest, m->addr);
+      if (pPack->data.src == TOS_LOCAL_ADDRESS)
+        signal Message.sendDone(pPack->data, SUCCESS);
     } else {
       tmpRetries = pPack->retriesLeft;
       if (tmpRetries > 0) {
@@ -132,6 +134,8 @@ implementation {
       } else {
         dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwd to %i failed!\n", 
           TOS_LOCAL_ADDRESS, pPack->data.src, pPack->data.dest, m->addr);
+        if (pPack->data.src == TOS_LOCAL_ADDRESS)
+          signal Message.sendDone(pPack->data, FAIL);
       }
     }
     return SUCCESS;

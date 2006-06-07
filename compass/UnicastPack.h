@@ -9,7 +9,6 @@
 #include "MessageData.h"
 
 struct UnicastPack {
-  uint16_t hops;
   uint8_t retriesLeft;
   msgData data;
 } __attribute__ ((packed));

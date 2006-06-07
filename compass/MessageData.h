@@ -9,32 +9,30 @@
 #include "RawData.h"
 #include "WaveletData.h"
 
-struct MessageData
-{
+struct MessageData {
 	int16_t src;
 	int16_t dest;
 	uint8_t type;
-	
-	union
-	{
+	union {
 		MoteCommand moteCmd;
 		RawData raw;
-		WaveletData wavelet;
+		WaveletData wData;
+		WaveletConfig wConfig;
+    WaveletConfigHeader wConfigHeader;
 	} data;
 } __attribute__ ((packed));
 
-typedef struct MessageData *msgPtr;
 typedef struct MessageData msgData;
   
-enum  // Identifies the type of data stored
-{
+enum { // Identifies the type of data stored
 	MOTECOMMAND,
 	RAWDATA,
 	WAVELETDATA,
+	WAVELETCONFIG,
+	WAVELETCONFIGHEADER
 };
 
-enum  // Identifies special message destinations
-{
+enum { // Identifies special message destinations
 	ALL_NODES = -1
 };
 
