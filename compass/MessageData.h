@@ -17,8 +17,8 @@ struct MessageData {
 		MoteCommand moteCmd;
 		RawData raw;
 		WaveletData wData;
-		WaveletConfig wConfig;
-    WaveletConfigHeader wConfigHeader;
+		WaveletConfData wConfData;
+    WaveletConfHeader wConfHeader;
 	} data;
 } __attribute__ ((packed));
 
@@ -28,8 +28,8 @@ enum { // Identifies the type of data stored
 	MOTECOMMAND,
 	RAWDATA,
 	WAVELETDATA,
-	WAVELETCONFIG,
-	WAVELETCONFIGHEADER
+	WAVELETCONFDATA,
+	WAVELETCONFHEADER
 };
 
 enum { // Identifies special message destinations

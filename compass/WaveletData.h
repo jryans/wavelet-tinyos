@@ -21,14 +21,15 @@ typedef struct {
 
 typedef struct {
   uint8_t numLevels; // Total number of WT levels that will be coming
-} WaveletConfigHeader;
+  uint8_t *nbCount; // Number of neighbors for each level
+} WaveletConfHeader;
 
 typedef struct {
-  uint8_t curLevel; // Current level being transmitted
+  uint8_t level; // Current level being transmitted
   uint8_t packNum; // Sequential packet number in that level
   uint8_t moteCount; // Number of motes in this pack (max of 3)
   MoteInfo *info; // Array of up to three MoteInfos
-} WaveletConfig;
+} WaveletConfData;
 
 typedef struct { // One MoteInfo and WaveletData for each neighbor
   MoteInfo info;

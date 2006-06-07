@@ -66,7 +66,7 @@ implementation {
       return;
     }
     memcpy(pFwdPack,pRcvPack,len);
-    pFwdPack->hops++;
+    //pFwdPack->hops++;
     pFwdPack->retriesLeft = retries;
     nextHop = call Router.getNextAddr(pFwdPack->data.dest);
     dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwding to %i, %i retries left...\n", 

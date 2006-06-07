@@ -9,6 +9,7 @@
 #include "MessageData.h"
 
 struct UnicastPack {
+  //uint16_t hops;  Takes up too much space...
   uint8_t retriesLeft;
   msgData data;
 } __attribute__ ((packed));

@@ -23,6 +23,9 @@ module WaveletM
     interface State;
     interface Timer as Timeout;
     interface Timer as NewSet;
+    
+    /*** Wavelet Config ***/
+    interface WaveletConfig;
   }
   provides interface StdControl;
 }
@@ -39,7 +42,7 @@ implementation
   uint8_t waitingFor; // Number of motes we are waiting on
   
   uint8_t numLevels; // Total number of wavelet levels
-  WaveletLevel *level; // Array
+  WaveletLevel *level; // Array of WaveletLevels
   
   // Defines all possible mote states
   enum {
@@ -77,9 +80,10 @@ implementation
       case S_STARTUP: {
         curLevel = 0;
         dataSet = 1;
-        // Build coeff reception
-        call State.forceState(S_START_DATASET);
-        post runState();
+//        // Build coeff reception
+//        call State.forceState(S_START_DATASET);
+//        post runState();
+        call WaveletConfig.getConfig();
         break; }
       case S_START_DATASET: {
         dataSet++;
@@ -91,19 +95,19 @@ implementation
         dbg(DBG_USR1, "DS: %i, Reading sensors...", dataSet);
         readSensors();
         // Execute first level state (PREDICTING, UPDATING, or DONE)
-        call State.forceState(wtData[curLevel].wt[0].state);
+        call State.forceState(level[curLevel].nb[0].data.state);
         post runState();
         break; }
       case S_UPDATING: {
         dbg(DBG_USR1, "Update: DS: %i, L: %i, Sending values to predict nodes...",
             dataSet, curLevel + 1);
         sendValuesToNeighbors();
-        waitingFor = wtData[curLevel].numMotes;
+        waitingFor = level[curLevel].nbCount;
         dbg(DBG_USR1, "Update: DS: %i, L: %i, Waiting to hear from predict nodes...",
             dataSet, curLevel + 1);
         break; }
       case S_PREDICTING: {
-        waitingFor = wtData[curLevel].numMotes;
+        waitingFor = level[curLevel].nbCount;
         dbg(DBG_USR1, "Predict: DS: %i, L: %i, Waiting to hear from update nodes...",
             dataSet, curLevel + 1);
         break; }  
@@ -136,12 +140,13 @@ implementation
     RawData newVals = call SensorData.readSensors();
     uint8_t i;
     for (i = 0; i < WT_SENSORS; i++)
-      wtData[0].wt[0].value[i] = newVals.value[i];
+      level[0].nb[0].data.value[i] = newVals.value[i];
   }
   
   static void nextWaveletLevel() {
     uint8_t i, newState;
-    (curLevel == WT_LEVELS) ? newState = S_DONE : (newState = wtData[curLevel].wt[0].state);
+    (curLevel == numLevels) ? newState = S_DONE : 
+                              (newState = level[curLevel].nb[0].data.state);
     if (newState != S_DONE)
       curLevel++;
     call State.forceState(newState);
@@ -153,9 +158,9 @@ implementation
     msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = 0;
     msg.type = WAVELETDATA;
-    msg.data.wavelet.state = S_DONE;
+    msg.data.wData.state = S_DONE;
     for (i = 0; i < WT_SENSORS; i++)
-      msg.data.wavelet.value[i] = wtData[curLevel].wt[0].value[i];
+      msg.data.wData.value[i] = level[curLevel].nb[0].data.value[i];
     call Message.send(msg);
   }
   
@@ -164,10 +169,10 @@ implementation
     uint8_t mote, i;
     msg.src = TOS_LOCAL_ADDRESS;
     msg.type = WAVELETDATA;
-    msg.data.wavelet.state = call State.getState();
+    msg.data.wData.state = call State.getState();
     for (i = 0; i < WT_SENSORS; i++)
-      msg.data.wavelet.value[i] = wtData[curLevel].wt[0].value[i];
-    for (mote = 1; mote < wtData[curLevel].numMotes; mote++) {
+      msg.data.wData.value[i] = level[curLevel].nb[0].data.value[i];
+    for (mote = 1; mote < level[curLevel].nbCount; mote++) {
       dbg(DBG_USR1, "Update: DS: %i, L: %i, Sending values to predict node %i...",
           dataSet, curLevel + 1, msg.dest);
       call Message.send(msg);
@@ -182,9 +187,9 @@ implementation
     uint8_t mote, sensor;
     dbg(DBG_USR1, "Calc: DS: %i, L: %i, Calculating new values...",
         dataSet, curLevel + 1);
-    for (mote = 1; mote < wtData[curLevel].numMotes; mote++) {
+    for (mote = 1; mote < level[curLevel].nbCount; mote++) {
       for (sensor = 0; sensor < WT_SENSORS; sensor++)
-        wtData[curLevel].wt[0].value[sensor] += wtData[curLevel].wt[mote].value[sensor];
+        level[curLevel].nb[0].data.value[sensor] += level[curLevel].nb[mote].data.value[sensor];
     }
   }
 
@@ -197,7 +202,11 @@ implementation
   
   command result_t StdControl.start() 
   {
-    call State.forceState(S_STARTUP);
+    if (TOS_LOCAL_ADDRESS == 0) {
+      call State.forceState(S_OFFLINE);
+    } else {
+      call State.forceState(S_STARTUP);
+    }
     post runState();
     return SUCCESS;
   }
@@ -207,10 +216,20 @@ implementation
     return SUCCESS;
   }
   
+  event result_t WaveletConfig.configDone(WaveletLevel *configData,
+                                          uint8_t lvlCount, result_t result) {
+    if (result == SUCCESS) {
+      level = configData;
+      numLevels = lvlCount;
+      dbg(DBG_USR1, "L1M1ID: %i L2M2ID: %i", level[0].nb[0].info.id, level[1].nb[1].info.id);
+    }
+    return SUCCESS; 
+  }
+  
   /**
    * sendDone is signaled when the send has completed
    */
-  event result_t Message.sendDone(result_t result) {
+  event result_t Message.sendDone(msgData msg, result_t result) {
     switch (call State.getState()) {
       case S_UPDATING: {
         if (result == FAIL)
@@ -236,15 +255,15 @@ implementation
     if (msg.type == WAVELETDATA) { // Ignore other message types
       switch (call State.getState()) {
         case S_PREDICTING: {
-          if (msg.data.wavelet.state == S_UPDATING) {
-            for (mote = 1; mote < wtData[curLevel].numMotes; mote++) {
-              if (wtData[curLevel].neighbors[mote] == msg.src)
+          if (msg.data.wData.state == S_UPDATING) {
+            for (mote = 1; mote < level[curLevel].nbCount; mote++) {
+              if (level[curLevel].nb[mote].info.id == msg.src)
                 break;
             }
-            if (mote < wtData[curLevel].numMotes) {
+            if (mote < level[curLevel].nbCount) {
               dbg(DBG_USR1, "Predict: DS: %i, L: %i, Got values from update mote %i",
                   dataSet, curLevel + 1, mote);
-              wtData[curLevel].wt[mote] = msg.data.wavelet;
+              level[curLevel].nb[mote].data = msg.data.wData;
               if (--waitingFor == 0) {
                 calcNewValues();
                 call State.forceState(S_PREDICTED);
@@ -257,15 +276,15 @@ implementation
           }
           break; }
         case S_UPDATING: {
-          if (msg.data.wavelet.state == S_PREDICTED) {
-            for (mote = 1; mote < wtData[curLevel].numMotes; mote++) {
-              if (wtData[curLevel].neighbors[mote] == msg.src)
+          if (msg.data.wData.state == S_PREDICTED) {
+            for (mote = 1; mote < level[curLevel].nbCount; mote++) {
+              if (level[curLevel].nb[mote].info.id == msg.src)
                 break;
             }
-            if (mote < wtData[curLevel].numMotes) {
+            if (mote < level[curLevel].nbCount) {
               dbg(DBG_USR1, "Update: DS: %i, L: %i, Got values from predict mote %i",
                   dataSet, curLevel + 1, mote);
-              wtData[curLevel].wt[mote] = msg.data.wavelet;
+              level[curLevel].nb[mote].data = msg.data.wData;
               if (--waitingFor == 0) {
                 calcNewValues();
                 call State.forceState(S_UPDATED);

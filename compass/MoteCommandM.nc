@@ -41,7 +41,7 @@ implementation {
 	    // For raw and wavelet data, display the 3 LSBs
 	  	uint16_t intVal;
 	    msg.type == RAWDATA ? (intVal = msg.data.raw.value[0]) 
-	    					: (intVal = msg.data.wavelet.value[0]);
+	    					: (intVal = msg.data.wData.value[0]);
 	    call Leds.set((uint8_t)(intVal & 0x7));
 	    break;
 	  }
@@ -74,7 +74,7 @@ implementation {
    * sendDone is signaled when the send has completed
    * TODO: Responding to commands not yet implemented
    */
-  event result_t Message.sendDone(result_t result) {
+  event result_t Message.sendDone(msgData msg, result_t result) {
     return SUCCESS;
   }
 }

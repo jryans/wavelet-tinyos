@@ -8,7 +8,6 @@ includes MessageData;
 module BigPackM {
   uses {
     interface Message;
-    interface MemAlloc;
   }
   provides {
     interface WaveletConfig;
@@ -18,12 +17,22 @@ module BigPackM {
 implementation {
   #if 0 // TinyOS Plugin Workaround
   typedef char msgData;
+  typedef char WaveletLevel;
+  typedef char WaveletConfData;
   #endif
   
   bool activeRequest = FALSE; // True if a request is in progress
   uint8_t curLevel;
-  uint8_t curMoteIndex;
+  uint8_t curPackNum;
   uint8_t numLevels;
+  uint8_t *nbCount; // Number of neighbors at each level
+  
+  WaveletLevel *pLevel; // Array of WaveletLevels
+  
+  static void sendAck(msgData msg);
+  static result_t allocWavelet();
+  static void freeWavelet();
+  static void fillWavelet(WaveletConfData *conf);
   
   /*** WaveletConfig ***/
   
@@ -35,11 +44,66 @@ implementation {
     msgData msg;
     msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = 0;
-    msg.type = WAVELETCONFIGHEADER;
-    dbg(DBG_USR1, "BigPack: Requesting wavelet configuration...");
+    msg.type = WAVELETCONFHEADER;
+    msg.data.wConfHeader.numLevels = 0;
+    dbg(DBG_USR1, "BigPack: Requesting wavelet config...");
     return call Message.send(msg);
   }
   
+  /*** Internal Helpers ***/
+  
+  /**
+   * Sends standard ACK by returning the message that was sent
+   */
+  static void sendAck(msgData msg) {
+    msg.src = TOS_LOCAL_ADDRESS;
+    msg.dest = 0;
+    call Message.send(msg); 
+  }
+  
+  /**
+   * Allocates an empty array of WaveletLevels
+   */
+  static result_t allocWavelet() {
+    uint8_t level;
+    if ((pLevel = malloc(numLevels * sizeof(WaveletLevel))) == NULL)
+      return FAIL;
+    for (level = 0; level < numLevels; level++) {
+      pLevel[level].nbCount = nbCount[level];
+      if ((pLevel[level].nb = 
+           malloc(nbCount[level] * sizeof(WaveletNeighbor)))
+          == NULL)
+        return FAIL;
+    }
+    return SUCCESS;
+  }
+  
+  /**
+   * Free an array of WaveletLevels.
+   */ 
+  static void freeWavelet() {
+    uint8_t level;
+    for (level = 0; level < numLevels; level++)
+      free(pLevel[level].nb); 
+    free(pLevel);
+  }
+  
+  /**
+   * Copies the received mote info into our WaveletLevel array and
+   * advances curLevel and curPackNum.
+   */ 
+  static void fillWavelet(WaveletConfData *conf) {
+    uint8_t mote;
+    for (mote = 0; mote < conf->moteCount; mote++)
+      memcpy(&pLevel[curLevel].nb[curPackNum * 3 + mote].info, 
+             &conf->info[mote], sizeof(MoteInfo));
+    if (++curPackNum * 3 >= nbCount[curLevel]) {
+      curPackNum = 0;
+      if (++curLevel >= numLevels)
+        curLevel = 0; // Done!
+    }
+  }
+   
   /*** Other Commands and Events ***/
   
   command result_t StdControl.init() {
@@ -59,9 +123,9 @@ implementation {
    */
   event result_t Message.sendDone(msgData msg, result_t result) {
     switch (msg.type) {
-      case WAVELETCONFIGHEADER: {
+      case WAVELETCONFHEADER: {
         if (result == FAIL) {
-          dbg(DBG_USR1, "BigPack: Wavelet configuration request failed!");
+          dbg(DBG_USR1, "BigPack: Wavelet config request failed!");
         }
         break; }
     }
@@ -72,26 +136,35 @@ implementation {
    * Receive is signaled when a new message arrives
    */
   event result_t Message.receive(msgData msg) {
+    WaveletConfData *conf;
     switch (msg.type) {
-      case WAVELETCONFIGHEADER: {
+      case WAVELETCONFHEADER: {
         activeRequest = TRUE;
-        numLevels = msg.data.wConfigHeader.
+        numLevels = msg.data.wConfHeader.numLevels;
+        memcpy(nbCount, msg.data.wConfHeader.nbCount, numLevels * 8);
+        curLevel = 0;
+        curPackNum = 0;
+        dbg(DBG_USR1, "BigPack: Rcvd wavelet config header");
+        allocWavelet();
+        sendAck(msg);
+        break; }
+      case WAVELETCONFDATA: {
+        if (activeRequest) {
+          conf = &msg.data.wConfData;
+          if ((curLevel == conf->level) && (curPackNum == conf->packNum)) {
+            dbg(DBG_USR1, "BigPack: Rcvd wavelet level %i pack %i", 
+                conf->level, conf->packNum);
+            fillWavelet(conf);
+            sendAck(msg);
+            if ((curLevel == 0) && (curPackNum == 0)) { // Done!
+              activeRequest = FALSE;
+              dbg(DBG_USR1, "BigPack: Wavelet config complete");
+              signal WaveletConfig.configDone(pLevel, numLevels, SUCCESS);              
+            }
+          }
+        }
         break; }
     }   
     return SUCCESS;
   }
-
-  event result_t MemAlloc.allocComplete(HandlePtr param0, result_t param1) {
-    return SUCCESS;
-  }
-
-  event result_t MemAlloc.reallocComplete(Handle param0, result_t param1) {
-    return SUCCESS;
-  }
-
-  event result_t MemAlloc.compactComplete() {
-    return SUCCESS;
-  }
-
-  
 }

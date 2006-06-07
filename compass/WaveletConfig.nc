@@ -15,5 +15,5 @@ interface WaveletConfig {
    * @param result Status of the reception
    * @param configData The requested data
    */
-  event result_t configDone(WaveletLevel *configData, result_t result);
+  event result_t configDone(WaveletLevel *configData, uint8_t numLevels, result_t result);
 }
