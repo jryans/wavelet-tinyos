@@ -35,7 +35,7 @@
  *
  * @author <a href="mailto:szewczyk@sourceforge.net">Robert Szewczyk</a>
  */
-package net.tinyos.tools;
+package edu.rice.compass;
 
 import net.tinyos.util.*;
 import java.io.*;

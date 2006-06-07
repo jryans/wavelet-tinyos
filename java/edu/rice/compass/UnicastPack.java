@@ -4,7 +4,7 @@
  * message type.
  */
 
-package net.tinyos.tools;
+package edu.rice.compass;
 
 public class UnicastPack extends net.tinyos.message.Message {
 
