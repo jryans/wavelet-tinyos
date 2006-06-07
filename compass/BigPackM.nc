@@ -46,7 +46,7 @@ implementation {
     msg.dest = 0;
     msg.type = WAVELETCONFHEADER;
     msg.data.wConfHeader.numLevels = 0;
-    dbg(DBG_USR1, "BigPack: Requesting wavelet config...");
+    dbg(DBG_USR1, "BigPack: Requesting wavelet config...\n");
     return call Message.send(msg);
   }
   
@@ -125,7 +125,7 @@ implementation {
     switch (msg.type) {
       case WAVELETCONFHEADER: {
         if (result == FAIL) {
-          dbg(DBG_USR1, "BigPack: Wavelet config request failed!");
+          dbg(DBG_USR1, "BigPack: Wavelet config request failed!\n");
         }
         break; }
     }
@@ -141,10 +141,14 @@ implementation {
       case WAVELETCONFHEADER: {
         activeRequest = TRUE;
         numLevels = msg.data.wConfHeader.numLevels;
-        memcpy(nbCount, msg.data.wConfHeader.nbCount, numLevels * 8);
+        // <FREE ME!>
+        if ((nbCount = malloc(numLevels * sizeof(uint8_t))) == NULL)
+          dbg(DBG_USR1, "BigPack: Couldn't allocate nbCount!\n");
+        // </FREE ME!>
+        memcpy(nbCount, msg.data.wConfHeader.nbCount, numLevels * sizeof(uint8_t));
         curLevel = 0;
         curPackNum = 0;
-        dbg(DBG_USR1, "BigPack: Rcvd wavelet config header");
+        dbg(DBG_USR1, "BigPack: Rcvd wavelet config header\n");
         allocWavelet();
         sendAck(msg);
         break; }
@@ -152,13 +156,13 @@ implementation {
         if (activeRequest) {
           conf = &msg.data.wConfData;
           if ((curLevel == conf->level) && (curPackNum == conf->packNum)) {
-            dbg(DBG_USR1, "BigPack: Rcvd wavelet level %i pack %i", 
+            dbg(DBG_USR1, "BigPack: Rcvd wavelet level %i pack %i\n", 
                 conf->level, conf->packNum);
             fillWavelet(conf);
             sendAck(msg);
             if ((curLevel == 0) && (curPackNum == 0)) { // Done!
               activeRequest = FALSE;
-              dbg(DBG_USR1, "BigPack: Wavelet config complete");
+              dbg(DBG_USR1, "BigPack: Wavelet config complete\n");
               signal WaveletConfig.configDone(pLevel, numLevels, SUCCESS);              
             }
           }

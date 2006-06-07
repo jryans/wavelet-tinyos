@@ -12,33 +12,37 @@
 typedef struct {
 	uint8_t state;
 	uint16_t value[WT_SENSORS];		// Holds one value for each sensor (only two sensors for now)
-} WaveletData;
+} __attribute__ ((packed)) WaveletData;
 
 typedef struct {
   uint16_t id; // ID number of the mote 
   float coeff; // The WT coeff for the mote (neg: predict, pos: update)
-} MoteInfo;
+} __attribute__ ((packed)) MoteInfo;
+
+enum {
+  WT_MAX_LEVELS = 3
+};
 
 typedef struct {
   uint8_t numLevels; // Total number of WT levels that will be coming
-  uint8_t *nbCount; // Number of neighbors for each level
-} WaveletConfHeader;
+  uint8_t nbCount[WT_MAX_LEVELS]; // Number of neighbors for each level
+} __attribute__ ((packed)) WaveletConfHeader;
 
 typedef struct {
   uint8_t level; // Current level being transmitted
   uint8_t packNum; // Sequential packet number in that level
   uint8_t moteCount; // Number of motes in this pack (max of 3)
-  MoteInfo *info; // Array of up to three MoteInfos
-} WaveletConfData;
+  MoteInfo info[3]; // Array of up to three MoteInfos
+} __attribute__ ((packed)) WaveletConfData;
 
 typedef struct { // One MoteInfo and WaveletData for each neighbor
   MoteInfo info;
   WaveletData data;
-} WaveletNeighbor;
+} __attribute__ ((packed)) WaveletNeighbor;
 
 typedef struct {
   uint8_t nbCount; // Number of neighbors at this level
   WaveletNeighbor *nb; // Array of WaveletNeighbors
-} WaveletLevel;
+} __attribute__ ((packed)) WaveletLevel;
 
 #endif // _WAVELETDATA_H
