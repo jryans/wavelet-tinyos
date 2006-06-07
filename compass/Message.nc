@@ -21,5 +21,5 @@ interface Message
     /**
 	 * Receive is signaled when a new message arrives
 	 */
-	event result_t receive(msgData msg);
+	event void receive(msgData msg);
 }

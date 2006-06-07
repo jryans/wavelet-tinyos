@@ -86,6 +86,7 @@ implementation {
     for (level = 0; level < numLevels; level++)
       free(pLevel[level].nb); 
     free(pLevel);
+    free(nbCount);
   }
   
   /**
@@ -94,10 +95,16 @@ implementation {
    */ 
   static void fillWavelet(WaveletConfData *conf) {
     uint8_t mote;
-    for (mote = 0; mote < conf->moteCount; mote++)
-      memcpy(&pLevel[curLevel].nb[curPackNum * 3 + mote].info, 
-             &conf->info[mote], sizeof(MoteInfo));
-    if (++curPackNum * 3 >= nbCount[curLevel]) {
+    WaveletNeighbor *pNB;
+    for (mote = 0; mote < conf->moteCount; mote++) {
+//      memcpy(&pLevel[curLevel].nb[curPackNum * WT_MI_PER_CONFDATA + mote].info, 
+//             &conf->info[mote], sizeof(MoteInfo));
+      pNB = &pLevel[curLevel].nb[curPackNum * WT_MOTE_PER_CONFDATA + mote];
+      pNB->info.id = conf->moteConf[mote].id;
+      pNB->info.coeff = conf->moteConf[mote].coeff;
+      pNB->data.state = conf->moteConf[mote].state;
+    }
+    if (++curPackNum * WT_MOTE_PER_CONFDATA >= nbCount[curLevel]) {
       curPackNum = 0;
       if (++curLevel >= numLevels)
         curLevel = 0; // Done!
@@ -135,21 +142,24 @@ implementation {
   /**
    * Receive is signaled when a new message arrives
    */
-  event result_t Message.receive(msgData msg) {
+  event void Message.receive(msgData msg) {
     WaveletConfData *conf;
     switch (msg.type) {
       case WAVELETCONFHEADER: {
         activeRequest = TRUE;
         numLevels = msg.data.wConfHeader.numLevels;
-        // <FREE ME!>
-        if ((nbCount = malloc(numLevels * sizeof(uint8_t))) == NULL)
+        if ((nbCount = malloc(numLevels * sizeof(uint8_t))) == NULL) {
           dbg(DBG_USR1, "BigPack: Couldn't allocate nbCount!\n");
-        // </FREE ME!>
+          return;
+        }
         memcpy(nbCount, msg.data.wConfHeader.nbCount, numLevels * sizeof(uint8_t));
         curLevel = 0;
         curPackNum = 0;
         dbg(DBG_USR1, "BigPack: Rcvd wavelet config header\n");
-        allocWavelet();
+        if (allocWavelet() == FAIL) {
+          dbg(DBG_USR1, "BigPack: Couldn't allocate wavelet config!\n"); 
+          return;
+        }
         sendAck(msg);
         break; }
       case WAVELETCONFDATA: {
@@ -169,6 +179,5 @@ implementation {
         }
         break; }
     }   
-    return SUCCESS;
   }
 }

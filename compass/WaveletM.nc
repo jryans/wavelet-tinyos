@@ -76,13 +76,9 @@ implementation
    */
   task void runState() {
     switch (call State.getState()) {
-      // At startup, retrieve parameters and then begin by reading sensors
-      case S_STARTUP: {
+      case S_STARTUP: { // Retrieve wavelet config data
         curLevel = 0;
-        dataSet = 1;
-//        // Build coeff reception
-//        call State.forceState(S_START_DATASET);
-//        post runState();
+        dataSet = 0;
         call WaveletConfig.getConfig();
         break; }
       case S_START_DATASET: {
@@ -221,7 +217,8 @@ implementation
     if (result == SUCCESS) {
       level = configData;
       numLevels = lvlCount;
-      dbg(DBG_USR1, "L1M1ID: %i L2M2ID: %i", level[0].nb[0].info.id, level[1].nb[1].info.id);
+      call State.forceState(S_START_DATASET);
+      post runState();
     }
     return SUCCESS; 
   }
@@ -250,7 +247,7 @@ implementation
   /**
    * Receive is signaled when a new message arrives
    */
-  event result_t Message.receive(msgData msg) {
+  event void Message.receive(msgData msg) {
     uint8_t mote, curState, rcvState, newState;
     if (msg.type == WAVELETDATA) { // Ignore other message types
       switch (call State.getState()) {
@@ -298,7 +295,6 @@ implementation
           break; }
       }
     }
-    return SUCCESS;
   }
   
   /**

@@ -33,7 +33,7 @@ implementation {
   typedef uint8_t msgData;
   #endif
     
-  event result_t Message.receive(msgData msg) {
+  event void Message.receive(msgData msg) {
     switch (msg.type) {
       case RAWDATA:
       case WAVELETDATA: {
@@ -68,7 +68,6 @@ implementation {
 	  	break;
 	  }	
     } 
-    return SUCCESS;
   }
   
   /**
