@@ -6,13 +6,13 @@
 package edu.rice.compass;
 
 import net.tinyos.message.*;
-
 import java.io.*;
+import java.beans.*;
 
 public class WaveletConfigServer implements MessageListener {
 	
 	private static WaveletConfig wc;
-	private static MoteIF mote = new MoteIF();
+	//private static MoteIF mote = new MoteIF();
 	
 	/*** Message Types ***/
 	static final byte MOTECOMMAND = 0;
@@ -24,12 +24,13 @@ public class WaveletConfigServer implements MessageListener {
 
 	public static void main(String[] args) throws IOException, ClassNotFoundException {
 		// Fixed path name for now
-		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\apps\\compass\\waveletConfig.dat";
+		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\apps\\compass\\waveletConfig.xml";
 		FileInputStream fs = new FileInputStream(path);
-		ObjectInputStream obj = new ObjectInputStream(fs);
+		//ObjectInputStream obj = new ObjectInputStream(fs);
+		XMLDecoder obj = new XMLDecoder(fs);
 		// Read in the config data
 		wc = (WaveletConfig)obj.readObject();
-		WaveletMote aMote = new WaveletMote(1, wc);
+		WaveletMote aMote = new WaveletMote(2, wc);
 		System.err.print(aMote.toString());
 		// Setup data listener
 		//mote.registerListener(new UnicastPack(), new WaveletConfigServer());

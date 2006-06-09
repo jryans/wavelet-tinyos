@@ -40,6 +40,8 @@ public class WaveletMote {
 				maxLevel = (int)wc.mScale[mote];
 		}
 		Vector updInfo[] = new Vector[maxLevel];
+		for (int level = 0; level < maxLevel; level++)
+			updInfo[level] = new Vector();
 		// updInfo holds one Vector for each possible scale.
 		// The Vectors will hold two numbers each time we find we are
 		// someone's predict neighbor: the predict mote's id,
@@ -101,7 +103,7 @@ public class WaveletMote {
 					// Dim 1: ID of predict node, Dim 2: Index in predict nb list
 					double[] nbCoeff = (double[])wc.mUpdCoeff[curNb.predID];
 					neighbors[levelIdx][nb + 1] = 
-						new NeighborInfo(curNb.predID, (float)nbCoeff[curNb.coeffIndex]);
+						new NeighborInfo(curNb.predID + 1, (float)nbCoeff[curNb.coeffIndex]);
 				}
 				break;
 			case S_PREDICTING:
