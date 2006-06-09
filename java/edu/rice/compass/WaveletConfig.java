@@ -1,16 +1,17 @@
 package edu.rice.compass;
 
-public class WaveletConfig {
+import java.io.*;
+
+public class WaveletConfig implements Serializable {
 	/*** Matlab Data ***/
-	double[] mScales;
-	double[][] mPredNB;
-    double[][] mPredCoeff;
-    double[][] mUpdCoeff;
+	double[] mScale;
+	Object[] mPredNB;
+	Object[] mPredCoeff;
+	Object[] mUpdCoeff;
     
-    
-	public WaveletConfig(double[] scales, double[][] predNB, 
-			             double[][] predCoeff, double[][] updCoeff) {
-		mScales = scales;
+	public WaveletConfig(double[] scale, Object[] predNB, 
+						 Object[] predCoeff, Object[] updCoeff) {
+		mScale = scale;
 		mPredNB = predNB;
 		mPredCoeff = predCoeff;
 		mUpdCoeff = updCoeff;

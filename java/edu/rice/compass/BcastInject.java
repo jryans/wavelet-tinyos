@@ -42,7 +42,7 @@ import java.io.*;
 import java.util.Properties;
 import net.tinyos.message.*;
 
-public class BcastInject implements MessageListener {
+public class BcastInject {
     static Properties p = new Properties();
     public static final byte YELLOW_LED_ON = 1;
     public static final byte YELLOW_LED_OFF = 2;
@@ -222,7 +222,7 @@ public class BcastInject implements MessageListener {
      BcastInject bc = null;
      if (read_log) {
   bc = new BcastInject();
-  mote.registerListener(new LogMsg(), bc);
+ // mote.registerListener(new LogMsg(), bc);
      }
      
 //     if (type == 5) {
@@ -252,23 +252,6 @@ public class BcastInject implements MessageListener {
      e.printStackTrace();
  } 
 
-    }
-
-    public void messageReceived(int dest_addr, Message m) {
- LogMsg lm = (LogMsg) m;
- System.err.println("Received log message: "+lm);
-
- System.err.print("Log values: ");
- for (int i = 0; i < lm.numElements_log(); i++) {
-     short val = lm.getElement_log(i);
-     System.err.print(Integer.toHexString((int)val)+" ");
- }
- System.err.println("");
-
- synchronized (this) {
-     read_log_done = true;
-     this.notifyAll();
- }
     }
 
 }
