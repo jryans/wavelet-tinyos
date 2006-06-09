@@ -12,10 +12,11 @@ import java.beans.*;
 public class WaveletConfigServer implements MessageListener {
 	
 	private static WaveletConfig wc;
-	//private static MoteIF mote = new MoteIF();
+	private static MoteIF moteCom = new MoteIF();
+	private static WaveletMote mote[];
 	
 	/*** Message Types ***/
-	static final byte MOTECOMMAND = 0;
+  static final byte MOTECOMMAND = 0;
 	static final byte RAWDATA = 1;
 	static final byte WAVELETDATA = 2;
 	static final byte WAVELETCONFDATA = 3;
@@ -26,19 +27,35 @@ public class WaveletConfigServer implements MessageListener {
 		// Fixed path name for now
 		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\apps\\compass\\waveletConfig.xml";
 		FileInputStream fs = new FileInputStream(path);
-		//ObjectInputStream obj = new ObjectInputStream(fs);
 		XMLDecoder obj = new XMLDecoder(fs);
 		// Read in the config data
 		wc = (WaveletConfig)obj.readObject();
-		WaveletMote aMote = new WaveletMote(2, wc);
-		System.err.print(aMote.toString());
+		// Setup mote data
+		mote = new WaveletMote[wc.mScale.length];
+		for (int i = 0; i < wc.mScale.length; i++)
+			mote[i] = new WaveletMote(i + 1, wc);
 		// Setup data listener
-		//mote.registerListener(new UnicastPack(), new WaveletConfigServer());
-		
+		moteCom.registerListener(new UnicastPack(), new WaveletConfigServer());
+		System.out.println("Ready to hear from motes...");
 	}
 
 	public void messageReceived(int to, Message m) {
-		
+		UnicastPack pack = (UnicastPack) m;
+		short id = pack.get_data_src();
+		if (pack.get_data_dest() != 0)
+			return; // This would be quite strange
+		switch (pack.get_data_type()) {
+		case WAVELETCONFHEADER:
+			// If true, this is the initial request, else an ACK.
+			if (pack.get_data_data_wConfHeader_numLevels() == 0) {
+				try {
+					moteCom.send(0, mote[id - 1].getHeaderPack());
+					System.out.println("Sent header pack to mote " + id);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 
 }

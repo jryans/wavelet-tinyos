@@ -20,7 +20,11 @@ public class WaveletMote {
 	short state[]; // Mote's state at each scale level that it is used in
                    // This could easily be less than total number of levels
 
-  // Array indices: nbs[level][nb_index]
+  private int lastLevelSent = 0;
+  private int lastPackSent = 0;
+  private boolean sending = false;
+	
+	// Array indices: nbs[level][nb_index]
 	NeighborInfo neighbors[][]; // Mote's neighbors during each state
     
 	public WaveletMote(int id, WaveletConfig wc) {
@@ -119,6 +123,30 @@ public class WaveletMote {
 			}
 		}
 	}
+	
+	public boolean isSending() {
+		return sending;
+	}
+	
+//	public boolean morePacks() {
+//		
+//	}
+	
+	public UnicastPack getHeaderPack() {
+		sending = true;
+		UnicastPack nInfo = new UnicastPack();
+		nInfo.set_data_src((short)0);
+		nInfo.set_data_dest((short)id);
+		nInfo.set_data_type(WaveletConfigServer.WAVELETCONFHEADER);
+		nInfo.set_data_data_wConfHeader_numLevels((short)state.length);
+		for (int lvl = 0; lvl < state.length; lvl++)
+			nInfo.setElement_data_data_wConfHeader_nbCount(lvl, (short)neighbors[lvl].length);
+		return nInfo;
+	}
+	
+//	public UnicastPack getDataPack(short level, short packNum) {
+//		
+//	}
 	
 	public String toString() {
 		return state.toString() + "/n" + neighbors.toString();
