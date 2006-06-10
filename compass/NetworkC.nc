@@ -13,7 +13,7 @@ configuration NetworkC {
   }
 }
 implementation {
-  components Main, BroadcastM, UnicastM, StaticRouterM, TransceiverC;
+  components Main, BroadcastM, UnicastM, RouterSimM, TransceiverC;
   
   Main.StdControl -> TransceiverC;
   
@@ -24,11 +24,11 @@ implementation {
   
   /*** Unicast ***/
   UnicastM.IO -> TransceiverC.Transceiver[TR_UNI];
-  UnicastM.Router -> StaticRouterM;
+  UnicastM.Router -> RouterSimM;
   Message = UnicastM;
   
   /*** Routing ***/
-  Main.StdControl -> StaticRouterM;
-  StaticRouterM.IO -> TransceiverC.Transceiver[TR_ROUTE];
-  Router = StaticRouterM;
+  Main.StdControl -> RouterSimM;
+  RouterSimM.IO -> TransceiverC.Transceiver[TR_ROUTE];
+  Router = RouterSimM;
 }

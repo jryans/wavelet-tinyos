@@ -9,7 +9,7 @@
 enum {
 	TEMP = 0,
 	LIGHT = 1,
-	VOLT = 2  // WT not currently done on voltage values
+	VOLT = 2  // WT not done on voltage values
 };
 
 // Total number of sensors

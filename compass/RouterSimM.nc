@@ -1,12 +1,12 @@
 /**
- * Simplest implementation of routing.  Uses a static routing table which is hard-coded
- * at compile time.
+ * Even less intelligent than RouterStaticM and useful for simulations,
+ * this Router module always returns the destination as the next hop.
  * @author Ryan Stinnett
  */
  
 includes IOPack;
  
-module StaticRouterM {
+module RouterSimM {
   provides {
     interface StdControl;
     interface Router; 
@@ -15,13 +15,6 @@ module StaticRouterM {
 }
 implementation {
   uint8_t curState; // Holds the current state of the router.
-  
-  int16_t routeTable[5][5] =
-    { { -1, 1, 1, 1, 1 } ,
-      { 0, -1, 2, 3, 2 } ,
-      { 1, 1, -1, 3, 4 } ,
-      { 1, 1, 2, -1, 4 } ,
-      { 3, 3, 2, 3, -1 } };
   
   command result_t StdControl.init() {
     curState = RO_READY;
@@ -49,10 +42,10 @@ implementation {
    * Gives the address of the next hop for a given destination.
    */
   command int16_t Router.getNextAddr(int16_t dest) {
-    return routeTable[TOS_LOCAL_ADDRESS][dest];
+    return dest;
   }
 
-  /*** Not needed in StaticRouterM ***/
+  /*** Not needed in RouterSimM ***/
   event result_t IO.radioSendDone(TOS_MsgPtr m, result_t result) {
     return SUCCESS;
   }

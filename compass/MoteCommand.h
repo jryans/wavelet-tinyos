@@ -11,8 +11,6 @@ enum   // Commands that can be sent
 	YELLOW_LED_OFF = 2,
 	GREEN_LED_ON = 3,
 	GREEN_LED_OFF = 4,
-	START_SENSING = 5,
-	WAVELET = 6
 };
 
 typedef struct
