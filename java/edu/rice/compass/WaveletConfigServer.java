@@ -48,13 +48,35 @@ public class WaveletConfigServer implements MessageListener {
 		case WAVELETCONFHEADER:
 			// If true, this is the initial request, else an ACK.
 			if (pack.get_data_data_wConfHeader_numLevels() == 0) {
+				System.out.println("Got header request from mote " + id);
 				try {
 					moteCom.send(0, mote[id - 1].getHeaderPack());
 					System.out.println("Sent header pack to mote " + id);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+			} else {
+				System.out.println("Got header ack from mote " + id);
+				try {
+					moteCom.send(0, mote[id - 1].getNextDataPack());
+					System.out.println("Sent data pack to mote " + id);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
+			break;
+		case WAVELETCONFDATA:
+			System.out.println("Got data ack from mote " + id);
+			// Send the next packet
+			if (mote[id - 1].isSending()) {
+				try {
+					moteCom.send(0, mote[id - 1].getNextDataPack());
+					System.out.println("Sent data pack to mote " + id);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			break;
 		}
 	}
 

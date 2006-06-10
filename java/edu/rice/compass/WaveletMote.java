@@ -11,6 +11,8 @@ public class WaveletMote {
 	
 	private int id; // ID number of the mote represented
 	
+	static final short WT_MOTE_PER_CONFDATA = 3;
+	
 	// Possible States
 	static final short S_PREDICTING = 5;
 	static final short S_UPDATING = 4;
@@ -20,8 +22,8 @@ public class WaveletMote {
 	short state[]; // Mote's state at each scale level that it is used in
                    // This could easily be less than total number of levels
 
-  private int lastLevelSent = 0;
-  private int lastPackSent = 0;
+  private short nextLevel = 0;
+  private short nextPack = 0;
   private boolean sending = false;
 	
 	// Array indices: nbs[level][nb_index]
@@ -128,12 +130,10 @@ public class WaveletMote {
 		return sending;
 	}
 	
-//	public boolean morePacks() {
-//		
-//	}
-	
 	public UnicastPack getHeaderPack() {
 		sending = true;
+		nextLevel = 0;
+		nextPack = 0;
 		UnicastPack nInfo = new UnicastPack();
 		nInfo.set_data_src((short)0);
 		nInfo.set_data_dest((short)id);
@@ -144,9 +144,33 @@ public class WaveletMote {
 		return nInfo;
 	}
 	
-//	public UnicastPack getDataPack(short level, short packNum) {
-//		
-//	}
+	public UnicastPack getNextDataPack() {
+		UnicastPack nInfo = new UnicastPack();
+		if (sending) {
+			nInfo.set_data_src((short)0);
+			nInfo.set_data_dest((short)id);
+			nInfo.set_data_type(WaveletConfigServer.WAVELETCONFDATA);
+			nInfo.set_data_data_wConfData_level(nextLevel);
+			nInfo.set_data_data_wConfData_packNum(nextPack);
+			int nb;
+			for (nb = 0; (nextPack * WT_MOTE_PER_CONFDATA + nb < neighbors[nextLevel].length) 
+			     && (nb < WT_MOTE_PER_CONFDATA); nb++) {
+				NeighborInfo curNb = neighbors[nextLevel][nextPack * WT_MOTE_PER_CONFDATA + nb];
+				nInfo.setElement_data_data_wConfData_moteConf_id(nb, (short)curNb.id);
+				nInfo.setElement_data_data_wConfData_moteConf_coeff(nb, curNb.coeff);
+				nInfo.setElement_data_data_wConfData_moteConf_state(nb, state[nextLevel]);
+			}
+			nInfo.set_data_data_wConfData_moteCount((short)nb);
+		}
+		if (++nextPack * WT_MOTE_PER_CONFDATA >= neighbors[nextLevel].length) {
+      nextPack = 0;
+      if (++nextLevel >= state.length) {
+        nextLevel = 0; // Done!
+        sending = false;
+      }
+    }
+		return nInfo;
+	}
 	
 	public String toString() {
 		return state.toString() + "/n" + neighbors.toString();
