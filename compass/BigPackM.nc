@@ -46,7 +46,7 @@ implementation {
     msg.dest = 0;
     msg.type = WAVELETCONFHEADER;
     msg.data.wConfHeader.numLevels = 0;
-    dbg(DBG_USR1, "BigPack: Requesting wavelet config...\n");
+    dbg(DBG_USR2, "BigPack: Requesting wavelet config...\n");
     return call Message.send(msg);
   }
   
@@ -132,7 +132,7 @@ implementation {
     switch (msg.type) {
       case WAVELETCONFHEADER: {
         if (result == FAIL) {
-          dbg(DBG_USR1, "BigPack: Wavelet config request failed!\n");
+          dbg(DBG_USR2, "BigPack: Wavelet config request failed!\n");
         }
         break; }
     }
@@ -149,15 +149,15 @@ implementation {
         activeRequest = TRUE;
         numLevels = msg.data.wConfHeader.numLevels;
         if ((nbCount = malloc(numLevels * sizeof(uint8_t))) == NULL) {
-          dbg(DBG_USR1, "BigPack: Couldn't allocate nbCount!\n");
+          dbg(DBG_USR2, "BigPack: Couldn't allocate nbCount!\n");
           return;
         }
         memcpy(nbCount, msg.data.wConfHeader.nbCount, numLevels * sizeof(uint8_t));
         curLevel = 0;
         curPackNum = 0;
-        dbg(DBG_USR1, "BigPack: Rcvd wavelet config header\n");
+        dbg(DBG_USR2, "BigPack: Rcvd wavelet config header\n");
         if (allocWavelet() == FAIL) {
-          dbg(DBG_USR1, "BigPack: Couldn't allocate wavelet config!\n"); 
+          dbg(DBG_USR2, "BigPack: Couldn't allocate wavelet config!\n"); 
           return;
         }
         sendAck(msg);
@@ -166,13 +166,13 @@ implementation {
         if (activeRequest) {
           conf = &msg.data.wConfData;
           if ((curLevel == conf->level) && (curPackNum == conf->packNum)) {
-            dbg(DBG_USR1, "BigPack: Rcvd wavelet level %i pack %i\n", 
+            dbg(DBG_USR2, "BigPack: Rcvd wavelet level %i pack %i\n", 
                 conf->level, conf->packNum);
             fillWavelet(conf);
             sendAck(msg);
             if ((curLevel == 0) && (curPackNum == 0)) { // Done!
               activeRequest = FALSE;
-              dbg(DBG_USR1, "BigPack: Wavelet config complete\n");
+              dbg(DBG_USR2, "BigPack: Wavelet config complete\n");
               signal WaveletConfig.configDone(pLevel, numLevels, SUCCESS);              
             }
           }
