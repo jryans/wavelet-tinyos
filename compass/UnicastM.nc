@@ -31,7 +31,7 @@ implementation {
    * Internal functions
    ***********************************************************************/
 
-  static result_t newMsg() {
+  result_t newMsg() {
     if ((tmpPtr = call IO.requestWrite()) == NULL) // Gets a new TOS_MsgPtr
       return FAIL;
     return SUCCESS;
@@ -40,7 +40,7 @@ implementation {
   /**
    * Forwards packets destined for the UART
    */
-  static void fwdUart(uPack *pRcvPack) {
+  void fwdUart(uPack *pRcvPack) {
     uPack *pFwdPack;
     if (newMsg() == SUCCESS) { 
       pFwdPack = (uPack *)tmpPtr->data;
@@ -56,7 +56,7 @@ implementation {
   /**
    * Forwards packets for a different mote to their next hop
    */
-  static void fwdNextHop(uPack *pRcvPack, uint8_t retries) {
+  void fwdNextHop(uPack *pRcvPack, uint8_t retries) {
     uPack *pFwdPack;
     int16_t nextHop;
     if (newMsg() == SUCCESS) { 
@@ -77,7 +77,7 @@ implementation {
   /**
    * Delivers incoming radio messages.
    */
-  static TOS_MsgPtr deliver(TOS_MsgPtr pMsg) {
+  TOS_MsgPtr deliver(TOS_MsgPtr pMsg) {
     uPack *pPack =(uPack *)pMsg->data;
     if (pPack->data.dest == TOS_LOCAL_ADDRESS) { // This packet is for us
       if (TOS_LOCAL_ADDRESS == 0) { // We are the UART bridge, forward to UART

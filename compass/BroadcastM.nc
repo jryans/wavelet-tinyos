@@ -64,7 +64,7 @@ implementation {
    * Initialization 
    ***********************************************************************/
 
-  static void initialize() {
+  void initialize() {
     bcastSeqno = 0;
   }
 
@@ -72,7 +72,7 @@ implementation {
    * Internal functions
    ***********************************************************************/
 
-  static bool newBcast(int16_t proposed) {
+  bool newBcast(int16_t proposed) {
     /*	This handles sequence space wrap-around. Overlow/Underflow makes
      * the result below correct ( -, 0, + ) for any a, b in the sequence
      * space. Results:	result	implies
@@ -91,7 +91,7 @@ implementation {
   /* Each unique broadcast wave is signaled to application and
    * rebroadcast once.
    */
-  static void FwdBcast(bPack *pRcvMsg) {
+  void FwdBcast(bPack *pRcvMsg) {
     bPack *pFwdMsg;
     if ((tmpPtr = call IO.requestWrite()) != NULL) { // Gets a new TOS_MsgPtr
       pFwdMsg = (bPack *)tmpPtr->data;
@@ -107,7 +107,7 @@ implementation {
   /**
    * All received messages come here, since the medium is unimportant.
    */
-  static TOS_MsgPtr receive(TOS_MsgPtr pMsg) {
+  TOS_MsgPtr receive(TOS_MsgPtr pMsg) {
     bPack *pBCMsg = (bPack *)pMsg->data;
     dbg(DBG_USR1, "Bcast: Msg rcvd, seq 0x%02x\n", pBCMsg->seqno);
     if (newBcast(pBCMsg->seqno)) {

@@ -38,7 +38,7 @@ implementation {
       case RAWDATA:
       case WAVELETDATA: {
         uint16_t intVal;
-        dbg(DBG_USR1, "Received a message at LED: type %i action %i", msg.type, msg.data.moteCmd.cmd);
+        dbg(DBG_USR1, "Received a message at LED: type %i action %i\n", msg.type, msg.data.moteCmd.cmd);
 	    // For raw and wavelet data, display the 3 LSBs
 	    msg.type == RAWDATA ? (intVal = msg.data.raw.value[0]) 
 	    					: (intVal = msg.data.wData.value[0]);
@@ -46,7 +46,7 @@ implementation {
 	    break;
 	  }
 	  case MOTECOMMAND: {
-	    dbg(DBG_USR1, "Received a message at LED: type %i action %i", msg.type, msg.data.moteCmd.cmd);
+	    dbg(DBG_USR1, "Received a message at LED: type %i action %i\n", msg.type, msg.data.moteCmd.cmd);
 	  	switch (msg.data.moteCmd.cmd) {
 	  	  case YELLOW_LED_ON: {
 	  	  	call Leds.yellowOn();

@@ -29,10 +29,10 @@ implementation {
   
   WaveletLevel *pLevel; // Array of WaveletLevels
   
-  static void sendAck(msgData msg);
-  static result_t allocWavelet();
-  static void freeWavelet();
-  static void fillWavelet(WaveletConfData *conf);
+  void sendAck(msgData msg);
+  result_t allocWavelet();
+  void freeWavelet();
+  void fillWavelet(WaveletConfData *conf);
   
   /*** WaveletConfig ***/
   
@@ -55,7 +55,7 @@ implementation {
   /**
    * Sends standard ACK by returning the message that was sent
    */
-  static void sendAck(msgData msg) {
+  void sendAck(msgData msg) {
     msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = 0;
     call Message.send(msg); 
@@ -64,7 +64,7 @@ implementation {
   /**
    * Allocates an empty array of WaveletLevels
    */
-  static result_t allocWavelet() {
+  result_t allocWavelet() {
     uint8_t level;
     if ((pLevel = malloc(numLevels * sizeof(WaveletLevel))) == NULL)
       return FAIL;
@@ -81,7 +81,7 @@ implementation {
   /**
    * Free an array of WaveletLevels.
    */ 
-  static void freeWavelet() {
+  void freeWavelet() {
     uint8_t level;
     for (level = 0; level < numLevels; level++)
       free(pLevel[level].nb); 
@@ -93,7 +93,7 @@ implementation {
    * Copies the received mote info into our WaveletLevel array and
    * advances curLevel and curPackNum.
    */ 
-  static void fillWavelet(WaveletConfData *conf) {
+  void fillWavelet(WaveletConfData *conf) {
     uint8_t mote;
     WaveletNeighbor *pNB;
     for (mote = 0; mote < conf->moteCount; mote++) {
