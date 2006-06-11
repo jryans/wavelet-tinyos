@@ -19,16 +19,16 @@ implementation {
   
   /*** Broadcast ***/
   Main.StdControl -> BroadcastM;
-  BroadcastM.IO -> TransceiverC.Transceiver[TR_BROAD];
+  BroadcastM.IO -> TransceiverC.Transceiver[AM_BROADCASTPACK];
   Message = BroadcastM;
   
   /*** Unicast ***/
-  UnicastM.IO -> TransceiverC.Transceiver[TR_UNI];
+  UnicastM.IO -> TransceiverC.Transceiver[AM_UNICASTPACK];
   UnicastM.Router -> RouterSimM;
   Message = UnicastM;
   
   /*** Routing ***/
   Main.StdControl -> RouterSimM;
-  RouterSimM.IO -> TransceiverC.Transceiver[TR_ROUTE];
+  RouterSimM.IO -> TransceiverC.Transceiver[AM_ROUTER];
   Router = RouterSimM;
 }

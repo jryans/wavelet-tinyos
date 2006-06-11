@@ -9,20 +9,36 @@
 
 #include "Sensors.h"
 
+/*** Constants ***/
+
 enum {
   WT_MAX_LEVELS = 3,
   WT_MOTE_PER_CONFDATA = 3
 };
+
+/*** Internal Wavelet Data ***/
+
+typedef struct {
+  uint16_t id; // ID number of the mote 
+  float coeff; // WT coeff for the mote (neg: predict, pos: update)
+} __attribute__ ((packed)) MoteInfo;
 
 typedef struct {
 	uint8_t state; // State this mote will have in this level
 	uint16_t value[WT_SENSORS];		// Holds one value for each sensor (only two sensors for now)
 } __attribute__ ((packed)) WaveletData;
 
+typedef struct { // One MoteInfo and WaveletData for each neighbor
+  MoteInfo info;
+  WaveletData data;
+} __attribute__ ((packed)) WaveletNeighbor;
+
 typedef struct {
-  uint16_t id; // ID number of the mote 
-  float coeff; // WT coeff for the mote (neg: predict, pos: update)
-} __attribute__ ((packed)) MoteInfo;
+  uint8_t nbCount; // Number of neighbors at this level
+  WaveletNeighbor *nb; // Array of WaveletNeighbors
+} __attribute__ ((packed)) WaveletLevel;
+
+/*** Transmitted Config Data ***/
 
 typedef struct {
   uint8_t numLevels; // Total number of WT levels that will be coming
@@ -43,14 +59,12 @@ typedef struct {
   WaveletConfMote moteConf[WT_MOTE_PER_CONFDATA]; // Array of MoteInfos
 } __attribute__ ((packed)) WaveletConfData;
 
-typedef struct { // One MoteInfo and WaveletData for each neighbor
-  MoteInfo info;
-  WaveletData data;
-} __attribute__ ((packed)) WaveletNeighbor;
+/*** State Control ***/
 
-typedef struct {
-  uint8_t nbCount; // Number of neighbors at this level
-  WaveletNeighbor *nb; // Array of WaveletNeighbors
-} __attribute__ ((packed)) WaveletLevel;
+// Used by the PC to query and set state
+typedef struct { 
+  uint8_t state; // One the states from WaveletM
+  uint32_t dataSetTime; // Length of time between data sets (and samples) 
+} __attribute__ ((packed)) WaveletState;
 
 #endif // _WAVELETDATA_H

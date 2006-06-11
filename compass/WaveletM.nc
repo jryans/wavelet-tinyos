@@ -21,8 +21,7 @@ module WaveletM
     
     /*** State Management ***/
     interface State;
-    interface Timer as Timeout;
-    interface Timer as NewSet;
+    interface Timer as DataSet;
     
     /*** Wavelet Config ***/
     interface WaveletConfig;
@@ -140,7 +139,7 @@ implementation
   }
   
   void nextWaveletLevel() {
-    uint8_t i, newState;
+    uint8_t newState;
     (curLevel == numLevels) ? newState = S_DONE : 
                               (newState = level[curLevel].nb[0].data.state);
     if (newState != S_DONE)
@@ -207,9 +206,9 @@ implementation
     if (TOS_LOCAL_ADDRESS == 0) {
       call State.forceState(S_OFFLINE);
     } else {
-      call NewSet.start(TIMER_ONE_SHOT, 10000);
+      call State.forceState(S_STARTUP);
     }
-//    post runState();
+    post runState();
     return SUCCESS;
   }
   
@@ -223,8 +222,6 @@ implementation
     if (result == SUCCESS) {
       level = configData;
       numLevels = lvlCount;
-      call State.forceState(S_START_DATASET);
-      post runState();
     }
     return SUCCESS; 
   }
@@ -233,19 +230,21 @@ implementation
    * sendDone is signaled when the send has completed
    */
   event result_t Message.sendDone(msgData msg, result_t result) {
-    switch (call State.getState()) {
-      case S_UPDATING: {
-        if (result == FAIL)
-          dbg(DBG_USR2, "Update: DS: %i, L: %i, Sending values to predict motes failed!\n",
-              dataSet, curLevel + 1);
-        break; }
-      case S_DONE: {
-        if (result == SUCCESS) {
-          dbg(DBG_USR2, "Done: DS: %i, Sending final values to base successful\n", dataSet);
-          call State.toIdle();
-        } else {
-          dbg(DBG_USR2, "Done: DS: %i, Sending final values to base failed!\n", dataSet);
-        } break; }
+    if (msg.type == WAVELETDATA) {
+      switch (call State.getState()) {
+        case S_UPDATING: {
+          if (result == FAIL)
+            dbg(DBG_USR2, "Update: DS: %i, L: %i, Sending values to predict motes failed!\n",
+                dataSet, curLevel + 1);
+          break; }
+        case S_DONE: {
+          if (result == SUCCESS) {
+            dbg(DBG_USR2, "Done: DS: %i, Sending final values to base successful\n", dataSet);
+            call State.toIdle();
+          } else {
+            dbg(DBG_USR2, "Done: DS: %i, Sending final values to base failed!\n", dataSet);
+          } break; }
+      }
     }
     return SUCCESS;
   }
@@ -254,65 +253,72 @@ implementation
    * Receive is signaled when a new message arrives
    */
   event void Message.receive(msgData msg) {
-    uint8_t mote, curState, rcvState, newState;
-    if (msg.type == WAVELETDATA) { // Ignore other message types
+    uint8_t mote;
+    switch (msg.type) {
+    case WAVELETDATA: {
       switch (call State.getState()) {
-        case S_PREDICTING: {
-          if (msg.data.wData.state == S_UPDATING) {
-            for (mote = 1; mote < level[curLevel].nbCount; mote++) {
-              if (level[curLevel].nb[mote].info.id == msg.src)
-                break;
-            }
-            if (mote < level[curLevel].nbCount) {
-              dbg(DBG_USR2, "Predict: DS: %i, L: %i, Got values from update mote %i\n",
-                  dataSet, curLevel + 1, mote);
-              level[curLevel].nb[mote].data = msg.data.wData;
-              if (--waitingFor == 0) {
-                calcNewValues();
-                call State.forceState(S_PREDICTED);
-                post runState();
-              }             
-            } else {
-              dbg(DBG_USR2, "Predict: DS: %i, L: %i, BAD NEIGHBOR! Got values from update mote %i\n",
-                  dataSet, curLevel + 1, mote);
-            }
+      case S_PREDICTING: {
+        if (msg.data.wData.state == S_UPDATING) {
+          for (mote = 1; mote < level[curLevel].nbCount; mote++) {
+            if (level[curLevel].nb[mote].info.id == msg.src)
+              break;
           }
-          break; }
-        case S_UPDATING: {
-          if (msg.data.wData.state == S_PREDICTED) {
-            for (mote = 1; mote < level[curLevel].nbCount; mote++) {
-              if (level[curLevel].nb[mote].info.id == msg.src)
-                break;
-            }
-            if (mote < level[curLevel].nbCount) {
-              dbg(DBG_USR2, "Update: DS: %i, L: %i, Got values from predict mote %i\n",
-                  dataSet, curLevel + 1, mote);
-              level[curLevel].nb[mote].data = msg.data.wData;
-              if (--waitingFor == 0) {
-                calcNewValues();
-                call State.forceState(S_UPDATED);
-                post runState();
-              }             
-            } else {
-              dbg(DBG_USR2, "Update: DS: %i, L: %i, BAD NEIGHBOR! Got values from predict mote %i\n",
-                  dataSet, curLevel + 1, mote);
-            }
+          if (mote < level[curLevel].nbCount) {
+            dbg(DBG_USR2, "Predict: DS: %i, L: %i, Got values from update mote %i\n",
+                dataSet, curLevel + 1, mote);
+            level[curLevel].nb[mote].data = msg.data.wData;
+            if (--waitingFor == 0) {
+              calcNewValues();
+              call State.forceState(S_PREDICTED);
+              post runState();
+            }             
+          } else {
+            dbg(DBG_USR2, "Predict: DS: %i, L: %i, BAD NEIGHBOR! Got values from update mote %i\n",
+                dataSet, curLevel + 1, mote);
           }
-          break; }
+        }
+        break; }
+      case S_UPDATING: {
+        if (msg.data.wData.state == S_PREDICTED) {
+          for (mote = 1; mote < level[curLevel].nbCount; mote++) {
+            if (level[curLevel].nb[mote].info.id == msg.src)
+              break;
+          }
+          if (mote < level[curLevel].nbCount) {
+            dbg(DBG_USR2, "Update: DS: %i, L: %i, Got values from predict mote %i\n",
+                dataSet, curLevel + 1, mote);
+            level[curLevel].nb[mote].data = msg.data.wData;
+            if (--waitingFor == 0) {
+              calcNewValues();
+              call State.forceState(S_UPDATED);
+              post runState();
+            }             
+          } else {
+            dbg(DBG_USR2, "Update: DS: %i, L: %i, BAD NEIGHBOR! Got values from predict mote %i\n",
+                dataSet, curLevel + 1, mote);
+          }
+        }
+        break; }
       }
+      break; }
+    case WAVELETSTATE: {
+      if (msg.data.wState.state == S_START_DATASET)
+        call DataSet.start(TIMER_REPEAT, msg.data.wState.dataSetTime);
+      call State.forceState(msg.data.wState.state);
+      post runState();
+      dbg(DBG_USR2, "Wavelet: State changed to %i\n", msg.data.wState.state);
+      break; }
     }
   }
   
-  /**
-   * The signal generated by the timer when it fires.
-   */
-  event result_t Timeout.fired() {return SUCCESS;}
+  /*** Timers ***/
   
   /**
-   * The signal generated by the timer when it fires.
+   * Enforces the dataSetTime interval by starting a new data set
+   * each time the timer fires.
    */
-  event result_t NewSet.fired() {
-    call State.forceState(S_STARTUP);
+  event result_t DataSet.fired() {
+    call State.forceState(S_START_DATASET);
     post runState();
     return SUCCESS;
   }

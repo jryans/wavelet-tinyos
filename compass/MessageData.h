@@ -10,8 +10,8 @@
 #include "WaveletData.h"
 
 struct MessageData {
-	int16_t src;
-	int16_t dest;
+	uint16_t src;
+	uint16_t dest;
 	uint8_t type;
 	union {
 		MoteCommand moteCmd;
@@ -19,6 +19,7 @@ struct MessageData {
 		WaveletData wData;
 		WaveletConfData wConfData;
     WaveletConfHeader wConfHeader;
+    WaveletState wState;
 	} data;
 } __attribute__ ((packed));
 
@@ -29,11 +30,8 @@ enum { // Identifies the type of data stored
 	RAWDATA,
 	WAVELETDATA,
 	WAVELETCONFDATA,
-	WAVELETCONFHEADER
-};
-
-enum { // Identifies special message destinations
-	ALL_NODES = -1
+	WAVELETCONFHEADER,
+	WAVELETSTATE
 };
 
 #endif // _MESSAGEDATA_H

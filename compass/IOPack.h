@@ -12,9 +12,9 @@
 // to prevent conflicts.
 enum  
 {
-  TR_BROAD = 5,
-  TR_UNI = 6,
-  TR_ROUTE = 7
+  AM_BROADCASTPACK = 5,
+  AM_UNICASTPACK = 6,
+  AM_ROUTER = 7
 };
 
 enum {

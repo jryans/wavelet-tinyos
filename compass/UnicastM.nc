@@ -102,7 +102,7 @@ implementation {
    */
   command result_t Message.send(msgData msg) {
     uPack newPack;
-    if (msg.dest == ALL_NODES)
+    if (msg.dest == TOS_BCAST_ADDR)
       return SUCCESS; // Ignore broadcase packets
     if (msg.dest == TOS_LOCAL_ADDRESS)
       return FAIL; // Don't send messages to yourself!

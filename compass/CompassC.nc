@@ -30,6 +30,8 @@ implementation {
   Main.StdControl -> WaveletM;
   WaveletM.Leds -> LedsC;
   WaveletM.SensorData -> SensorControlC;
-  WaveletM.Timeout -> TimerC.Timer[unique("Timer")];
-  WaveletM.NewSet -> TimerC.Timer[unique("Timer")];
+  
+  /*** Timer: enforces time-based control ***/
+  BigPackM.MsgRepeat -> TimerC.Timer[unique("Timer")];
+  WaveletM.DataSet -> TimerC.Timer[unique("Timer")];
 }

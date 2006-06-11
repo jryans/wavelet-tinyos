@@ -8,6 +8,7 @@ includes MessageData;
 module BigPackM {
   uses {
     interface Message;
+    interface Timer as MsgRepeat;
   }
   provides {
     interface WaveletConfig;
@@ -29,10 +30,31 @@ implementation {
   
   WaveletLevel *pLevel; // Array of WaveletLevels
   
+  msgData repeatMsg; // Message to repeat
+  
   void sendAck(msgData msg);
   result_t allocWavelet();
   void freeWavelet();
   void fillWavelet(WaveletConfData *conf);
+  void repeatSend(msgData msg, uint16_t bms);
+  
+  /*** Timers ***/
+  
+  /**
+   * Helper function for repeating a message until get a response
+   */ 
+  void repeatSend(msgData msg, uint16_t bms) {
+    repeatMsg = msg;
+    call MsgRepeat.start(TIMER_REPEAT, bms);
+  }
+  
+  /**
+   * Sends the saved message again
+   */
+  event result_t MsgRepeat.fired() {
+    call Message.send(repeatMsg);
+    return SUCCESS;
+  }  
   
   /*** WaveletConfig ***/
   
@@ -47,7 +69,8 @@ implementation {
     msg.type = WAVELETCONFHEADER;
     msg.data.wConfHeader.numLevels = 0;
     dbg(DBG_USR2, "BigPack: Requesting wavelet config...\n");
-    return call Message.send(msg);
+    repeatSend(msg, 1000);
+    return SUCCESS;
   }
   
   /*** Internal Helpers ***/
@@ -146,6 +169,9 @@ implementation {
     WaveletConfData *conf;
     switch (msg.type) {
       case WAVELETCONFHEADER: {
+        // Turn off message repeat        
+        call MsgRepeat.stop();
+        // Store basic config parameters
         activeRequest = TRUE;
         numLevels = msg.data.wConfHeader.numLevels;
         if ((nbCount = malloc(numLevels * sizeof(uint8_t))) == NULL) {

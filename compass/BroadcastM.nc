@@ -35,7 +35,7 @@
 /**
  * I converted the TinyOS library Bcast to a version that makes use of the
  * Transceiver library and makes use of its queue abilities, rather than
- * implementing another one of its own. - JRS
+ * implementing another one of its own.
  * @author Ryan Stinnett
  */
 
@@ -139,7 +139,7 @@ implementation {
    * TODO: Can't initiate broadcasts on a mote yet.
    */
   command result_t Message.send(msgData msg) {
-    if (msg.dest == ALL_NODES)
+    if (msg.dest == TOS_BCAST_ADDR)
       return FAIL;
     return SUCCESS;
   }
