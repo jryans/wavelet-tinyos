@@ -12,16 +12,20 @@ import java.beans.*;
 public class WaveletConfigServer implements MessageListener {
 	
 	private static WaveletConfig wc;
-	private static MoteIF moteCom = new MoteIF();
 	private static WaveletMote mote[];
+	private static MoteIF moteListen = new MoteIF();
+	private static MoteSend moteSend = new MoteSend();
 	
 	/*** Message Types ***/
-  static final byte MOTECOMMAND = 0;
-	static final byte RAWDATA = 1;
-	static final byte WAVELETDATA = 2;
-	static final byte WAVELETCONFDATA = 3;
-	static final byte WAVELETCONFHEADER = 4;
+  static final short MOTECOMMAND = 0;
+	static final short RAWDATA = 1;
+	static final short WAVELETDATA = 2;
+	static final short WAVELETCONFDATA = 3;
+	static final short WAVELETCONFHEADER = 4;
+	static final short WAVELETSTATE = 5;	
 	
+	/*** State Control ***/
+	static final short S_START_DATASET = 2; 
 
 	public static void main(String[] args) throws IOException, ClassNotFoundException {
 		// Fixed path name for now
@@ -35,13 +39,13 @@ public class WaveletConfigServer implements MessageListener {
 		for (int i = 0; i < wc.mScale.length; i++)
 			mote[i] = new WaveletMote(i + 1, wc);
 		// Setup data listener
-		moteCom.registerListener(new UnicastPack(), new WaveletConfigServer());
+		moteListen.registerListener(new UnicastPack(), new WaveletConfigServer());
 		System.out.println("Ready to hear from motes...");
 	}
 
 	public void messageReceived(int to, Message m) {
 		UnicastPack pack = (UnicastPack) m;
-		short id = pack.get_data_src();
+		int id = pack.get_data_src();
 		if (pack.get_data_dest() != 0)
 			return; // This would be quite strange
 		switch (pack.get_data_type()) {
@@ -50,7 +54,7 @@ public class WaveletConfigServer implements MessageListener {
 			if (pack.get_data_data_wConfHeader_numLevels() == 0) {
 				System.out.println("Got header request from mote " + id);
 				try {
-					moteCom.send(0, mote[id - 1].getHeaderPack());
+					moteSend.sendPack(mote[id - 1].getHeaderPack());
 					System.out.println("Sent header pack to mote " + id);
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -58,7 +62,7 @@ public class WaveletConfigServer implements MessageListener {
 			} else {
 				System.out.println("Got header ack from mote " + id);
 				try {
-					moteCom.send(0, mote[id - 1].getNextDataPack());
+					moteSend.sendPack(mote[id - 1].getNextDataPack());
 					System.out.println("Sent data pack to mote " + id);
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -70,14 +74,38 @@ public class WaveletConfigServer implements MessageListener {
 			// Send the next packet
 			if (mote[id - 1].isSending()) {
 				try {
-					moteCom.send(0, mote[id - 1].getNextDataPack());
+					moteSend.sendPack(mote[id - 1].getNextDataPack());
 					System.out.println("Sent data pack to mote " + id);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+			} else { // Check if all motes are done
+				boolean done = true;
+				for (int i = 0; i < mote.length; i++) {
+					if (mote[i].isSending()) {
+						done = false;
+						break;
+					}
+				}
+				if (done) {
+					try {
+						moteSend.sendPack(startDataSet());
+						System.out.println("Sent start command to mote " + id);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 			break;
 		}
+	}
+	
+	private BroadcastPack startDataSet() {
+		BroadcastPack pack = new BroadcastPack();
+		pack.set_data_type(WAVELETSTATE);
+		pack.set_data_data_wState_state(S_START_DATASET);
+		pack.set_data_data_wState_dataSetTime(10000);
+		return pack;
 	}
 
 }

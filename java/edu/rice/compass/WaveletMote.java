@@ -31,6 +31,7 @@ public class WaveletMote {
     
 	public WaveletMote(int id, WaveletConfig wc) {
 		this.id = id;
+		sending = true;
 		dataTransform(wc);
 	}
 	
@@ -131,12 +132,10 @@ public class WaveletMote {
 	}
 	
 	public UnicastPack getHeaderPack() {
-		sending = true;
 		nextLevel = 0;
 		nextPack = 0;
 		UnicastPack nInfo = new UnicastPack();
-		nInfo.set_data_src((short)0);
-		nInfo.set_data_dest((short)id);
+		nInfo.set_data_dest(id);
 		nInfo.set_data_type(WaveletConfigServer.WAVELETCONFHEADER);
 		nInfo.set_data_data_wConfHeader_numLevels((short)state.length);
 		for (int lvl = 0; lvl < state.length; lvl++)
@@ -147,8 +146,7 @@ public class WaveletMote {
 	public UnicastPack getNextDataPack() {
 		UnicastPack nInfo = new UnicastPack();
 		if (sending) {
-			nInfo.set_data_src((short)0);
-			nInfo.set_data_dest((short)id);
+			nInfo.set_data_dest(id);
 			nInfo.set_data_type(WaveletConfigServer.WAVELETCONFDATA);
 			nInfo.set_data_data_wConfData_level(nextLevel);
 			nInfo.set_data_data_wConfData_packNum(nextPack);
