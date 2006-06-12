@@ -66,7 +66,7 @@ implementation
   /*** Internal Functions ***/
   task void runState();
   void readSensors();
-  void nextWaveletLevel();
+  uint8_t nextWaveletLevel();
   void sendResultsToBase();
   void sendValuesToNeighbors();
   void calcNewValues();
@@ -94,10 +94,6 @@ implementation
         dbg(DBG_USR2, "DS: %i, Reading sensors...\n", dataSet);
         delayState();
         readSensors();
-        // Execute first level state (PREDICTING, UPDATING, or DONE)
-        // Use nextWL?
-        //call State.forceState(level[curLevel].nb[0].data.state);
-        //post runState();
         call State.toIdle();
         break; }
       case S_UPDATING: {
@@ -117,28 +113,28 @@ implementation
         break; }  
       case S_PREDICTED: {
         calcNewValues();
-        //delayState();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Sending values to update nodes...\n",
             dataSet, curLevel + 1);
+        delayState();
         sendValuesToNeighbors();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
-        
-       // nextWaveletLevel();
-       // post runState();
+        call State.toIdle();
         break; }
       case S_UPDATED: {
-        // delayState();
         calcNewValues();
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
-        //nextWaveletLevel();
-        //post runState();
+        delayState();
+        call State.toIdle();
         break; }
       case S_DONE: {
         dbg(DBG_USR2, "Done: DS: %i, Sending final values to base...\n", dataSet);
         sendResultsToBase(); 
+        call State.toIdle();
         break; }
       case S_SKIPLEVEL: {
         dbg(DBG_USR2, "Skip: DS: %i, L: %i, Nothing to do, level done!\n", dataSet, curLevel + 1);
+        delayState();
+        call State.toIdle();
         break; }
     }
   }
@@ -152,20 +148,8 @@ implementation
     switch (call State.getState()) {
     case S_READING_SENSORS: {
       nextState = level[curLevel].nb[0].data.state;
-      switch (nextState) {
-      case S_UPDATING: {
-        delay = 4000;
-        break; }
-      case S_PREDICTING: {
-        delay = 2000;
-        break; }
-      case S_DONE: {
-        delay = 4000;
-        break; }
-      case S_SKIPLEVEL: {
-        delay = 2000;
-        break; }
-      }
+      (nextState == S_UPDATING) ? (delay = 4000)
+                                : (delay = 2000);
       break; }
     case S_UPDATING: {
       nextState = S_UPDATED;
@@ -179,6 +163,16 @@ implementation
       nextState = S_DONE;
       delay = 4000;
       break; }
+    case S_UPDATED: {
+      nextState = nextWaveletLevel();
+      (nextState == S_UPDATING) ? (delay = 4000)
+                                : (delay = 2000);
+      break; }
+    case S_SKIPLEVEL: {
+      nextState = nextWaveletLevel();
+      (nextState == S_UPDATING) ? (delay = 14000)
+                                : (delay = 12000);
+      break; }
     }
     call StateTimer.start(TIMER_ONE_SHOT, delay);
   }
@@ -190,13 +184,13 @@ implementation
       level[0].nb[0].data.value[i] = newVals.value[i];
   }
   
-  void nextWaveletLevel() {
+  uint8_t nextWaveletLevel() {
     uint8_t newState;
     (curLevel + 1 == numLevels) ? newState = S_DONE 
                                 : (newState = level[curLevel + 1].nb[0].data.state);
     if (newState != S_DONE)
       curLevel++;
-    call State.forceState(newState);
+    return newState;
   }
   
   void sendResultsToBase() {
