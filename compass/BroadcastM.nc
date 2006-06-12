@@ -112,7 +112,8 @@ implementation {
     dbg(DBG_USR1, "Bcast: Msg rcvd, seq 0x%02x\n", pBCMsg->seqno);
     if (newBcast(pBCMsg->seqno)) {
       FwdBcast(pBCMsg);
-      signal Message.receive(pBCMsg->data);
+      if (TOS_LOCAL_ADDRESS != 0)
+        signal Message.receive(pBCMsg->data);
     }
     return pMsg;
   }

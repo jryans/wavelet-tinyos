@@ -71,7 +71,8 @@ implementation {
     nextHop = call Router.getNextAddr(pFwdPack->data.dest);
     dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwding to %i, %i retries left...\n", 
         TOS_LOCAL_ADDRESS, pFwdPack->data.src, pFwdPack->data.dest, nextHop, retries);
-    call IO.sendRadio(nextHop, len);
+    if (call IO.sendRadio(nextHop, len) == FAIL)
+      dbg(DBG_USR2, "Ucast: sendRadio failed!");
   }
   
   /**
@@ -132,7 +133,7 @@ implementation {
       if (tmpRetries > 0) {
         fwdNextHop(pPack, tmpRetries - 1);
       } else {
-        dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwd to %i failed!\n", 
+        dbg(DBG_USR2, "Ucast: Mote: %i, Src: %i, Dest: %i, fwd to %i failed!\n", 
           TOS_LOCAL_ADDRESS, pPack->data.src, pPack->data.dest, m->addr);
         if (pPack->data.src == TOS_LOCAL_ADDRESS)
           signal Message.sendDone(pPack->data, FAIL);

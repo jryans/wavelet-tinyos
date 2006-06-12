@@ -45,6 +45,7 @@ implementation {
    */ 
   void repeatSend(msgData msg, uint16_t bms) {
     repeatMsg = msg;
+    call Message.send(msg);
     call MsgRepeat.start(TIMER_REPEAT, bms);
   }
   
@@ -79,9 +80,10 @@ implementation {
    * Sends standard ACK by returning the message that was sent
    */
   void sendAck(msgData msg) {
+    //dbg(DBG_USR2, "BigPack: Sent ack\n");
     msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = 0;
-    call Message.send(msg); 
+    repeatSend(msg, 3000); 
   }
   
   /**
@@ -190,6 +192,8 @@ implementation {
         break; }
       case WAVELETCONFDATA: {
         if (activeRequest) {
+          // Turn off message repeat
+          call MsgRepeat.stop();
           conf = &msg.data.wConfData;
           if ((curLevel == conf->level) && (curPackNum == conf->packNum)) {
             dbg(DBG_USR2, "BigPack: Rcvd wavelet level %i pack %i\n", 
@@ -197,6 +201,7 @@ implementation {
             fillWavelet(conf);
             sendAck(msg);
             if ((curLevel == 0) && (curPackNum == 0)) { // Done!
+              call MsgRepeat.stop();
               activeRequest = FALSE;
               dbg(DBG_USR2, "BigPack: Wavelet config complete\n");
               signal WaveletConfig.configDone(pLevel, numLevels, SUCCESS);              

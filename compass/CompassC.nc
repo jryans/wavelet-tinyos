@@ -34,4 +34,5 @@ implementation {
   /*** Timer: enforces time-based control ***/
   BigPackM.MsgRepeat -> TimerC.Timer[unique("Timer")];
   WaveletM.DataSet -> TimerC.Timer[unique("Timer")];
+  WaveletM.StateTimer -> TimerC.Timer[unique("Timer")];
 }

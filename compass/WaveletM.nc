@@ -22,6 +22,7 @@ module WaveletM
     /*** State Management ***/
     interface State;
     interface Timer as DataSet;
+    interface Timer as StateTimer;
     
     /*** Wavelet Config ***/
     interface WaveletConfig;
@@ -59,6 +60,8 @@ implementation
     S_OFFLINE = 11,
     S_ERROR = 12
   };
+  
+  uint8_t nextState;
     
   /*** Internal Functions ***/
   task void runState();
@@ -67,6 +70,7 @@ implementation
   void sendResultsToBase();
   void sendValuesToNeighbors();
   void calcNewValues();
+  void delayState();
   
   /**
    * This is the heart of the wavelet algorithm's state management.
@@ -88,47 +92,95 @@ implementation
         break; }
       case S_READING_SENSORS: {
         dbg(DBG_USR2, "DS: %i, Reading sensors...\n", dataSet);
+        delayState();
         readSensors();
         // Execute first level state (PREDICTING, UPDATING, or DONE)
-        call State.forceState(level[curLevel].nb[0].data.state);
-        post runState();
+        // Use nextWL?
+        //call State.forceState(level[curLevel].nb[0].data.state);
+        //post runState();
+        call State.toIdle();
         break; }
       case S_UPDATING: {
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Sending values to predict nodes...\n",
             dataSet, curLevel + 1);
+        delayState();
+        waitingFor = level[curLevel].nbCount - 1;
         sendValuesToNeighbors();
-        waitingFor = level[curLevel].nbCount;
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Waiting to hear from predict nodes...\n",
             dataSet, curLevel + 1);
         break; }
       case S_PREDICTING: {
-        waitingFor = level[curLevel].nbCount;
+        waitingFor = level[curLevel].nbCount - 1;
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Waiting to hear from update nodes...\n",
             dataSet, curLevel + 1);
+        delayState();
         break; }  
-    /*  case S_CALCULATING: {
-        dbg(DBG_USR2, "Calc: DS: %i, L: %i, Calculating new values...\n",
-            dataSet, curLevel);
-        calcNewValues();
-        break; } */
       case S_PREDICTED: {
+        calcNewValues();
+        //delayState();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Sending values to update nodes...\n",
             dataSet, curLevel + 1);
         sendValuesToNeighbors();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
-        nextWaveletLevel();
-        post runState();
+        
+       // nextWaveletLevel();
+       // post runState();
         break; }
       case S_UPDATED: {
+        // delayState();
+        calcNewValues();
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
-        nextWaveletLevel();
-        post runState();
+        //nextWaveletLevel();
+        //post runState();
         break; }
       case S_DONE: {
         dbg(DBG_USR2, "Done: DS: %i, Sending final values to base...\n", dataSet);
         sendResultsToBase(); 
         break; }
+      case S_SKIPLEVEL: {
+        dbg(DBG_USR2, "Skip: DS: %i, L: %i, Nothing to do, level done!\n", dataSet, curLevel + 1);
+        break; }
     }
+  }
+  
+  /**
+   * Calculates the delay until the next state change
+   * should occur and sets a timer to make it so.
+   */
+  void delayState() {
+    uint32_t delay;
+    switch (call State.getState()) {
+    case S_READING_SENSORS: {
+      nextState = level[curLevel].nb[0].data.state;
+      switch (nextState) {
+      case S_UPDATING: {
+        delay = 4000;
+        break; }
+      case S_PREDICTING: {
+        delay = 2000;
+        break; }
+      case S_DONE: {
+        delay = 4000;
+        break; }
+      case S_SKIPLEVEL: {
+        delay = 2000;
+        break; }
+      }
+      break; }
+    case S_UPDATING: {
+      nextState = S_UPDATED;
+      delay = 8000;
+      break; }
+    case S_PREDICTING: {
+      nextState = S_PREDICTED;
+      delay = 5000;
+      break; }
+    case S_PREDICTED: {
+      nextState = S_DONE;
+      delay = 4000;
+      break; }
+    }
+    call StateTimer.start(TIMER_ONE_SHOT, delay);
   }
   
   void readSensors() {
@@ -140,8 +192,8 @@ implementation
   
   void nextWaveletLevel() {
     uint8_t newState;
-    (curLevel == numLevels) ? newState = S_DONE : 
-                              (newState = level[curLevel].nb[0].data.state);
+    (curLevel + 1 == numLevels) ? newState = S_DONE 
+                                : (newState = level[curLevel + 1].nb[0].data.state);
     if (newState != S_DONE)
       curLevel++;
     call State.forceState(newState);
@@ -265,16 +317,13 @@ implementation
           }
           if (mote < level[curLevel].nbCount) {
             dbg(DBG_USR2, "Predict: DS: %i, L: %i, Got values from update mote %i\n",
-                dataSet, curLevel + 1, mote);
+                dataSet, curLevel + 1, msg.src);
             level[curLevel].nb[mote].data = msg.data.wData;
-            if (--waitingFor == 0) {
-              calcNewValues();
-              call State.forceState(S_PREDICTED);
-              post runState();
-            }             
+            if (--waitingFor == 0) // Problem area?
+              call State.toIdle();  
           } else {
             dbg(DBG_USR2, "Predict: DS: %i, L: %i, BAD NEIGHBOR! Got values from update mote %i\n",
-                dataSet, curLevel + 1, mote);
+                dataSet, curLevel + 1, msg.src);
           }
         }
         break; }
@@ -286,24 +335,21 @@ implementation
           }
           if (mote < level[curLevel].nbCount) {
             dbg(DBG_USR2, "Update: DS: %i, L: %i, Got values from predict mote %i\n",
-                dataSet, curLevel + 1, mote);
+                dataSet, curLevel + 1, msg.src);
             level[curLevel].nb[mote].data = msg.data.wData;
-            if (--waitingFor == 0) {
-              calcNewValues();
-              call State.forceState(S_UPDATED);
-              post runState();
-            }             
+            if (--waitingFor == 0) // Problem area?
+              call State.toIdle();
           } else {
             dbg(DBG_USR2, "Update: DS: %i, L: %i, BAD NEIGHBOR! Got values from predict mote %i\n",
-                dataSet, curLevel + 1, mote);
+                dataSet, curLevel + 1, msg.src);
           }
         }
         break; }
       }
       break; }
     case WAVELETSTATE: {
-      if (msg.data.wState.state == S_START_DATASET)
-        call DataSet.start(TIMER_REPEAT, msg.data.wState.dataSetTime);
+      //if (msg.data.wState.state == S_START_DATASET)
+      //  call DataSet.start(TIMER_REPEAT, msg.data.wState.dataSetTime);
       call State.forceState(msg.data.wState.state);
       post runState();
       dbg(DBG_USR2, "Wavelet: State changed to %i\n", msg.data.wState.state);
@@ -320,6 +366,18 @@ implementation
   event result_t DataSet.fired() {
     call State.forceState(S_START_DATASET);
     post runState();
+    return SUCCESS;
+  }
+  
+  /**
+   *
+   */
+  event result_t StateTimer.fired() {
+    if (call State.requestState(nextState) == FAIL) {
+      dbg(DBG_USR2, "Wavelet: Not enough time before moving to state %i!\n", nextState); 
+    } else {
+      post runState();
+    }
     return SUCCESS;
   }
 }
