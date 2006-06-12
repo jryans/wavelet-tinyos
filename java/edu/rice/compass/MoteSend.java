@@ -75,8 +75,9 @@ public class MoteSend {
 	}
 
 	public MoteSend() {
-		if (sequenceNo == 0)
-			sequenceNo = restoreSequenceNo();
+		//if (sequenceNo == 0)
+			//sequenceNo = restoreSequenceNo();
+			sequenceNo = 1;
 	}
 
 	/*public void sendDiag() {
