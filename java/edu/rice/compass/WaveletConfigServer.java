@@ -12,41 +12,43 @@ import java.beans.*;
 public class WaveletConfigServer implements MessageListener {
 
 	private static WaveletConfig wc;
-
 	private static WaveletMote mote[];
-
 	private static MoteIF moteListen = new MoteIF();
-
 	private static MoteSend moteSend = new MoteSend();
 
 	/** * Message Types ** */
 	static final short MOTECOMMAND = 0;
-
 	static final short RAWDATA = 1;
-
 	static final short WAVELETDATA = 2;
-
 	static final short WAVELETCONFDATA = 3;
-
 	static final short WAVELETCONFHEADER = 4;
-
 	static final short WAVELETSTATE = 5;
 
 	/** * State Control ** */
 	static final short S_START_DATASET = 2;
-
+	static final short S_DONE = 10;
+	static final short S_RAW = 13;
 	private boolean startSent = false;
+
+	/** * Sensor Data ** */
+	static final short TEMP = 0;
+	static final short LIGHT = 1;
+	private static int dataDone;
+	private static MoteData mData;
 
 	public static void main(String[] args) throws IOException,
 			ClassNotFoundException {
 		// Fixed path name for now
-		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\apps\\compass\\waveletConfig.xml";
+		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletConfig.xml";
 		FileInputStream fs = new FileInputStream(path);
 		XMLDecoder obj = new XMLDecoder(fs);
 		// Read in the config data
 		wc = (WaveletConfig) obj.readObject();
+		obj.close();
 		// Setup mote data
 		mote = new WaveletMote[wc.mScale.length];
+		mData = new MoteData(wc.mScale.length);
+		dataDone = wc.mScale.length;
 		for (int i = 0; i < wc.mScale.length; i++)
 			mote[i] = new WaveletMote(i + 1, wc);
 		// Setup data listener
@@ -111,6 +113,32 @@ public class WaveletConfigServer implements MessageListener {
 				}
 			}
 			break;
+		case WAVELETDATA:
+			if (pack.get_data_data_wData_state() == S_DONE) {
+				mData.lightwt[id - 1] = pack.getElement_data_data_wData_value(LIGHT);
+				mData.tempwt[id - 1] = pack.getElement_data_data_wData_value(TEMP);
+				if (--dataDone == 0)
+					saveData();
+			} else if (pack.get_data_data_wData_state() == S_RAW) {
+				mData.lightraw[id - 1] = pack.getElement_data_data_wData_value(LIGHT);
+				mData.tempraw[id - 1] = pack.getElement_data_data_wData_value(TEMP);
+			}
+			break;
+		}
+	}
+
+	private void saveData() {
+		// Fixed path name for now
+		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletData.xml";
+		try {
+			FileOutputStream fs = new FileOutputStream(path);
+			//Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
+			XMLEncoder obj = new XMLEncoder(fs);
+			obj.writeObject(mData);
+			obj.close();
+			System.out.println("Data write successful!");
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 

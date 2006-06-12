@@ -114,7 +114,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
       try {
         s += "  [data.data.wData.value=";
         for (int i = 0; i < 2; i++) {
-          s += "0x"+Long.toHexString(getElement_data_data_wData_value(i) & 0xff)+" ";
+          s += Float.toString(getElement_data_data_wData_value(i))+" ";
         }
         s += "]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
@@ -677,9 +677,9 @@ public class BroadcastPack extends net.tinyos.message.Message {
 
     /////////////////////////////////////////////////////////
     // Accessor methods for field: data.data.wData.value
-    //   Field type: int[]
+    //   Field type: float[]
     //   Offset (bits): 64
-    //   Size of each element (bits): 16
+    //   Size of each element (bits): 32
     /////////////////////////////////////////////////////////
 
     /**
@@ -702,7 +702,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
     public static int offset_data_data_wData_value(int index1) {
         int offset = 64;
         if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
-        offset += 0 + index1 * 16;
+        offset += 0 + index1 * 32;
         return (offset / 8);
     }
 
@@ -712,15 +712,15 @@ public class BroadcastPack extends net.tinyos.message.Message {
     public static int offsetBits_data_data_wData_value(int index1) {
         int offset = 64;
         if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
-        offset += 0 + index1 * 16;
+        offset += 0 + index1 * 32;
         return offset;
     }
 
     /**
-     * Return the entire array 'data.data.wData.value' as a int[]
+     * Return the entire array 'data.data.wData.value' as a float[]
      */
-    public int[] get_data_data_wData_value() {
-        int[] tmp = new int[2];
+    public float[] get_data_data_wData_value() {
+        float[] tmp = new float[2];
         for (int index0 = 0; index0 < numElements_data_data_wData_value(0); index0++) {
             tmp[index0] = getElement_data_data_wData_value(index0);
         }
@@ -728,54 +728,54 @@ public class BroadcastPack extends net.tinyos.message.Message {
     }
 
     /**
-     * Set the contents of the array 'data.data.wData.value' from the given int[]
+     * Set the contents of the array 'data.data.wData.value' from the given float[]
      */
-    public void set_data_data_wData_value(int[] value) {
+    public void set_data_data_wData_value(float[] value) {
         for (int index0 = 0; index0 < value.length; index0++) {
             setElement_data_data_wData_value(index0, value[index0]);
         }
     }
 
     /**
-     * Return an element (as a int) of the array 'data.data.wData.value'
+     * Return an element (as a float) of the array 'data.data.wData.value'
      */
-    public int getElement_data_data_wData_value(int index1) {
-        return (int)getUIntElement(offsetBits_data_data_wData_value(index1), 16);
+    public float getElement_data_data_wData_value(int index1) {
+        return (float)getFloatElement(offsetBits_data_data_wData_value(index1), 32);
     }
 
     /**
      * Set an element of the array 'data.data.wData.value'
      */
-    public void setElement_data_data_wData_value(int index1, int value) {
-        setUIntElement(offsetBits_data_data_wData_value(index1), 16, value);
+    public void setElement_data_data_wData_value(int index1, float value) {
+        setFloatElement(offsetBits_data_data_wData_value(index1), 32, value);
     }
 
     /**
      * Return the total size, in bytes, of the array 'data.data.wData.value'
      */
     public static int totalSize_data_data_wData_value() {
-        return (32 / 8);
+        return (64 / 8);
     }
 
     /**
      * Return the total size, in bits, of the array 'data.data.wData.value'
      */
     public static int totalSizeBits_data_data_wData_value() {
-        return 32;
+        return 64;
     }
 
     /**
      * Return the size, in bytes, of each element of the array 'data.data.wData.value'
      */
     public static int elementSize_data_data_wData_value() {
-        return (16 / 8);
+        return (32 / 8);
     }
 
     /**
      * Return the size, in bits, of each element of the array 'data.data.wData.value'
      */
     public static int elementSizeBits_data_data_wData_value() {
-        return 16;
+        return 32;
     }
 
     /**
