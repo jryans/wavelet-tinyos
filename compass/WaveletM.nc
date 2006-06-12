@@ -52,13 +52,14 @@ implementation
     S_READING_SENSORS = 3,
     S_UPDATING = 4,
     S_PREDICTING = 5,
-    S_CALCULATING = 6,
+//    S_CALCULATING = 6,
     S_PREDICTED = 7,
     S_UPDATED = 8,
     S_SKIPLEVEL = 9,
     S_DONE = 10,
     S_OFFLINE = 11,
-    S_ERROR = 12
+    S_ERROR = 12,
+    S_RAW = 13
   };
   
   uint8_t nextState;
@@ -68,9 +69,13 @@ implementation
   void readSensors();
   uint8_t nextWaveletLevel();
   void sendResultsToBase();
+#ifdef DIAG
+  void sendRawToBase();
+#endif
   void sendValuesToNeighbors();
   void calcNewValues();
   void delayState();
+  void newDataSet();
   
   /**
    * This is the heart of the wavelet algorithm's state management.
@@ -80,11 +85,11 @@ implementation
   task void runState() {
     switch (call State.getState()) {
       case S_STARTUP: { // Retrieve wavelet config data
-        curLevel = 0;
         dataSet = 0;
         call WaveletConfig.getConfig();
         break; }
       case S_START_DATASET: {
+        curLevel = 0;
         dataSet++;
         dbg(DBG_USR2, "DS: %i, Starting data set...\n", dataSet);
         call State.forceState(S_READING_SENSORS);
@@ -94,6 +99,10 @@ implementation
         dbg(DBG_USR2, "DS: %i, Reading sensors...\n", dataSet);
         delayState();
         readSensors();
+#ifdef DIAG
+        dbg(DBG_USR2, "Diag: DS: %i, Sending raw values to base...\n", dataSet);
+        sendRawToBase();
+#endif        
         call State.toIdle();
         break; }
       case S_UPDATING: {
@@ -205,6 +214,20 @@ implementation
     call Message.send(msg);
   }
   
+#ifdef DIAG  
+  void sendRawToBase() {
+    msgData msg;
+    uint8_t i;
+    msg.src = TOS_LOCAL_ADDRESS;
+    msg.dest = 0;
+    msg.type = WAVELETDATA;
+    msg.data.wData.state = S_RAW;
+    for (i = 0; i < WT_SENSORS; i++)
+      msg.data.wData.value[i] = level[0].nb[0].data.value[i];
+    call Message.send(msg);
+  }
+#endif
+  
   void sendValuesToNeighbors() {
     msgData msg;
     uint8_t mote, i;
@@ -268,6 +291,7 @@ implementation
     if (result == SUCCESS) {
       level = configData;
       numLevels = lvlCount;
+      call State.toIdle();
     }
     return SUCCESS; 
   }
@@ -343,10 +367,10 @@ implementation
       break; }
     case WAVELETSTATE: {
       //if (msg.data.wState.state == S_START_DATASET)
-      //  call DataSet.start(TIMER_REPEAT, msg.data.wState.dataSetTime);
-      call State.forceState(msg.data.wState.state);
-      post runState();
-      dbg(DBG_USR2, "Wavelet: State changed to %i\n", msg.data.wState.state);
+      newDataSet();
+      //call DataSet.start(TIMER_REPEAT, msg.data.wState.dataSetTime);
+      //call State.forceState(msg.data.wState.state);
+      //post runState();
       break; }
     }
   }
@@ -358,8 +382,7 @@ implementation
    * each time the timer fires.
    */
   event result_t DataSet.fired() {
-    call State.forceState(S_START_DATASET);
-    post runState();
+    newDataSet();
     return SUCCESS;
   }
   
@@ -373,5 +396,13 @@ implementation
       post runState();
     }
     return SUCCESS;
+  }
+  
+  void newDataSet() {
+    if (call State.requestState(S_START_DATASET) == FAIL) {
+      dbg(DBG_USR2, "Wavelet: Data set %i did not finish in time!\n", dataSet);
+    } else {
+      post runState();
+    }
   }
 }
