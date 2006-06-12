@@ -25,7 +25,7 @@ typedef struct {
 
 typedef struct {
 	uint8_t state; // State this mote will have in this level
-	uint16_t value[WT_SENSORS];		// Holds one value for each sensor (only two sensors for now)
+	float value[WT_SENSORS];		// Holds one value for each sensor (only two sensors for now)
 } __attribute__ ((packed)) WaveletData;
 
 typedef struct { // One MoteInfo and WaveletData for each neighbor

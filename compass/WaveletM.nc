@@ -63,6 +63,9 @@ implementation
   };
   
   uint8_t nextState;
+#ifdef DIAG
+  float rawVals[WT_SENSORS];
+#endif
     
   /*** Internal Functions ***/
   task void runState();
@@ -98,11 +101,7 @@ implementation
       case S_READING_SENSORS: {
         dbg(DBG_USR2, "DS: %i, Reading sensors...\n", dataSet);
         delayState();
-        readSensors();
-#ifdef DIAG
-        dbg(DBG_USR2, "Diag: DS: %i, Sending raw values to base...\n", dataSet);
-        sendRawToBase();
-#endif        
+        readSensors();     
         call State.toIdle();
         break; }
       case S_UPDATING: {
@@ -136,8 +135,12 @@ implementation
         call State.toIdle();
         break; }
       case S_DONE: {
+#ifdef DIAG
+        dbg(DBG_USR2, "Diag: DS: %i, Sending raw values to base...\n", dataSet);
+        sendRawToBase();
+#endif   
         dbg(DBG_USR2, "Done: DS: %i, Sending final values to base...\n", dataSet);
-        sendResultsToBase(); 
+        sendResultsToBase();
         call State.toIdle();
         break; }
       case S_SKIPLEVEL: {
@@ -189,16 +192,23 @@ implementation
   void readSensors() {
     RawData newVals = call SensorData.readSensors();
     uint8_t i;
-    for (i = 0; i < WT_SENSORS; i++)
+    for (i = 0; i < WT_SENSORS; i++) {
       level[0].nb[0].data.value[i] = newVals.value[i];
+#ifdef DIAG
+      rawVals[i] = newVals.value[i];
+#endif      
+    }
   }
   
   uint8_t nextWaveletLevel() {
-    uint8_t newState;
+    uint8_t newState, i;
     (curLevel + 1 == numLevels) ? newState = S_DONE 
                                 : (newState = level[curLevel + 1].nb[0].data.state);
-    if (newState != S_DONE)
+    if (newState != S_DONE) {
+      for (i = 0; i < WT_SENSORS; i++) // Carry data over to next level
+        level[curLevel + 1].nb[0].data.value[i] = level[curLevel].nb[0].data.value[i];
       curLevel++;
+    }  
     return newState;
   }
   
@@ -223,7 +233,7 @@ implementation
     msg.type = WAVELETDATA;
     msg.data.wData.state = S_RAW;
     for (i = 0; i < WT_SENSORS; i++)
-      msg.data.wData.value[i] = level[0].nb[0].data.value[i];
+      msg.data.wData.value[i] = rawVals[i];
     call Message.send(msg);
   }
 #endif
@@ -255,11 +265,14 @@ implementation
    */
   void calcNewValues() {
     uint8_t mote, sensor;
+    float sign;
     dbg(DBG_USR2, "Calc: DS: %i, L: %i, Calculating new values...\n",
         dataSet, curLevel + 1);
+    (call State.getState() == S_PREDICTED) ? (sign = -1) : (sign = 1);
     for (mote = 1; mote < level[curLevel].nbCount; mote++) {
       for (sensor = 0; sensor < WT_SENSORS; sensor++)
-        level[curLevel].nb[0].data.value[sensor] += level[curLevel].nb[mote].data.value[sensor];
+        level[curLevel].nb[0].data.value[sensor] += (sign * level[curLevel].nb[mote].info.coeff
+                                                     * level[curLevel].nb[mote].data.value[sensor]);
     }
   }
 
