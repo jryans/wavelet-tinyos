@@ -70,7 +70,7 @@ implementation {
     msg.type = WAVELETCONFHEADER;
     msg.data.wConfHeader.numLevels = 0;
     dbg(DBG_USR2, "BigPack: Requesting wavelet config...\n");
-    repeatSend(msg, 1000);
+    repeatSend(msg, 5000);
     return SUCCESS;
   }
   
@@ -83,7 +83,7 @@ implementation {
     //dbg(DBG_USR2, "BigPack: Sent ack\n");
     msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = 0;
-    repeatSend(msg, 3000); 
+    repeatSend(msg, 5000); 
   }
   
   /**

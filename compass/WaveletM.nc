@@ -163,30 +163,30 @@ implementation
     switch (call State.getState()) {
     case S_READING_SENSORS: {
       nextState = level[curLevel].nb[0].data.state;
-      (nextState == S_UPDATING) ? (delay = 4000)
-                                : (delay = 2000);
+      (nextState == S_UPDATING) ? (delay = 6000)
+                                : (delay = 3000);
       break; }
     case S_UPDATING: {
       nextState = S_UPDATED;
-      delay = 8000;
+      delay = 12000;
       break; }
     case S_PREDICTING: {
       nextState = S_PREDICTED;
-      delay = 5000;
+      delay = 7500;
       break; }
     case S_PREDICTED: {
       nextState = S_DONE;
-      delay = 4000;
+      delay = 6000;
       break; }
     case S_UPDATED: {
       nextState = nextWaveletLevel();
-      (nextState == S_UPDATING) ? (delay = 4000)
-                                : (delay = 2000);
+      (nextState == S_UPDATING) ? (delay = 6000)
+                                : (delay = 3000);
       break; }
     case S_SKIPLEVEL: {
       nextState = nextWaveletLevel();
-      (nextState == S_UPDATING) ? (delay = 14000)
-                                : (delay = 12000);
+      (nextState == S_UPDATING) ? (delay = 21000)
+                                : (delay = 18000);
       break; }
     }
     call StateTimer.start(TIMER_ONE_SHOT, delay);
