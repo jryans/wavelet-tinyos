@@ -13,7 +13,8 @@ configuration NetworkC {
   }
 }
 implementation {
-  components Main, BroadcastM, UnicastM, RouterSimM, TransceiverC;
+  components Main, BroadcastM, UnicastM, RouterSimM, 
+             TransceiverC, CC2420RadioC;
   
   Main.StdControl -> TransceiverC;
   
@@ -23,6 +24,7 @@ implementation {
   Message = BroadcastM;
   
   /*** Unicast ***/
+  Main.StdControl -> UnicastM;
   UnicastM.IO -> TransceiverC.Transceiver[AM_UNICASTPACK];
   UnicastM.Router -> RouterSimM;
   Message = UnicastM;
@@ -31,4 +33,9 @@ implementation {
   Main.StdControl -> RouterSimM;
   RouterSimM.IO -> TransceiverC.Transceiver[AM_ROUTER];
   Router = RouterSimM;
+  
+  /*** CC2420 ***/
+  UnicastM.TransControl -> CC2420RadioC.StdControl;
+  UnicastM.MacControl -> CC2420RadioC;
+  UnicastM.CC2420Control -> CC2420RadioC;
 }

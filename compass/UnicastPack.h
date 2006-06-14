@@ -17,7 +17,7 @@ struct UnicastPack {
 typedef struct UnicastPack uPack;
 
 enum {
-  RADIO_RETRIES = 0
+  RADIO_RETRIES = 5
 };
 
 #endif /* _UNICASTPACK_H */

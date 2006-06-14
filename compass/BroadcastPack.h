@@ -50,4 +50,8 @@ struct BroadcastPack {
 
 typedef struct BroadcastPack bPack;
 
+enum {
+  BCAST_REPEATS = 3
+};
+
 #endif /* _BROADCASTPACK_H */

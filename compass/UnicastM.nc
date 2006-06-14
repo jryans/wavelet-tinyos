@@ -11,15 +11,18 @@ includes IOPack;
 module UnicastM {
   provides {
     interface Message;
+    interface StdControl;
   }
   uses {
+    interface StdControl as TransControl;
+    interface CC2420Control;
+    interface MacControl;
     interface Transceiver as IO;
     interface Router;
   }
 }
 
 implementation {
-  
   #if 0
   typedef uint8_t uPack;
   #endif
@@ -98,6 +101,23 @@ implementation {
    * Commands and events
    ***********************************************************************/
 
+  command result_t StdControl.init() {
+    call TransControl.init();
+    return SUCCESS;
+  }
+
+  command result_t StdControl.start() {
+    call TransControl.start();
+    call CC2420Control.SetRFPower(31);
+    call MacControl.enableAck();
+    return SUCCESS;
+  }
+
+  command result_t StdControl.stop() {
+    call TransControl.stop();
+    return SUCCESS;
+  }
+  
   /**
    * Builds a unicast pack from an input message and sends it on its way.
    */

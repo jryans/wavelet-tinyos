@@ -91,7 +91,7 @@ implementation {
   /* Each unique broadcast wave is signaled to application and
    * rebroadcast once.
    */
-  void FwdBcast(bPack *pRcvMsg) {
+  void FwdBcast(bPack *pRcvMsg, uint8_t repeatsLeft) {
     bPack *pFwdMsg;
     if ((tmpPtr = call IO.requestWrite()) != NULL) { // Gets a new TOS_MsgPtr
       pFwdMsg = (bPack *)tmpPtr->data;
@@ -100,8 +100,11 @@ implementation {
       return;
     }
     memcpy(pFwdMsg,pRcvMsg,len);  
-    dbg(DBG_USR1, "Bcast: FwdMsg (seqno 0x%x) sending...\n", pFwdMsg->seqno);
+    dbg(DBG_USR1, "Bcast: FwdMsg (seqno 0x%x) sending, %i repeats left...\n", 
+        pFwdMsg->seqno, repeatsLeft);
     call IO.sendRadio(TOS_BCAST_ADDR, len); 
+    if (repeatsLeft > 0)
+      FwdBcast(pFwdMsg, repeatsLeft - 1);
   }
   
   /**
@@ -111,7 +114,7 @@ implementation {
     bPack *pBCMsg = (bPack *)pMsg->data;
     dbg(DBG_USR1, "Bcast: Msg rcvd, seq 0x%02x\n", pBCMsg->seqno);
     if (newBcast(pBCMsg->seqno)) {
-      FwdBcast(pBCMsg);
+      FwdBcast(pBCMsg, BCAST_REPEATS);
       if (TOS_LOCAL_ADDRESS != 0)
         signal Message.receive(pBCMsg->data);
     }

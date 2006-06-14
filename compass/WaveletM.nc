@@ -92,6 +92,7 @@ implementation
         call WaveletConfig.getConfig();
         break; }
       case S_START_DATASET: {
+        call Leds.yellowOn();
         curLevel = 0;
         dataSet++;
         dbg(DBG_USR2, "DS: %i, Starting data set...\n", dataSet);
@@ -139,6 +140,8 @@ implementation
         dbg(DBG_USR2, "Diag: DS: %i, Sending raw values to base...\n", dataSet);
         sendRawToBase();
 #endif   
+        call Leds.yellowOff();
+        call Leds.greenOn();
         dbg(DBG_USR2, "Done: DS: %i, Sending final values to base...\n", dataSet);
         sendResultsToBase();
         call State.toIdle();
@@ -256,6 +259,7 @@ implementation
             dataSet, curLevel + 1, msg.dest);
       }
       call Message.send(msg);
+      call Leds.greenOn();
     }
   }
   
@@ -288,6 +292,7 @@ implementation
     if (TOS_LOCAL_ADDRESS == 0) {
       call State.forceState(S_OFFLINE);
     } else {
+      call Leds.redOn();
       call State.forceState(S_STARTUP);
     }
     post runState();
@@ -305,6 +310,9 @@ implementation
       level = configData;
       numLevels = lvlCount;
       call State.toIdle();
+      call Leds.redOff();
+     // call State.forceState(S_START_DATASET); // TESTING
+      //post runState(); // TESTING
     }
     return SUCCESS; 
   }
@@ -314,6 +322,7 @@ implementation
    */
   event result_t Message.sendDone(msgData msg, result_t result) {
     if (msg.type == WAVELETDATA) {
+      call Leds.greenOff();
       switch (call State.getState()) {
         case S_UPDATING: {
           if (result == FAIL)
@@ -404,7 +413,8 @@ implementation
    */
   event result_t StateTimer.fired() {
     if (call State.requestState(nextState) == FAIL) {
-      dbg(DBG_USR2, "Wavelet: Not enough time before moving to state %i!\n", nextState); 
+      dbg(DBG_USR2, "Wavelet: Not enough time before moving to state %i!\n", nextState);
+      call Leds.redOn(); 
     } else {
       post runState();
     }
@@ -414,6 +424,7 @@ implementation
   void newDataSet() {
     if (call State.requestState(S_START_DATASET) == FAIL) {
       dbg(DBG_USR2, "Wavelet: Data set %i did not finish in time!\n", dataSet);
+      call Leds.redOn();
     } else {
       post runState();
     }
