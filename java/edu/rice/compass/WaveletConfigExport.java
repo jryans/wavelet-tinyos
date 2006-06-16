@@ -19,7 +19,6 @@ public class WaveletConfigExport {
 		// Fixed path name for now
 		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletConfig.xml";
 		FileOutputStream fs = new FileOutputStream(path);
-		//ObjectOutputStream obj = new ObjectOutputStream(fs);
 		Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
 		XMLEncoder obj = new XMLEncoder(fs);
 		obj.writeObject(conf);
@@ -30,19 +29,20 @@ public class WaveletConfigExport {
 		
 	}
 	
-	public float[][] loadData() {
+	public float[][][] loadData() {
     // Fixed path name for now
 		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletData.xml";
-		MoteData mData = new MoteData(0);
+		MoteData mData = new MoteData();
 		try {
 			FileInputStream fs = new FileInputStream(path);
 			Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-			XMLDecoder obj = new XMLDecoder(fs);
+			//XMLDecoder obj = new XMLDecoder(fs);
+			ObjectInputStream obj = new ObjectInputStream(fs);
 			mData = (MoteData) obj.readObject();
 			obj.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new float[][] {mData.lightraw, mData.lightwt, mData.tempraw, mData.tempwt};
+		return mData.value;
 	}
 }

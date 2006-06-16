@@ -25,16 +25,22 @@ public class WaveletConfigServer implements MessageListener {
 	static final short WAVELETSTATE = 5;
 
 	/** * State Control ** */
+	static final short S_STARTUP = 1;
 	static final short S_START_DATASET = 2;
 	static final short S_DONE = 10;
+	static final short S_OFFLINE = 11;
 	static final short S_RAW = 13;
 	private boolean startSent = false;
 
 	/** * Sensor Data ** */
 	static final short TEMP = 0;
 	static final short LIGHT = 1;
+	static final short WT_SENSORS = 2;
 	private static int dataDone;
 	private static MoteData mData;
+	private static long setLength;
+	private static int numSets;
+	private static int curSet;
 
 	public static void main(String[] args) throws IOException,
 			ClassNotFoundException {
@@ -54,7 +60,14 @@ public class WaveletConfigServer implements MessageListener {
 			}
 			System.exit(0);
 		} else if (args[0].equals("prog")) {
-			moteSend = new MoteSend(true);
+			if ((args.length > 3) && (args[3].equals("clear"))) {
+			  moteSend = new MoteSend(true);
+			} else {
+				moteSend = new MoteSend(false);
+			}
+			forceStartup();
+			setLength = Integer.parseInt(args[1]);
+			numSets = Integer.parseInt(args[2]);
 			// Fixed path name for now
 			String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletConfig.xml";
 			FileInputStream fs = new FileInputStream(path);
@@ -64,10 +77,12 @@ public class WaveletConfigServer implements MessageListener {
 			obj.close();
 			// Setup mote data
 			mote = new WaveletMote[wc.mScale.length];
-			mData = new MoteData(wc.mScale.length);
-			dataDone = wc.mScale.length;
-			for (int i = 0; i < wc.mScale.length; i++)
+			for (int i = 0; i < mote.length; i++)
 				mote[i] = new WaveletMote(i + 1, wc);
+			// Init data collection
+			curSet = 0;
+			mData = new MoteData(numSets, WT_SENSORS, mote.length);
+			dataDone = wc.mScale.length;
 			// Setup data listener
 			moteListen.registerListener(new UnicastPack(), new WaveletConfigServer());
 			System.out.println("Ready to hear from motes...");
@@ -113,7 +128,6 @@ public class WaveletConfigServer implements MessageListener {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				// } else { // Check if all motes are done
 			}
 			if (!mote[id - 1].isSending()) {
 				if (!startSent) {
@@ -127,14 +141,7 @@ public class WaveletConfigServer implements MessageListener {
 					if (done) {
 						try {
 							startSent = true;
-							moteSend.sendPack(startDataSet());
-							// UnicastPack uPack = startDataSetU();
-							// for (int i = 0; i < mote.length; i++) {
-							// uPack.set_data_dest(i + 1);
-							// moteSend.sendPack(uPack);
-							// System.out.println("Sent start command to mote " + i);
-							// Thread.sleep(500);
-							// }
+							startDataSet();
 							System.out.println("Last mote was " + id + ", sent start command");
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -145,15 +152,24 @@ public class WaveletConfigServer implements MessageListener {
 			break;
 		case WAVELETDATA:
 			if (pack.get_data_data_wData_state() == S_DONE) {
-				mData.lightwt[id - 1] = pack.getElement_data_data_wData_value(LIGHT);
-				mData.tempwt[id - 1] = pack.getElement_data_data_wData_value(TEMP);
+				mData.value[curSet][TEMP * 2 + 1][id - 1] = pack.getElement_data_data_wData_value(TEMP);
+				mData.value[curSet][LIGHT * 2 + 1][id - 1] = pack.getElement_data_data_wData_value(LIGHT);
 				if (--dataDone == 0)
-					saveData();
+					nextSet();
 			} else if (pack.get_data_data_wData_state() == S_RAW) {
-				mData.lightraw[id - 1] = pack.getElement_data_data_wData_value(LIGHT);
-				mData.tempraw[id - 1] = pack.getElement_data_data_wData_value(TEMP);
+				mData.value[curSet][TEMP * 2][id - 1] = pack.getElement_data_data_wData_value(TEMP);
+				mData.value[curSet][LIGHT * 2][id - 1] = pack.getElement_data_data_wData_value(LIGHT);
 			}
 			break;
+		}
+	}
+	
+	private void nextSet() {
+		System.out.println("Data set " + (curSet + 1) + " complete!");
+		if (++curSet < numSets) {
+			dataDone = wc.mScale.length;
+		} else {
+			saveData();
 		}
 	}
 
@@ -162,30 +178,50 @@ public class WaveletConfigServer implements MessageListener {
 		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletData.xml";
 		try {
 			FileOutputStream fs = new FileOutputStream(path);
-			XMLEncoder obj = new XMLEncoder(fs);
+			//XMLEncoder obj = new XMLEncoder(fs);
+			ObjectOutputStream obj = new ObjectOutputStream(fs);
 			obj.writeObject(mData);
 			obj.close();
 			System.out.println("Data write successful!");
+			forceStop();
 			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+	
+	private static void forceStartup() {
+		BroadcastPack pack = new BroadcastPack();
+		pack.set_data_type(WAVELETSTATE);
+		pack.set_data_data_wState_state(S_STARTUP);
+		try {
+			moteSend.sendPack(pack);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static void forceStop() {
+		BroadcastPack pack = new BroadcastPack();
+		pack.set_data_type(WAVELETSTATE);
+		pack.set_data_data_wState_state(S_OFFLINE);
+		try {
+			moteSend.sendPack(pack);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
-	private BroadcastPack startDataSet() {
+	private void startDataSet() {
 		BroadcastPack pack = new BroadcastPack();
 		pack.set_data_type(WAVELETSTATE);
 		pack.set_data_data_wState_state(S_START_DATASET);
-		pack.set_data_data_wState_dataSetTime(45000);
-		return pack;
-	}
-
-	private static UnicastPack startDataSetU() {
-		UnicastPack pack = new UnicastPack();
-		pack.set_data_type(WAVELETSTATE);
-		pack.set_data_data_wState_state(S_START_DATASET);
-		pack.set_data_data_wState_dataSetTime(45000);
-		return pack;
+		pack.set_data_data_wState_dataSetTime(setLength);
+		try {
+			moteSend.sendPack(pack);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

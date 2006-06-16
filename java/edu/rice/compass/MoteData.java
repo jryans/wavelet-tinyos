@@ -1,52 +1,27 @@
 package edu.rice.compass;
 
-public class MoteData {
-	float lightraw[];
-	float lightwt[];
-	float tempraw[];
-	float tempwt[];
+import java.io.*;
+
+public class MoteData implements Serializable {
+	private static final long serialVersionUID = 1L;
+	
+	// value[dataset][sensor][mote]
+	float value[][][];
 	
 	public MoteData() {
 		
 	}
 
-	public MoteData(int numMotes) {
-		lightraw = new float[numMotes];
-		lightwt = new float[numMotes];
-		tempraw = new float[numMotes];
-		tempwt = new float[numMotes];
+	public MoteData(int sets, int sens, int motes) {
+		value = new float[sets][2 * sens][motes];
 	}
 
-	public float[] getLightraw() {
-		return lightraw;
+	public float[][][] getValue() {
+		return value;
 	}
 
-	public void setLightraw(float[] lightraw) {
-		this.lightraw = lightraw;
-	}
-
-	public float[] getLightwt() {
-		return lightwt;
-	}
-
-	public void setLightwt(float[] lightwt) {
-		this.lightwt = lightwt;
-	}
-
-	public float[] getTempraw() {
-		return tempraw;
-	}
-
-	public void setTempraw(float[] tempraw) {
-		this.tempraw = tempraw;
-	}
-
-	public float[] getTempwt() {
-		return tempwt;
-	}
-
-	public void setTempwt(float[] tempwt) {
-		this.tempwt = tempwt;
+	public void setValue(float[][][] value) {
+		this.value = value;
 	}
 
 }
