@@ -25,7 +25,6 @@ module SensorControlM {
     interface StdControl as TempControl;
     interface StdControl as LightControl;
     interface StdControl as VoltControl;
-    interface Timer;
   }
 }
 
@@ -75,10 +74,9 @@ implementation {
    * Requests new data from the sensor system.
    */
   command void SensorData.readSensors() {
-  	call Leds.redOn();
   	atomic { sensToGo = NUM_SENSORS; }
   	post readData();
-    }
+  }
   
   /**
    * When the last sensor finished sampling, it posts this task
@@ -89,7 +87,6 @@ implementation {
     call LightControl.stop();
     dbg(DBG_USR1, "Values read from sensors: Light = %i, Temp = %i, Volt = %i\n",
         curData.value[LIGHT], curData.value[TEMP], curData.value[VOLT]);
-    call Leds.redOff();
     atomic { signal SensorData.readDone(curData); }
   }
 

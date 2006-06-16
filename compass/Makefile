@@ -1,10 +1,10 @@
-COMPONENT = TestC
+COMPONENT = CompassC
 
 CFLAGS += -I%T/lib/Transceiver 
 CFLAGS += -I%T/lib/State
 
 # For now, use twice the max number of neighbors
-CFLAGS += -DMAX_TOS_MSGS=6
+CFLAGS += -DMAX_TOS_MSGS=26
 
 # Adds (annoying) beeps to indicate various errors
 #CFLAGS += -DBEEP

@@ -6,14 +6,16 @@
 
 configuration CompassC {}
 implementation {
-  components Main, DelugeC, NetworkC, MoteCommandC, WaveletM, LedsC,
-             SensorControlC, StateC, TimerC, BigPackM;
+  components Main, DelugeC, NetworkC, TimerC, BigPackM,
+             WaveletM, LedsC, StateC, SensorControlC;
+#ifdef BEEP
+  components BeepC;
+#endif
 
   /*** Deluge: allows for wireless mote reprogramming ***/
   Main.StdControl -> DelugeC;
   
   /*** Network: provides broadcast and unicast I/O ***/
-  MoteCommandC.Message -> NetworkC;
   WaveletM.Message -> NetworkC;
   WaveletM.Router -> NetworkC;
   BigPackM.Message -> NetworkC;
@@ -25,6 +27,9 @@ implementation {
   /*** BigPack: receives multi-packet data ***/
   Main.StdControl -> BigPackM;
   WaveletM.WaveletConfig -> BigPackM;
+#ifdef BEEP
+  BigPackM.Beep -> BeepC;
+#endif
   
   /*** Wavelet: main wavelet application ***/
   Main.StdControl -> WaveletM;

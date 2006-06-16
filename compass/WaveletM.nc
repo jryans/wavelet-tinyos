@@ -91,6 +91,7 @@ implementation
         call WaveletConfig.getConfig();
         break; }
       case S_START_DATASET: {
+        call Leds.redOff();
         call Leds.yellowOn();
         curLevel = 0;
         dataSet++;
@@ -160,30 +161,30 @@ implementation
     switch (call State.getState()) {
     case S_READING_SENSORS: {
       nextState = level[curLevel].nb[0].data.state;
-      (nextState == S_UPDATING) ? (delay = 6000)
-                                : (delay = 3000);
+      (nextState == S_UPDATING) ? (delay = 4000)
+                                : (delay = 2000);
       break; }
     case S_UPDATING: {
       nextState = S_UPDATED;
-      delay = 12000;
+      delay = 8000;
       break; }
     case S_PREDICTING: {
       nextState = S_PREDICTED;
-      delay = 7500;
+      delay = 5000;
       break; }
     case S_PREDICTED: {
       nextState = S_DONE;
-      delay = 6000;
+      delay = 4000;
       break; }
     case S_UPDATED: {
       nextState = nextWaveletLevel();
-      (nextState == S_UPDATING) ? (delay = 6000)
-                                : (delay = 3000);
+      (nextState == S_UPDATING) ? (delay = 4000)
+                                : (delay = 2000);
       break; }
     case S_SKIPLEVEL: {
       nextState = nextWaveletLevel();
-      (nextState == S_UPDATING) ? (delay = 21000)
-                                : (delay = 18000);
+      (nextState == S_UPDATING) ? (delay = 14000)
+                                : (delay = 12000);
       break; }
     }
     call StateTimer.start(TIMER_ONE_SHOT, delay);
@@ -306,9 +307,6 @@ implementation
       level = configData;
       numLevels = lvlCount;
       call State.toIdle();
-      call Leds.redOff();
-     // call State.forceState(S_START_DATASET); // TESTING
-      //post runState(); // TESTING
     }
     return SUCCESS; 
   }
@@ -384,11 +382,13 @@ implementation
       }
       break; }
     case WAVELETSTATE: {
-      //if (msg.data.wState.state == S_START_DATASET)
-      newDataSet();
-      //call DataSet.start(TIMER_REPEAT, msg.data.wState.dataSetTime);
-      //call State.forceState(msg.data.wState.state);
-      //post runState();
+      if (msg.data.wState.state == S_START_DATASET) {
+        newDataSet();
+        call DataSet.start(TIMER_REPEAT, msg.data.wState.dataSetTime);
+      } else {
+        call State.forceState(msg.data.wState.state);
+        post runState();
+      }
       break; }
     }
   }
@@ -405,7 +405,7 @@ implementation
   }
   
   /**
-   *
+   * Enforces delays between each state change.
    */
   event result_t StateTimer.fired() {
     if (call State.requestState(nextState) == FAIL) {
@@ -416,6 +416,9 @@ implementation
     return SUCCESS;
   }
   
+  /**
+   * Starts the next data set.
+   */
   void newDataSet() {
     if (call State.requestState(S_START_DATASET) == FAIL) {
       dbg(DBG_USR2, "Wavelet: Data set %i did not finish in time!\n", dataSet);
