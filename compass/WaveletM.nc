@@ -149,6 +149,12 @@ implementation
         delayState();
         call State.toIdle();
         break; }
+      case S_OFFLINE: {
+        dbg(DBG_USR2, "Wavelet: Offline");
+        call Leds.redOff();
+        call Leds.yellowOff();
+        call State.toIdle();
+        break; }
     }
   }
   
@@ -385,7 +391,9 @@ implementation
       if (msg.data.wState.state == S_START_DATASET) {
         newDataSet();
         call DataSet.start(TIMER_REPEAT, msg.data.wState.dataSetTime);
-      } else {
+      } else { // Allows stoping and restarting on demand
+        call DataSet.stop();
+        call StateTimer.stop();
         call State.forceState(msg.data.wState.state);
         post runState();
       }

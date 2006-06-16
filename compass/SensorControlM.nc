@@ -5,7 +5,6 @@
  * caches their values, and sends out the most recent set of data when requested.
  * IMPORTANT: Temp and Light must start and stop with each request. If
  * they are not stopped, the radio will not be able to receive.
- * TODO: Need to wait for a settling time after starting a sensor?
  * @author The Moters
  * @author Ryan Stinnett
  */
