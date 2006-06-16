@@ -42,11 +42,11 @@ import net.tinyos.message.*;
 public class MoteSend {
 	static Properties p = new Properties();
 
-	static final short TOS_BCAST_ADDR = (short) 0xffff;
+	static final int TOS_BCAST_ADDR = 0xffff;
 
-	static short sequenceNo = 0;
+	short sequenceNo = 0;
 
-	public static boolean debug = false;
+	public boolean debug = false;
 
 	private static MoteIF moteCom = new MoteIF(PrintStreamMessenger.out);
 
@@ -74,50 +74,44 @@ public class MoteSend {
 		}
 	}
 
-	public MoteSend() {
-		//if (sequenceNo == 0)
-			//sequenceNo = restoreSequenceNo();
+	public MoteSend(boolean clear) {
+		if (clear) {
 			sequenceNo = 1;
+		} else {
+			if (sequenceNo == 0)
+				sequenceNo = restoreSequenceNo();
+		}
 	}
 
-	/*public void sendDiag() {
-		UnicastPack packet = new UnicastPack();
-
-		packet.set_retriesLeft((short) 0);
-		packet.set_data_src(0);
-		packet.set_data_dest(1);
-
-		switch (cmd) {
-		case 1:
-			packet.set_data_type((short) 4);
-			packet.set_data_data_wConfHeader_numLevels((short) 2);
-			packet.setElement_data_data_wConfHeader_nbCount(0, (short) 2);
-			packet.setElement_data_data_wConfHeader_nbCount(1, (short) 2);
-			break;
-		case 2:
-			packet.set_data_type((short) 3);
-			packet.set_data_data_wConfData_level((short) 0);
-			packet.set_data_data_wConfData_packNum((short) 0);
-			packet.set_data_data_wConfData_moteCount((short) 2);
-			packet.setElement_data_data_wConfData_moteConf_id(0, (short) 1);
-			packet.setElement_data_data_wConfData_moteConf_state(0, (short) 5);
-			packet.setElement_data_data_wConfData_moteConf_coeff(0, (float) 0);
-			packet.setElement_data_data_wConfData_moteConf_id(1, (short) 2);
-			packet.setElement_data_data_wConfData_moteConf_state(1, (short) 4);
-			packet.setElement_data_data_wConfData_moteConf_coeff(1, (float) 0);
-			break;
-		case 3:
-			packet.set_data_type((short) 3);
-			packet.set_data_data_wConfData_level((short) 1);
-			packet.set_data_data_wConfData_packNum((short) 0);
-			packet.set_data_data_wConfData_moteCount((short) 2);
-			packet.setElement_data_data_wConfData_moteConf_id(0, (short) 1);
-			packet.setElement_data_data_wConfData_moteConf_coeff(0, (float) 0);
-			packet.setElement_data_data_wConfData_moteConf_id(1, (short) 2);
-			packet.setElement_data_data_wConfData_moteConf_coeff(1, (float) 0);
-			break;
-		}
-	}*/
+	/*
+	 * public void sendDiag() { UnicastPack packet = new UnicastPack();
+	 * 
+	 * packet.set_retriesLeft((short) 0); packet.set_data_src(0);
+	 * packet.set_data_dest(1);
+	 * 
+	 * switch (cmd) { case 1: packet.set_data_type((short) 4);
+	 * packet.set_data_data_wConfHeader_numLevels((short) 2);
+	 * packet.setElement_data_data_wConfHeader_nbCount(0, (short) 2);
+	 * packet.setElement_data_data_wConfHeader_nbCount(1, (short) 2); break; case
+	 * 2: packet.set_data_type((short) 3);
+	 * packet.set_data_data_wConfData_level((short) 0);
+	 * packet.set_data_data_wConfData_packNum((short) 0);
+	 * packet.set_data_data_wConfData_moteCount((short) 2);
+	 * packet.setElement_data_data_wConfData_moteConf_id(0, (short) 1);
+	 * packet.setElement_data_data_wConfData_moteConf_state(0, (short) 5);
+	 * packet.setElement_data_data_wConfData_moteConf_coeff(0, (float) 0);
+	 * packet.setElement_data_data_wConfData_moteConf_id(1, (short) 2);
+	 * packet.setElement_data_data_wConfData_moteConf_state(1, (short) 4);
+	 * packet.setElement_data_data_wConfData_moteConf_coeff(1, (float) 0); break;
+	 * case 3: packet.set_data_type((short) 3);
+	 * packet.set_data_data_wConfData_level((short) 1);
+	 * packet.set_data_data_wConfData_packNum((short) 0);
+	 * packet.set_data_data_wConfData_moteCount((short) 2);
+	 * packet.setElement_data_data_wConfData_moteConf_id(0, (short) 1);
+	 * packet.setElement_data_data_wConfData_moteConf_coeff(0, (float) 0);
+	 * packet.setElement_data_data_wConfData_moteConf_id(1, (short) 2);
+	 * packet.setElement_data_data_wConfData_moteConf_coeff(1, (float) 0); break; } }
+	 */
 
 	private void debugMsg(Message msg) {
 		if (debug) {
@@ -128,7 +122,7 @@ public class MoteSend {
 			System.out.println();
 		}
 	}
-	
+
 	public void sendPack(BroadcastPack pack) throws IOException {
 		debugMsg(pack);
 		pack.set_data_src(0);
@@ -137,15 +131,15 @@ public class MoteSend {
 		try {
 			moteCom.send(TOS_BCAST_ADDR, pack);
 			saveSequenceNo(++sequenceNo);
-		} catch(IOException e) {
+		} catch (IOException e) {
 			throw e;
 		}
 	}
-	
+
 	public void sendPack(UnicastPack pack) throws IOException {
 		debugMsg(pack);
 		pack.set_data_src(0);
 		moteCom.send(0, pack);
 	}
-	
+
 }
