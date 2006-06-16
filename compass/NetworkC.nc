@@ -13,29 +13,47 @@ configuration NetworkC {
   }
 }
 implementation {
-  components Main, BroadcastM, UnicastM, RouterSimM, 
-             TransceiverC, CC2420RadioC;
+  components Main, BroadcastM, UnicastM, RouterStaticM, 
+             TransceiverC, LedsC, TimerC;
+#ifdef BEEP
+  components BeepC;
+#endif
+#ifdef CC2420
+  components CC2420RadioC;
+#endif
   
+  /*** Services ***/
   Main.StdControl -> TransceiverC;
+  Main.StdControl -> TimerC;
   
   /*** Broadcast ***/
-  Main.StdControl -> BroadcastM;
   BroadcastM.IO -> TransceiverC.Transceiver[AM_BROADCASTPACK];
+  BroadcastM.Leds -> LedsC;
+  BroadcastM.Repeat -> TimerC.Timer[unique("Timer")];
+#ifdef BEEP
+  BroadcastM.Beep -> BeepC;
+#endif
   Message = BroadcastM;
   
   /*** Unicast ***/
   Main.StdControl -> UnicastM;
   UnicastM.IO -> TransceiverC.Transceiver[AM_UNICASTPACK];
-  UnicastM.Router -> RouterSimM;
+  UnicastM.Router -> RouterStaticM;
+  UnicastM.Leds -> LedsC;
+#ifdef BEEP
+  UnicastM.Beep -> BeepC;
+#endif
   Message = UnicastM;
   
   /*** Routing ***/
-  Main.StdControl -> RouterSimM;
-  RouterSimM.IO -> TransceiverC.Transceiver[AM_ROUTER];
-  Router = RouterSimM;
+  Main.StdControl -> RouterStaticM;
+  RouterStaticM.IO -> TransceiverC.Transceiver[AM_ROUTER];
+  Router = RouterStaticM;
   
+#ifdef CC2420
   /*** CC2420 ***/
   UnicastM.TransControl -> CC2420RadioC.StdControl;
   UnicastM.MacControl -> CC2420RadioC;
   UnicastM.CC2420Control -> CC2420RadioC;
+#endif
 }

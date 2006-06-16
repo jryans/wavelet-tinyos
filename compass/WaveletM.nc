@@ -63,16 +63,15 @@ implementation
   };
   
   uint8_t nextState;
-#ifdef DIAG
+#ifdef RAW
   float rawVals[WT_SENSORS];
 #endif
     
   /*** Internal Functions ***/
   task void runState();
-  void readSensors();
   uint8_t nextWaveletLevel();
   void sendResultsToBase();
-#ifdef DIAG
+#ifdef RAW
   void sendRawToBase();
 #endif
   void sendValuesToNeighbors();
@@ -102,8 +101,7 @@ implementation
       case S_READING_SENSORS: {
         dbg(DBG_USR2, "DS: %i, Reading sensors...\n", dataSet);
         delayState();
-        readSensors();     
-        call State.toIdle();
+        call SensorData.readSensors();
         break; }
       case S_UPDATING: {
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Sending values to predict nodes...\n",
@@ -136,12 +134,11 @@ implementation
         call State.toIdle();
         break; }
       case S_DONE: {
-#ifdef DIAG
+#ifdef RAW
         dbg(DBG_USR2, "Diag: DS: %i, Sending raw values to base...\n", dataSet);
         sendRawToBase();
 #endif   
-        call Leds.yellowOff();
-        call Leds.greenOn();
+        call Leds.redOn();
         dbg(DBG_USR2, "Done: DS: %i, Sending final values to base...\n", dataSet);
         sendResultsToBase();
         call State.toIdle();
@@ -192,17 +189,6 @@ implementation
     call StateTimer.start(TIMER_ONE_SHOT, delay);
   }
   
-  void readSensors() {
-    RawData newVals = call SensorData.readSensors();
-    uint8_t i;
-    for (i = 0; i < WT_SENSORS; i++) {
-      level[0].nb[0].data.value[i] = newVals.value[i];
-#ifdef DIAG
-      rawVals[i] = newVals.value[i];
-#endif      
-    }
-  }
-  
   uint8_t nextWaveletLevel() {
     uint8_t newState, i;
     (curLevel + 1 == numLevels) ? newState = S_DONE 
@@ -227,7 +213,7 @@ implementation
     call Message.send(msg);
   }
   
-#ifdef DIAG  
+#ifdef RAW  
   void sendRawToBase() {
     msgData msg;
     uint8_t i;
@@ -259,7 +245,6 @@ implementation
             dataSet, curLevel + 1, msg.dest);
       }
       call Message.send(msg);
-      call Leds.greenOn();
     }
   }
   
@@ -304,6 +289,17 @@ implementation
     return SUCCESS;
   }
   
+  event void SensorData.readDone(RawData newVals) {
+    uint8_t i;
+    for (i = 0; i < WT_SENSORS; i++) {
+      level[0].nb[0].data.value[i] = newVals.value[i];
+#ifdef RAW
+      rawVals[i] = newVals.value[i];
+#endif      
+    }
+    call State.toIdle();
+  }
+  
   event result_t WaveletConfig.configDone(WaveletLevel *configData,
                                           uint8_t lvlCount, result_t result) {
     if (result == SUCCESS) {
@@ -319,10 +315,10 @@ implementation
   
   /**
    * sendDone is signaled when the send has completed
+   * TODO: Could be improved, doesn't respond for all messages.
    */
   event result_t Message.sendDone(msgData msg, result_t result) {
     if (msg.type == WAVELETDATA) {
-      call Leds.greenOff();
       switch (call State.getState()) {
         case S_UPDATING: {
           if (result == FAIL)
@@ -414,7 +410,6 @@ implementation
   event result_t StateTimer.fired() {
     if (call State.requestState(nextState) == FAIL) {
       dbg(DBG_USR2, "Wavelet: Not enough time before moving to state %i!\n", nextState);
-      call Leds.redOn(); 
     } else {
       post runState();
     }
@@ -424,7 +419,6 @@ implementation
   void newDataSet() {
     if (call State.requestState(S_START_DATASET) == FAIL) {
       dbg(DBG_USR2, "Wavelet: Data set %i did not finish in time!\n", dataSet);
-      call Leds.redOn();
     } else {
       post runState();
     }

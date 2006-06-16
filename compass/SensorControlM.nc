@@ -3,6 +3,9 @@
 /**
  * This application takes data readings from various sensors,
  * caches their values, and sends out the most recent set of data when requested.
+ * IMPORTANT: Temp and Light must start and stop with each request. If
+ * they are not stopped, the radio will not be able to receive.
+ * TODO: Need to wait for a settling time after starting a sensor?
  * @author The Moters
  * @author Ryan Stinnett
  */
@@ -27,8 +30,10 @@ module SensorControlM {
 }
 
 implementation {
-  uint16_t last_val[NUM_SENSORS];
+  uint8_t sensToGo;
+  RawData curData;
   task void readData();
+  task void dataDone();
   
   command result_t StdControl.init() {
     if (TOS_LOCAL_ADDRESS != 0) {
@@ -40,21 +45,13 @@ implementation {
   }
 
   command result_t StdControl.start() {
-    if (TOS_LOCAL_ADDRESS != 0) {
-      call TempControl.start();
-      call LightControl.start();
+    if (TOS_LOCAL_ADDRESS != 0)
       call VoltControl.start();
-
-      call Timer.start(TIMER_REPEAT, SAMPLE_TIME);
-      post readData();
-    }
     return SUCCESS;
   }
 
   command result_t StdControl.stop() {
     if (TOS_LOCAL_ADDRESS != 0) {
-      call Timer.stop();
-    
       call TempControl.stop();
       call LightControl.stop();
       call VoltControl.stop();
@@ -63,52 +60,66 @@ implementation {
   }
  
   /**
-   * Each time the timer fires, a new set of values is read to the cache. This
-   * means that the samples will be delayed by at most SAMPLE_TIME ms.
+   * Each time an application requests new measurements, this task
+   * is posted to start the dormant sensors and read their values.
    */
-  event result_t Timer.fired()
-  {  
-    post readData();
-    return SUCCESS;
-  }
-  
   task void readData() {
+    call TempControl.start();
+    call LightControl.start();
     call TempADC.getData();
     call LightADC.getData();
     call VoltADC.getData();
   }
   
   /**
-   * Requests new data from the sensor system
-   * @return Struct containing the requested values
+   * Requests new data from the sensor system.
    */
-  command RawData SensorData.readSensors() {
-  	RawData newVals;
-  	uint8_t i;
-  	atomic { // Sensors report data with async events, could alter cache
-  	  for (i = 0; i <= NUM_SENSORS - 1; i++)
-        newVals.value[i] = last_val[i];
-        dbg(DBG_USR1, "Values read from sensors: Light = %i, Temp = %i, Volt = %i\n",
-            (int)last_val[LIGHT], (int)last_val[TEMP], (int)last_val[VOLT]);
+  command void SensorData.readSensors() {
+  	call Leds.redOn();
+  	atomic { sensToGo = NUM_SENSORS; }
+  	post readData();
     }
-    return newVals;
+  
+  /**
+   * When the last sensor finished sampling, it posts this task
+   * which pass the new data up to applications.
+   */
+  task void dataDone() {
+    call TempControl.stop();
+    call LightControl.stop();
+    dbg(DBG_USR1, "Values read from sensors: Light = %i, Temp = %i, Volt = %i\n",
+        curData.value[LIGHT], curData.value[TEMP], curData.value[VOLT]);
+    call Leds.redOff();
+    atomic { signal SensorData.readDone(curData); }
   }
 
   async event result_t TempADC.dataReady(uint16_t data)
   {
-    last_val[TEMP] = data;
+    atomic {
+      curData.value[TEMP] = data;
+      if (--sensToGo == 0)
+        post dataDone();
+    }
     return SUCCESS;
   }
  
   async event result_t LightADC.dataReady(uint16_t data)
   {
-    last_val[LIGHT] = data; 
+    atomic {
+      curData.value[LIGHT] = data; 
+      if (--sensToGo == 0)
+        post dataDone();
+    }
     return SUCCESS;
   }
 
   async event result_t VoltADC.dataReady(uint16_t data)
   {
-    last_val[VOLT] = data; 
+    atomic {
+      curData.value[VOLT] = data; 
+      if (--sensToGo == 0)
+        post dataDone();
+    }
     return SUCCESS;
   }
 }

@@ -1,5 +1,6 @@
-/*
+/**
  * Combines various I/O packets into a generic type and defines routing constants.
+ * @author Ryan Stinnett
  */
 
 #ifndef _IOPACK_H

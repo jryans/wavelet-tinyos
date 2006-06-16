@@ -7,8 +7,14 @@ includes RawData;
 
 interface SensorData {
 	/**
-	 * Requests new data from the sensor system
-	 * @return Struct containing the requested values
+	 * Requests new data from the sensor system.
 	 */
-	command RawData readSensors();
+	command void readSensors();
+	
+	/**
+	 * When the sensors are done, this event returns the requested data
+	 * to applications.
+	 * @param data Struct containing the requested values
+	 */
+	event void readDone(RawData data);
 }

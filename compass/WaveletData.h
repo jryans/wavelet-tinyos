@@ -1,7 +1,8 @@
-/*
+/**
  * Defines various datatypes and constants used by the wavelet
  * application, including packets for obtaining configuration
  * data over the network.  Getting to be a bit struct-crazy...
+ * @author Ryan Stinnett
  */
 
 #ifndef _WAVELETDATA_H

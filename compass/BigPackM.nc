@@ -9,6 +9,9 @@ module BigPackM {
   uses {
     interface Message;
     interface Timer as MsgRepeat;
+#ifdef BEEP
+    interface Beep;
+#endif
   }
   provides {
     interface WaveletConfig;
@@ -80,10 +83,9 @@ implementation {
    * Sends standard ACK by returning the message that was sent
    */
   void sendAck(msgData msg) {
-    //dbg(DBG_USR2, "BigPack: Sent ack\n");
     msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = 0;
-    repeatSend(msg, 5000); 
+    repeatSend(msg, 3000); 
   }
   
   /**
@@ -91,14 +93,22 @@ implementation {
    */
   result_t allocWavelet() {
     uint8_t level;
-    if ((pLevel = malloc(numLevels * sizeof(WaveletLevel))) == NULL)
+    if ((pLevel = malloc(numLevels * sizeof(WaveletLevel))) == NULL) {
+#ifdef BEEP
+      call Beep.play(1, 250);
+#endif
       return FAIL;
+    }
     for (level = 0; level < numLevels; level++) {
       pLevel[level].nbCount = nbCount[level];
       if ((pLevel[level].nb = 
            malloc(nbCount[level] * sizeof(WaveletNeighbor)))
-          == NULL)
+          == NULL) {
+#ifdef BEEP
+        call Beep.play(2, 250);
+#endif
         return FAIL;
+    }
     }
     return SUCCESS;
   }
@@ -122,8 +132,6 @@ implementation {
     uint8_t mote;
     WaveletNeighbor *pNB;
     for (mote = 0; mote < conf->moteCount; mote++) {
-//      memcpy(&pLevel[curLevel].nb[curPackNum * WT_MI_PER_CONFDATA + mote].info, 
-//             &conf->info[mote], sizeof(MoteInfo));
       pNB = &pLevel[curLevel].nb[curPackNum * WT_MOTE_PER_CONFDATA + mote];
       pNB->info.id = conf->moteConf[mote].id;
       pNB->info.coeff = conf->moteConf[mote].coeff;
@@ -177,6 +185,9 @@ implementation {
         activeRequest = TRUE;
         numLevels = msg.data.wConfHeader.numLevels;
         if ((nbCount = malloc(numLevels * sizeof(uint8_t))) == NULL) {
+#ifdef BEEP
+          call Beep.play(3, 250);
+#endif
           dbg(DBG_USR2, "BigPack: Couldn't allocate nbCount!\n");
           return;
         }
@@ -194,6 +205,7 @@ implementation {
         if (activeRequest) {
           // Turn off message repeat
           call MsgRepeat.stop();
+          // Store new config data
           conf = &msg.data.wConfData;
           if ((curLevel == conf->level) && (curPackNum == conf->packNum)) {
             dbg(DBG_USR2, "BigPack: Rcvd wavelet level %i pack %i\n", 

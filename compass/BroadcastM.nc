@@ -36,6 +36,11 @@
  * I converted the TinyOS library Bcast to a version that makes use of the
  * Transceiver library and makes use of its queue abilities, rather than
  * implementing another one of its own.
+ * TODO: Remove back-to-back repeats.  Simple idea: save message,
+ * repeat a few times with timers.  Use sounder if Tranceiver needs more
+ * message slots.
+ * From Ray: If you know neighbors, repeat bcasts until neighbors repeat
+ * them back to you (prob give up after N tries or M ms)
  * @author Ryan Stinnett
  */
 
@@ -44,42 +49,41 @@ includes IOPack;
 
 module BroadcastM {
   provides {
-    interface StdControl;
     interface Message;
   }
-  uses interface Transceiver as IO;
+  uses {
+    interface Transceiver as IO;
+    interface Leds;
+    interface Timer as Repeat;
+#ifdef BEEP
+    interface Beep;
+#endif
+  }
 }
 
 implementation {
   
-  #if 0
+#if 0 // TinyOS Plugin Workaround
   typedef uint8_t bPack;
   #endif
 
-  int16_t bcastSeqno;
+  int16_t bcastSeqno = 0;
   TOS_MsgPtr tmpPtr;
+  bPack sendData;
+  uint8_t curRepsLeft;
   uint8_t len = sizeof(bPack);
 
-  /***********************************************************************
-   * Initialization 
-   ***********************************************************************/
+  /*** Internal Functions ***/
 
-  void initialize() {
-    bcastSeqno = 0;
-  }
-
-  /***********************************************************************
-   * Internal functions
-   ***********************************************************************/
-
-  bool newBcast(int16_t proposed) {
-    /*	This handles sequence space wrap-around. Overlow/Underflow makes
+  /** 
+   * This handles sequence space wrap-around. Overlow/Underflow makes
      * the result below correct ( -, 0, + ) for any a, b in the sequence
      * space. Results:	result	implies
      *			  - 	 a < b
      *			  0 	 a = b
      *			  + 	 a > b
      */
+  bool newBcast(int16_t proposed) {
     if ((proposed - bcastSeqno) > 0) {
       bcastSeqno++;
       return TRUE;
@@ -88,23 +92,29 @@ implementation {
     }
   }
 
-  /* Each unique broadcast wave is signaled to application and
-   * rebroadcast once.
+  /**
+   * Each unique broadcast wave is signaled to applications once, but
+   * may be rebroadcast multiple times to ensure reception.
    */
-  void FwdBcast(bPack *pRcvMsg, uint8_t repeatsLeft) {
+  void fwdBcast() {
     bPack *pFwdMsg;
     if ((tmpPtr = call IO.requestWrite()) != NULL) { // Gets a new TOS_MsgPtr
       pFwdMsg = (bPack *)tmpPtr->data;
     } else {
-      dbg(DBG_USR1, "Bcast: Couldn't get a new TOS_MsgPtr! (seqno 0x%x)\n", pRcvMsg->seqno);
+      // If we're out of free messages, try increasing MAX_TOS_MSGS
+#ifdef BEEP
+      call Beep.play(3, 250);
+#endif
+      dbg(DBG_USR1, "Bcast: Couldn't get a new TOS_MsgPtr! (seqno 0x%x)\n", sendData.seqno);
       return;
     }
-    memcpy(pFwdMsg,pRcvMsg,len);  
+    curRepsLeft--;
+    *pFwdMsg = sendData; 
     dbg(DBG_USR1, "Bcast: FwdMsg (seqno 0x%x) sending, %i repeats left...\n", 
-        pFwdMsg->seqno, repeatsLeft);
+        pFwdMsg->seqno, curRepsLeft);
     call IO.sendRadio(TOS_BCAST_ADDR, len); 
-    if (repeatsLeft > 0)
-      FwdBcast(pFwdMsg, repeatsLeft - 1);
+    if (curRepsLeft > 0)
+      call Repeat.start(TIMER_ONE_SHOT, BCAST_REP_DELAY);
   }
   
   /**
@@ -112,29 +122,25 @@ implementation {
    */
   TOS_MsgPtr receive(TOS_MsgPtr pMsg) {
     bPack *pBCMsg = (bPack *)pMsg->data;
-    dbg(DBG_USR1, "Bcast: Msg rcvd, seq 0x%02x\n", pBCMsg->seqno);
     if (newBcast(pBCMsg->seqno)) {
-      FwdBcast(pBCMsg, BCAST_REPEATS);
+      dbg(DBG_USR1, "Bcast: Msg rcvd, seq 0x%02x\n", pBCMsg->seqno);
+      sendData = *pBCMsg;
+      curRepsLeft = BCAST_REPEATS;
+      fwdBcast();
       if (TOS_LOCAL_ADDRESS != 0)
         signal Message.receive(pBCMsg->data);
     }
     return pMsg;
   }
 
-  /***********************************************************************
-   * Commands and events
-   ***********************************************************************/
+  /*** Commands and Events ***/
 
-  command result_t StdControl.init() {
-    initialize();
-    return SUCCESS;
-  }
-
-  command result_t StdControl.start() {
-    return SUCCESS;
-  }
-
-  command result_t StdControl.stop() {
+  /**
+   * After a delay of BCAST_REP_DELAY bms, a broadcast message
+   * is repeat to ensure neighbors receive it.
+   */
+  event result_t Repeat.fired() {
+    fwdBcast();
     return SUCCESS;
   }
 
@@ -192,6 +198,4 @@ implementation {
     return receive(m);	
   }
 }
-
-
 

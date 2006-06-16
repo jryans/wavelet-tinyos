@@ -1,5 +1,6 @@
-/*
+/**
  * A static sensor list is used to assign array slot of each sensor.
+ * @author Ryan Stinnett
  */
 
 #ifndef _SENSORS_H
@@ -16,11 +17,6 @@ enum {
 enum {
   NUM_SENSORS = 3,
   WT_SENSORS = 2
-};
-
-// Time between sensor samples in binary ms (1/1024 s)
-enum {
-	SAMPLE_TIME = 512
 };
 
 #endif // _SENSORS_H

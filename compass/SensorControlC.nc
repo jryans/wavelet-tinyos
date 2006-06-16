@@ -1,8 +1,8 @@
 // Portions of this code created by The Moters (Fall 2005 - Spring 2006)
 
 /**
- * This application takes data readings from various sensors,
- * caches their values, and sends out the most recent set of data when requested.
+ * This application takes data readings from various sensors when requested
+ * and sends back the values when they arrive.
  * @author The Moters
  * @author Ryan Stinnett
  */
@@ -12,7 +12,7 @@ configuration SensorControlC {
 }
 
 implementation {
-  components SensorControlM, PhotoTemp, Voltage, Main, TimerC;
+  components SensorControlM, PhotoTemp, Voltage, Main;
 
   SensorData = SensorControlM;
   Main.StdControl -> SensorControlM;
@@ -22,5 +22,4 @@ implementation {
   SensorControlM.LightControl -> PhotoTemp.PhotoStdControl;
   SensorControlM.TempControl -> PhotoTemp.TempStdControl; 
   SensorControlM.VoltControl -> Voltage.StdControl;
-  SensorControlM.Timer -> TimerC.Timer[unique("Timer")];
 }

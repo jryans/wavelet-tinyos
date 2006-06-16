@@ -1,5 +1,6 @@
-/*
+/**
  * Defines a datatype to carry raw sensor values called RawData.
+ * @author Ryan Stinnett
  */
  
 #ifndef _RAWDATA_H

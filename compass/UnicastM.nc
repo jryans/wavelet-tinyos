@@ -14,34 +14,45 @@ module UnicastM {
     interface StdControl;
   }
   uses {
+#ifdef CC2420
     interface StdControl as TransControl;
     interface CC2420Control;
     interface MacControl;
+#endif
     interface Transceiver as IO;
     interface Router;
+    interface Leds;
+#ifdef BEEP
+    interface Beep;
+#endif
   }
 }
 
 implementation {
-  #if 0
+#if 0 // TinyOS Plugin Workaround
   typedef uint8_t uPack;
   #endif
 
   TOS_MsgPtr tmpPtr;
   uint8_t len = sizeof(uPack);
 
-  /***********************************************************************
-   * Internal functions
-   ***********************************************************************/
+  /*** Internal Functions ***/
 
+  /**
+   * Requests a new TOS_MsgPtr.
+   */ 
   result_t newMsg() {
-    if ((tmpPtr = call IO.requestWrite()) == NULL) // Gets a new TOS_MsgPtr
+    if ((tmpPtr = call IO.requestWrite()) == NULL) {
       return FAIL;
+#ifdef BEEP
+      call Beep.play(3, 250);
+#endif
+    }
     return SUCCESS;
   }
   
   /**
-   * Forwards packets destined for the UART
+   * Forwards packets destined for the UART.
    */
   void fwdUart(uPack *pRcvPack) {
     uPack *pFwdPack;
@@ -57,7 +68,7 @@ implementation {
   }
   
   /**
-   * Forwards packets for a different mote to their next hop
+   * Forwards packets for a different mote to their next hop.
    */
   void fwdNextHop(uPack *pRcvPack, uint8_t retries) {
     uPack *pFwdPack;
@@ -70,12 +81,15 @@ implementation {
     }
     memcpy(pFwdPack,pRcvPack,len);
     //pFwdPack->hops++;
-    pFwdPack->retriesLeft = retries;
+    pFwdPack->retriesLeft = retries - 1;
     nextHop = call Router.getNextAddr(pFwdPack->data.dest);
     dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwding to %i, %i retries left...\n", 
         TOS_LOCAL_ADDRESS, pFwdPack->data.src, pFwdPack->data.dest, nextHop, retries);
-    if (call IO.sendRadio(nextHop, len) == FAIL)
+    if (call IO.sendRadio(nextHop, len) == FAIL) {
       dbg(DBG_USR2, "Ucast: sendRadio failed!");
+    } else {
+      call Leds.greenOn(); 
+    }
   }
   
   /**
@@ -97,24 +111,29 @@ implementation {
     return pMsg;
   }
 
-  /***********************************************************************
-   * Commands and events
-   ***********************************************************************/
+  /*** Commands and Events ***/
 
   command result_t StdControl.init() {
+#ifdef CC2420
     call TransControl.init();
+#endif
     return SUCCESS;
   }
 
   command result_t StdControl.start() {
+#ifdef CC2420
     call TransControl.start();
-    call CC2420Control.SetRFPower(31);
+    // TODO: Test effects of following setting from diff distances
+    //call CC2420Control.SetRFPower(31);
     call MacControl.enableAck();
+#endif
     return SUCCESS;
   }
 
   command result_t StdControl.stop() {
+#ifdef CC2420
     call TransControl.stop();
+#endif
     return SUCCESS;
   }
   
@@ -143,16 +162,23 @@ implementation {
   event result_t IO.radioSendDone(TOS_MsgPtr m, result_t result) {
     uPack *pPack = (uPack *)m->data;
     uint8_t tmpRetries;
-    if (result == SUCCESS) {  
+    call Leds.greenOff();
+    // Yes, ACKs work *currently*...  Stop checking them!
+    //(m->ack == 1) ? (call Leds.yellowOn()) : (call Leds.yellowOff());
+    if ((result == SUCCESS) && (m->ack == 1)) {  
       dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwd to %i succeeded\n", 
           TOS_LOCAL_ADDRESS, pPack->data.src, pPack->data.dest, m->addr);
       if (pPack->data.src == TOS_LOCAL_ADDRESS)
         signal Message.sendDone(pPack->data, SUCCESS);
     } else {
+      // Either we got FAIL or there was no ACK
       tmpRetries = pPack->retriesLeft;
       if (tmpRetries > 0) {
-        fwdNextHop(pPack, tmpRetries - 1);
+        fwdNextHop(pPack, tmpRetries);
       } else {
+#ifdef BEEP
+        //call Beep.play(2, 250);
+#endif
         dbg(DBG_USR2, "Ucast: Mote: %i, Src: %i, Dest: %i, fwd to %i failed!\n", 
           TOS_LOCAL_ADDRESS, pPack->data.src, pPack->data.dest, m->addr);
         if (pPack->data.src == TOS_LOCAL_ADDRESS)
