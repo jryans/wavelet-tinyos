@@ -96,8 +96,11 @@ implementation
         curLevel = 0;
         dataSet++;
         dbg(DBG_USR2, "DS: %i, Starting data set...\n", dataSet);
-        call State.forceState(S_READING_SENSORS);
-        post runState();
+        // If a message is received while reading the sensors,
+        // temperature values will be way off.  Using state delays
+        // on both sides of the sensor reading work around this.
+        delayState();
+        call State.toIdle();
         break; }
       case S_READING_SENSORS: {
         dbg(DBG_USR2, "DS: %i, Reading sensors...\n", dataSet);
@@ -165,6 +168,10 @@ implementation
   void delayState() {
     uint32_t delay;
     switch (call State.getState()) {
+    case S_START_DATASET: {
+      nextState = S_READING_SENSORS;
+      delay = 2000;
+      break; }  
     case S_READING_SENSORS: {
       nextState = level[curLevel].nb[0].data.state;
       (nextState == S_UPDATING) ? (delay = 4000)
