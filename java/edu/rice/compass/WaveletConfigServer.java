@@ -8,6 +8,7 @@ package edu.rice.compass;
 import net.tinyos.message.*;
 import java.io.*;
 import java.beans.*;
+import java.util.*;
 
 public class WaveletConfigServer implements MessageListener {
 
@@ -36,11 +37,14 @@ public class WaveletConfigServer implements MessageListener {
 	static final short TEMP = 0;
 	static final short LIGHT = 1;
 	static final short WT_SENSORS = 2;
-	private static int dataDone;
+	private static int resultsDone;
+	private static int rawDone;
 	private static MoteData mData;
 	private static long setLength;
 	private static int numSets;
 	private static int curSet;
+	private Timer setTimer = new Timer();
+	private SetTracker setTracker = new SetTracker();
 
 	public static void main(String[] args) throws IOException,
 			ClassNotFoundException {
@@ -61,7 +65,7 @@ public class WaveletConfigServer implements MessageListener {
 			System.exit(0);
 		} else if (args[0].equals("prog")) {
 			if ((args.length > 3) && (args[3].equals("clear"))) {
-			  moteSend = new MoteSend(true);
+				moteSend = new MoteSend(true);
 			} else {
 				moteSend = new MoteSend(false);
 			}
@@ -82,7 +86,8 @@ public class WaveletConfigServer implements MessageListener {
 			// Init data collection
 			curSet = 0;
 			mData = new MoteData(numSets, WT_SENSORS, mote.length);
-			dataDone = wc.mScale.length;
+			resultsDone = wc.mScale.length;
+			rawDone = wc.mScale.length;
 			// Setup data listener
 			moteListen.registerListener(new UnicastPack(), new WaveletConfigServer());
 			System.out.println("Ready to hear from motes...");
@@ -142,7 +147,9 @@ public class WaveletConfigServer implements MessageListener {
 						try {
 							startSent = true;
 							startDataSet();
-							System.out.println("Last mote was " + id + ", sent start command");
+							System.out
+									.println("Last mote was " + id + ", sent start command");
+							setTimer.scheduleAtFixedRate(setTracker, setLength / 1024 * 1000, setLength / 1024 * 1000);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -152,33 +159,45 @@ public class WaveletConfigServer implements MessageListener {
 			break;
 		case WAVELETDATA:
 			if (pack.get_data_data_wData_state() == S_DONE) {
-				mData.value[curSet][TEMP * 2 + 1][id - 1] = pack.getElement_data_data_wData_value(TEMP);
-				mData.value[curSet][LIGHT * 2 + 1][id - 1] = pack.getElement_data_data_wData_value(LIGHT);
-				if (--dataDone == 0)
-					nextSet();
+				mData.value[curSet][TEMP * 2 + 1][id - 1] = pack
+						.getElement_data_data_wData_value(TEMP);
+				mData.value[curSet][LIGHT * 2 + 1][id - 1] = pack
+						.getElement_data_data_wData_value(LIGHT);
+				System.out.println("Got wavelet data from mote " + id);
+				resultsDone--;
 			} else if (pack.get_data_data_wData_state() == S_RAW) {
-				mData.value[curSet][TEMP * 2][id - 1] = pack.getElement_data_data_wData_value(TEMP);
-				mData.value[curSet][LIGHT * 2][id - 1] = pack.getElement_data_data_wData_value(LIGHT);
+				mData.value[curSet][TEMP * 2][id - 1] = pack
+						.getElement_data_data_wData_value(TEMP);
+				mData.value[curSet][LIGHT * 2][id - 1] = pack
+						.getElement_data_data_wData_value(LIGHT);
+				System.out.println("Got raw data from mote " + id);
+				rawDone--;
 			}
 			break;
 		}
 	}
-	
-	private void nextSet() {
-		System.out.println("Data set " + (curSet + 1) + " complete!");
+
+	static void nextSet() {
+		if (resultsDone <= 0 && rawDone <= 0) {
+			System.out.println("Data set " + (curSet + 1) + " complete!");
+		} else {
+			System.out.println("Data set " + (curSet + 1) + " incomplete, missing "
+					+ rawDone + " raw and " + resultsDone + " wavelet.");
+		}
 		if (++curSet < numSets) {
-			dataDone = wc.mScale.length;
+			resultsDone = wc.mScale.length;
+			rawDone = wc.mScale.length;
 		} else {
 			saveData();
 		}
 	}
 
-	private void saveData() {
+	private static void saveData() {
 		// Fixed path name for now
 		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletData.xml";
 		try {
 			FileOutputStream fs = new FileOutputStream(path);
-			//XMLEncoder obj = new XMLEncoder(fs);
+			// XMLEncoder obj = new XMLEncoder(fs);
 			ObjectOutputStream obj = new ObjectOutputStream(fs);
 			obj.writeObject(mData);
 			obj.close();
@@ -189,7 +208,7 @@ public class WaveletConfigServer implements MessageListener {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private static void forceStartup() {
 		BroadcastPack pack = new BroadcastPack();
 		pack.set_data_type(WAVELETSTATE);
@@ -200,7 +219,7 @@ public class WaveletConfigServer implements MessageListener {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private static void forceStop() {
 		BroadcastPack pack = new BroadcastPack();
 		pack.set_data_type(WAVELETSTATE);
@@ -222,6 +241,14 @@ public class WaveletConfigServer implements MessageListener {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+}
+
+class SetTracker extends TimerTask {
+
+	public void run() {
+		WaveletConfigServer.nextSet();
 	}
 
 }
