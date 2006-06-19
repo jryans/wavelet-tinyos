@@ -18,6 +18,9 @@ module WaveletM
     interface Router;
     interface Leds;
     interface SensorData;
+#ifdef BEEP
+    interface Beep;
+#endif
     
     /*** State Management ***/
     interface State;
@@ -170,34 +173,34 @@ implementation
     switch (call State.getState()) {
     case S_START_DATASET: {
       nextState = S_READING_SENSORS;
-      delay = 2000;
+      delay = 1000;
       break; }  
     case S_READING_SENSORS: {
       nextState = level[curLevel].nb[0].data.state;
-      (nextState == S_UPDATING) ? (delay = 4000)
-                                : (delay = 2000);
+      (nextState == S_UPDATING) ? (delay = 1000)
+                                : (delay = 500);
       break; }
     case S_UPDATING: {
       nextState = S_UPDATED;
-      delay = 8000;
+      delay = 2500;
       break; }
     case S_PREDICTING: {
       nextState = S_PREDICTED;
-      delay = 5000;
+      delay = 1500;
       break; }
     case S_PREDICTED: {
       nextState = S_DONE;
-      delay = 4000;
+      delay = 1000;
       break; }
     case S_UPDATED: {
       nextState = nextWaveletLevel();
-      (nextState == S_UPDATING) ? (delay = 4000)
-                                : (delay = 2000);
+      (nextState == S_UPDATING) ? (delay = 1000)
+                                : (delay = 500);
       break; }
     case S_SKIPLEVEL: {
       nextState = nextWaveletLevel();
-      (nextState == S_UPDATING) ? (delay = 14000)
-                                : (delay = 12000);
+      (nextState == S_UPDATING) ? (delay = 4000)
+                                : (delay = 3500);
       break; }
     }
     call StateTimer.start(TIMER_ONE_SHOT, delay);
@@ -425,6 +428,9 @@ implementation
   event result_t StateTimer.fired() {
     if (call State.requestState(nextState) == FAIL) {
       dbg(DBG_USR2, "Wavelet: Not enough time before moving to state %i!\n", nextState);
+#ifdef BEEP
+      call Beep.play(1, 250);
+#endif
     } else {
       post runState();
     }
@@ -437,6 +443,9 @@ implementation
   void newDataSet() {
     if (call State.requestState(S_START_DATASET) == FAIL) {
       dbg(DBG_USR2, "Wavelet: Data set %i did not finish in time!\n", dataSet);
+#ifdef BEEP
+      call Beep.play(1, 250);
+#endif
     } else {
       post runState();
     }

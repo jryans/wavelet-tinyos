@@ -17,7 +17,7 @@ struct BroadcastPack {
 typedef struct BroadcastPack bPack;
 
 enum {
-  BCAST_REP_DELAY = 300,
+  BCAST_REP_DELAY = 200,
   BCAST_REPEATS = 3
 };
 

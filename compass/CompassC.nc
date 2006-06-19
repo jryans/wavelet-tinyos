@@ -35,6 +35,9 @@ implementation {
   Main.StdControl -> WaveletM;
   WaveletM.Leds -> LedsC;
   WaveletM.SensorData -> SensorControlC;
+#ifdef BEEP
+  WaveletM.Beep -> BeepC;
+#endif  
   
   /*** Timer: enforces time-based control ***/
   Main.StdControl -> TimerC;

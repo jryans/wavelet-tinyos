@@ -7,7 +7,7 @@ CFLAGS += -I%T/lib/State
 CFLAGS += -DMAX_TOS_MSGS=15
 
 # Adds (annoying) beeps to indicate various errors
-#CFLAGS += -DBEEP
+CFLAGS += -DBEEP
 
 # Transmits raw values back to base for comparison
 CFLAGS += -DRAW
