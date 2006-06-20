@@ -11,27 +11,25 @@ public class WaveletMote {
 
 	private int id; // ID number of the mote represented
 
-	static final short WT_MOTE_PER_CONFDATA = 3;
-
-	// Possible States
-	static final short S_PREDICTING = 5;
-	static final short S_UPDATING = 4;
-	static final short S_SKIPLEVEL = 9;
-	static final short S_DONE = 10;
-
 	short state[]; // Mote's state at each scale level that it is used in
 	// This could easily be less than total number of levels
 
 	private short nextLevel = 0;
 	private short nextPack = 0;
-	private boolean sending = false;
-
+	//private boolean sending = false;
+	private boolean configDone;
+	
 	// Array indices: nbs[level][nb_index]
 	NeighborInfo neighbors[][]; // Mote's neighbors during each state
+	
+	// Tracks data reception from each mote
+	private boolean rawDone;
+	private boolean resultDone;
 
 	public WaveletMote(int id, WaveletConfig wc) {
 		this.id = id;
-		sending = true;
+		//sending = true;
+		configDone = false;
 		dataTransform(wc);
 	}
 
@@ -66,7 +64,7 @@ public class WaveletMote {
 		// its last level. Otherwise, we find the last level it updates.
 		if (predLevel != 0) {
 			state = new short[predLevel];
-			state[predLevel - 1] = S_PREDICTING;
+			state[predLevel - 1] = Wavelet.S_PREDICTING;
 		} else {
 			for (lastUpdLevel = maxLevel - 1; lastUpdLevel >= 0; lastUpdLevel--) {
 				if (updInfo[lastUpdLevel].size() != 0)
@@ -76,10 +74,10 @@ public class WaveletMote {
 			// Otherwise, we now know how many levels the mote is used in.
 			if (lastUpdLevel < 0) {
 				state = new short[1];
-				state[0] = S_DONE;
+				state[0] = Wavelet.S_DONE;
 			} else {
 				state = new short[lastUpdLevel + 1];
-				state[lastUpdLevel] = S_UPDATING;
+				state[lastUpdLevel] = Wavelet.S_UPDATING;
 			}
 		}
 		// Allocate neighbors array now that the number of states is known
@@ -89,18 +87,18 @@ public class WaveletMote {
 		for (int levelIdx = 0; levelIdx < state.length; levelIdx++) {
 			if (state[levelIdx] == 0) {
 				if (updInfo[levelIdx].size() == 0) {
-					state[levelIdx] = S_SKIPLEVEL;
+					state[levelIdx] = Wavelet.S_SKIPLEVEL;
 				} else {
-					state[levelIdx] = S_UPDATING;
+					state[levelIdx] = Wavelet.S_UPDATING;
 				}
 			}
 			switch (state[levelIdx]) {
-			case S_DONE:
-			case S_SKIPLEVEL:
+			case Wavelet.S_DONE:
+			case Wavelet.S_SKIPLEVEL:
 				// First entry about ourselves
 				neighbors[levelIdx] = new NeighborInfo[] { new NeighborInfo(id, 0) };
 				break;
-			case S_UPDATING:
+			case Wavelet.S_UPDATING:
 				neighbors[levelIdx] = new NeighborInfo[updInfo[levelIdx].size() + 1];
 				// First entry about ourselves
 				neighbors[levelIdx][0] = new NeighborInfo(id, 0);
@@ -113,7 +111,7 @@ public class WaveletMote {
 							(float) nbCoeff[curNb.coeffIndex]);
 				}
 				break;
-			case S_PREDICTING:
+			case Wavelet.S_PREDICTING:
 				double[] predNb = (double[]) wc.mPredNB[id - 1];
 				double[] predCoeff = (double[]) wc.mPredCoeff[id - 1];
 				neighbors[levelIdx] = new NeighborInfo[predNb.length + 1];
@@ -127,16 +125,12 @@ public class WaveletMote {
 		}
 	}
 
-	public boolean isSending() {
-		return sending;
-	}
-
 	public UnicastPack getHeaderPack() {
 		nextLevel = 0;
 		nextPack = 0;
 		UnicastPack nInfo = new UnicastPack();
 		nInfo.set_data_dest(id);
-		nInfo.set_data_type(WaveletConfigServer.WAVELETCONFHEADER);
+		nInfo.set_data_type(Wavelet.WAVELETCONFHEADER);
 		nInfo.set_data_data_wConfHeader_numLevels((short) state.length);
 		for (int lvl = 0; lvl < state.length; lvl++)
 			nInfo.setElement_data_data_wConfHeader_nbCount(lvl,
@@ -146,23 +140,24 @@ public class WaveletMote {
 
 	public UnicastPack getNextDataPack(short nextLevel, short nextPack) {
 		UnicastPack nInfo = new UnicastPack();
-		if (++nextPack * WT_MOTE_PER_CONFDATA >= neighbors[nextLevel].length) {
+		boolean packToSend = true;
+		if (++nextPack * Wavelet.WT_MOTE_PER_CONFDATA >= neighbors[nextLevel].length) {
 			nextPack = 0;
 			if (++nextLevel >= state.length) {
 				nextLevel = 0; // Done!
-				sending = false;
+				packToSend = false;
 			}
 		}
-		if (sending) {
+		if (packToSend) {
 			nInfo.set_data_dest(id);
-			nInfo.set_data_type(WaveletConfigServer.WAVELETCONFDATA);
+			nInfo.set_data_type(Wavelet.WAVELETCONFDATA);
 			nInfo.set_data_data_wConfData_level(nextLevel);
 			nInfo.set_data_data_wConfData_packNum(nextPack);
 			int nb;
-			for (nb = 0; (nextPack * WT_MOTE_PER_CONFDATA + nb < neighbors[nextLevel].length)
-					&& (nb < WT_MOTE_PER_CONFDATA); nb++) {
+			for (nb = 0; (nextPack * Wavelet.WT_MOTE_PER_CONFDATA + nb < neighbors[nextLevel].length)
+					&& (nb < Wavelet.WT_MOTE_PER_CONFDATA); nb++) {
 				NeighborInfo curNb = neighbors[nextLevel][nextPack
-						* WT_MOTE_PER_CONFDATA + nb];
+						* Wavelet.WT_MOTE_PER_CONFDATA + nb];
 				nInfo.setElement_data_data_wConfData_moteConf_id(nb, (short) curNb.id);
 				nInfo.setElement_data_data_wConfData_moteConf_coeff(nb, curNb.coeff);
 				nInfo.setElement_data_data_wConfData_moteConf_state(nb,
@@ -172,37 +167,63 @@ public class WaveletMote {
 		}
 		return nInfo;
 	}
+	
+	public boolean nextPackExists(short nextLevel, short nextPack) {
+		if (++nextPack * Wavelet.WT_MOTE_PER_CONFDATA >= neighbors[nextLevel].length) {
+			nextPack = 0;
+			if (++nextLevel >= state.length) {
+				nextLevel = 0; // Done!
+				return false;
+			}
+		}
+		return true;
+	}
 
 	public UnicastPack getNextDataPack() {
 		UnicastPack nInfo = new UnicastPack();
-		// if (sending) {
 		nInfo.set_data_dest(id);
-		nInfo.set_data_type(WaveletConfigServer.WAVELETCONFDATA);
+		nInfo.set_data_type(Wavelet.WAVELETCONFDATA);
 		nInfo.set_data_data_wConfData_level(nextLevel);
 		nInfo.set_data_data_wConfData_packNum(nextPack);
 		int nb;
-		for (nb = 0; (nextPack * WT_MOTE_PER_CONFDATA + nb < neighbors[nextLevel].length)
-				&& (nb < WT_MOTE_PER_CONFDATA); nb++) {
-			NeighborInfo curNb = neighbors[nextLevel][nextPack * WT_MOTE_PER_CONFDATA
-					+ nb];
+		for (nb = 0; (nextPack * Wavelet.WT_MOTE_PER_CONFDATA + nb < neighbors[nextLevel].length)
+				&& (nb < Wavelet.WT_MOTE_PER_CONFDATA); nb++) {
+			NeighborInfo curNb = neighbors[nextLevel][nextPack
+					* Wavelet.WT_MOTE_PER_CONFDATA + nb];
 			nInfo.setElement_data_data_wConfData_moteConf_id(nb, (short) curNb.id);
 			nInfo.setElement_data_data_wConfData_moteConf_coeff(nb, curNb.coeff);
 			nInfo.setElement_data_data_wConfData_moteConf_state(nb, state[nextLevel]);
 		}
 		nInfo.set_data_data_wConfData_moteCount((short) nb);
-		// }
-		// if (++nextPack * WT_MOTE_PER_CONFDATA >= neighbors[nextLevel].length) {
-		// nextPack = 0;
-		// if (++nextLevel >= state.length) {
-		// nextLevel = 0; // Done!
-		// sending = false;
-		// }
-		// }
 		return nInfo;
 	}
 
 	public String toString() {
 		return state.toString() + "/n" + neighbors.toString();
+	}
+
+	public boolean isRawDone() {
+		return rawDone;
+	}
+
+	public void setRawDone(boolean rawDone) {
+		this.rawDone = rawDone;
+	}
+
+	public boolean isResultDone() {
+		return resultDone;
+	}
+
+	public void setResultDone(boolean resultDone) {
+		this.resultDone = resultDone;
+	}
+
+	public boolean isConfigDone() {
+		return configDone;
+	}
+
+	public void setConfigDone(boolean configDone) {
+		this.configDone = configDone;
 	}
 
 }

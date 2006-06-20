@@ -18,29 +18,9 @@ public class WaveletConfigServer implements MessageListener {
 	private static MoteIF moteListen = new MoteIF();
 	private static MoteSend moteSend;
 
-	/** * Message Types ** */
-	static final short MOTECOMMAND = 0;
-	static final short RAWDATA = 1;
-	static final short WAVELETDATA = 2;
-	static final short WAVELETCONFDATA = 3;
-	static final short WAVELETCONFHEADER = 4;
-	static final short WAVELETSTATE = 5;
-	static final short NETWORKSTATS = 6;
-
-	/** * State Control ** */
-	static final short S_STARTUP = 1;
-	static final short S_START_DATASET = 2;
-	static final short S_DONE = 10;
-	static final short S_OFFLINE = 11;
-	static final short S_RAW = 13;
 	private boolean startSent = false;
 
-	/** * Sensor Data ** */
-	static final short TEMP = 0;
-	static final short LIGHT = 1;
-	static final short WT_SENSORS = 2;
-	private static int resultsDone;
-	private static int rawDone;
+	/* Sensor Data */
 	private static MoteData mData;
 	private static long setLength;
 	private static int numSets;
@@ -75,13 +55,13 @@ public class WaveletConfigServer implements MessageListener {
 		if (config.getBoolean("pack")) {
 			if (args[1].equals("b")) {
 				BroadcastPack tPack = new BroadcastPack();
-				tPack.set_data_type(MOTECOMMAND);
+				tPack.set_data_type(Wavelet.MOTECOMMAND);
 				tPack.set_data_data_moteCmd_cmd((short) Integer.parseInt(args[2]));
 				moteSend.sendPack(tPack);
 			} else if (args[1].equals("u")) {
 				UnicastPack tPack = new UnicastPack();
 				tPack.set_data_dest((short) Integer.parseInt(args[2]));
-				tPack.set_data_type(MOTECOMMAND);
+				tPack.set_data_type(Wavelet.MOTECOMMAND);
 				tPack.set_data_data_moteCmd_cmd((short) Integer.parseInt(args[3]));
 				moteSend.sendPack(tPack);
 			}
@@ -103,16 +83,15 @@ public class WaveletConfigServer implements MessageListener {
 				mote[i] = new WaveletMote(i + 1, wc);
 			// Init data collection
 			curSet = 0;
-			mData = new MoteData(numSets, WT_SENSORS, mote.length);
-			resultsDone = wc.mScale.length;
-			rawDone = wc.mScale.length;
+			mData = new MoteData(numSets, Wavelet.WT_SENSORS, mote.length);
+			clearDataCheck();
 			listen();
 		} else if (config.getBoolean("stats")) {
-			listen();
 			int dest = config.getInt("dest");
 			UnicastPack req = new UnicastPack();
 			req.set_data_dest(dest);
-			req.set_data_type(NETWORKSTATS);
+			req.set_data_type(Wavelet.MOTESTATS);
+			listen();
 			moteSend.sendPack(req);
 			System.out.println("Sent stats request to mote " + dest);
 		}
@@ -124,13 +103,31 @@ public class WaveletConfigServer implements MessageListener {
 		System.out.println("Ready to hear from motes...");
 	}
 
+	private static void clearDataCheck() {
+		for (int i = 0; i < mote.length; i++) {
+			mote[i].setRawDone(false);
+			mote[i].setResultDone(false);
+		}
+	}
+
+	private static int[] dataCheck() {
+		int[] dataCheck = new int[2];
+		for (int i = 0; i < mote.length; i++) {
+			if (!mote[i].isRawDone())
+				dataCheck[Wavelet.RAW_OFFSET]++;
+			if (!mote[i].isResultDone())
+				dataCheck[Wavelet.WT_OFFSET]++;
+		}
+		return dataCheck;
+	}
+
 	public void messageReceived(int to, Message m) {
 		UnicastPack pack = (UnicastPack) m;
 		int id = pack.get_data_src();
 		if (pack.get_data_dest() != 0)
 			return; // This would be quite strange
 		switch (pack.get_data_type()) {
-		case WAVELETCONFHEADER:
+		case Wavelet.WAVELETCONFHEADER:
 			// If true, this is the initial request, else an ACK.
 			if (pack.get_data_data_wConfHeader_numLevels() == 0) {
 				System.out.println("Got header request from mote " + id);
@@ -151,24 +148,28 @@ public class WaveletConfigServer implements MessageListener {
 				}
 			}
 			break;
-		case WAVELETCONFDATA:
+		case Wavelet.WAVELETCONFDATA:
 			System.out.println("Got data ack from mote " + id);
 			// Send the next packet
-			if (mote[id - 1].isSending()) {
-				try {
-					short curPack = pack.get_data_data_wConfData_packNum();
-					short curLevel = pack.get_data_data_wConfData_level();
-					moteSend.sendPack(mote[id - 1].getNextDataPack(curLevel, curPack));
-					System.out.println("Sent data pack to mote " + id);
-				} catch (IOException e) {
-					e.printStackTrace();
+			if (!mote[id - 1].isConfigDone()) {
+				short curLevel = pack.get_data_data_wConfData_level();
+				short curPack = pack.get_data_data_wConfData_packNum();
+				if (mote[id - 1].nextPackExists(curLevel, curPack)) {
+					try {
+						moteSend.sendPack(mote[id - 1].getNextDataPack(curLevel, curPack));
+						System.out.println("Sent data pack to mote " + id);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				} else {
+					mote[id - 1].setConfigDone(true);
+					System.out.println("Config done for mote " + id);
 				}
-			}
-			if (!mote[id - 1].isSending()) {
+			} else {
 				if (!startSent) {
 					boolean done = true;
 					for (int i = 0; i < mote.length; i++) {
-						if (mote[i].isSending()) {
+						if (!mote[i].isConfigDone()) {
 							done = false;
 							break;
 						}
@@ -188,24 +189,24 @@ public class WaveletConfigServer implements MessageListener {
 				}
 			}
 			break;
-		case WAVELETDATA:
-			if (pack.get_data_data_wData_state() == S_DONE) {
-				mData.value[curSet][TEMP * 2 + 1][id - 1] = pack
-						.getElement_data_data_wData_value(TEMP);
-				mData.value[curSet][LIGHT * 2 + 1][id - 1] = pack
-						.getElement_data_data_wData_value(LIGHT);
+		case Wavelet.WAVELETDATA:
+			if (pack.get_data_data_wData_state() == Wavelet.S_DONE) {
+				mData.value[curSet][Wavelet.TEMP * 2 + Wavelet.WT_OFFSET][id - 1] = pack
+						.getElement_data_data_wData_value(Wavelet.TEMP);
+				mData.value[curSet][Wavelet.LIGHT * 2 + Wavelet.WT_OFFSET][id - 1] = pack
+						.getElement_data_data_wData_value(Wavelet.LIGHT);
 				System.out.println("Got wavelet data from mote " + id);
-				resultsDone--;
-			} else if (pack.get_data_data_wData_state() == S_RAW) {
-				mData.value[curSet][TEMP * 2][id - 1] = pack
-						.getElement_data_data_wData_value(TEMP);
-				mData.value[curSet][LIGHT * 2][id - 1] = pack
-						.getElement_data_data_wData_value(LIGHT);
+				mote[id - 1].setResultDone(true);
+			} else if (pack.get_data_data_wData_state() == Wavelet.S_RAW) {
+				mData.value[curSet][Wavelet.TEMP * 2 + Wavelet.RAW_OFFSET][id - 1] = pack
+						.getElement_data_data_wData_value(Wavelet.TEMP);
+				mData.value[curSet][Wavelet.LIGHT * 2 + Wavelet.RAW_OFFSET][id - 1] = pack
+						.getElement_data_data_wData_value(Wavelet.LIGHT);
 				System.out.println("Got raw data from mote " + id);
-				rawDone--;
+				mote[id - 1].setRawDone(true);
 			}
 			break;
-		case NETWORKSTATS:
+		case Wavelet.MOTESTATS:
 			int rcvd = pack.get_data_data_stats_rcvd();
 			int sent = pack.get_data_data_stats_sent();
 			int acked = pack.get_data_data_stats_acked();
@@ -216,20 +217,35 @@ public class WaveletConfigServer implements MessageListener {
 			System.out.println("Sent:      " + sent);
 			System.out.println("ACKed:     " + acked + " (" + (acked * 100 / sent)
 					+ "%)");
+			for (int i = 0; i < pack.get_data_data_stats_numReps(); i++) {
+				System.out.println("Report " + (i + 1) + ":");
+				System.out.print("  Type:  ");
+				switch (pack.getElement_data_data_stats_reports_type(i)) {
+				case Wavelet.WT_CACHE:
+					System.out.println("Cache Hit");
+					System.out.println("  Level: "
+							+ pack.getElement_data_data_stats_reports_data_cache_level(i));
+					System.out.println("  Mote:  "
+							+ pack.getElement_data_data_stats_reports_data_cache_mote(i));
+					break;
+				}
+			}
 			System.exit(0);
+			break;
 		}
 	}
 
 	static void nextSet() {
-		if (resultsDone <= 0 && rawDone <= 0) {
+		int[] check = dataCheck();
+		if (check[Wavelet.RAW_OFFSET] == 0 && check[Wavelet.WT_OFFSET] == 0) {
 			System.out.println("Data set " + (curSet + 1) + " complete!");
 		} else {
 			System.out.println("Data set " + (curSet + 1) + " incomplete, missing "
-					+ rawDone + " raw and " + resultsDone + " wavelet.");
+					+ check[Wavelet.RAW_OFFSET] + " raw and " + check[Wavelet.WT_OFFSET]
+					+ " wavelet.");
 		}
 		if (++curSet < numSets) {
-			resultsDone = wc.mScale.length;
-			rawDone = wc.mScale.length;
+			clearDataCheck();
 		} else {
 			saveData();
 		}
@@ -254,8 +270,8 @@ public class WaveletConfigServer implements MessageListener {
 
 	private static void forceStartup() {
 		BroadcastPack pack = new BroadcastPack();
-		pack.set_data_type(WAVELETSTATE);
-		pack.set_data_data_wState_state(S_STARTUP);
+		pack.set_data_type(Wavelet.WAVELETSTATE);
+		pack.set_data_data_wState_state(Wavelet.S_STARTUP);
 		try {
 			moteSend.sendPack(pack);
 		} catch (IOException e) {
@@ -265,8 +281,8 @@ public class WaveletConfigServer implements MessageListener {
 
 	private static void forceStop() {
 		BroadcastPack pack = new BroadcastPack();
-		pack.set_data_type(WAVELETSTATE);
-		pack.set_data_data_wState_state(S_OFFLINE);
+		pack.set_data_type(Wavelet.WAVELETSTATE);
+		pack.set_data_data_wState_state(Wavelet.S_OFFLINE);
 		try {
 			moteSend.sendPack(pack);
 		} catch (IOException e) {
@@ -276,8 +292,8 @@ public class WaveletConfigServer implements MessageListener {
 
 	private void startDataSet() {
 		BroadcastPack pack = new BroadcastPack();
-		pack.set_data_type(WAVELETSTATE);
-		pack.set_data_data_wState_state(S_START_DATASET);
+		pack.set_data_type(Wavelet.WAVELETSTATE);
+		pack.set_data_data_wState_state(Wavelet.S_START_DATASET);
 		pack.set_data_data_wState_dataSetTime(setLength);
 		try {
 			moteSend.sendPack(pack);

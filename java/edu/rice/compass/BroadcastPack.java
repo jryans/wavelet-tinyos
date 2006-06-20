@@ -9,12 +9,12 @@ package edu.rice.compass;
 public class BroadcastPack extends net.tinyos.message.Message {
 
     /** The default size of this message type in bytes. */
-    public static final int DEFAULT_MESSAGE_SIZE = 28;
+    public static final int DEFAULT_MESSAGE_SIZE = 30;
 
     /** The Active Message type associated with this message. */
     public static final int AM_TYPE = 5;
 
-    /** Create a new BroadcastPack of size 28. */
+    /** Create a new BroadcastPack of size 30. */
     public BroadcastPack() {
         super(DEFAULT_MESSAGE_SIZE);
         amTypeSet(AM_TYPE);
@@ -153,7 +153,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [data.data.wConfHeader.nbCount=";
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 10; i++) {
           s += "0x"+Long.toHexString(getElement_data_data_wConfHeader_nbCount(i) & 0xff)+" ";
         }
         s += "]\n";
@@ -175,6 +175,37 @@ public class BroadcastPack extends net.tinyos.message.Message {
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [data.data.stats.acked=0x"+Long.toHexString(get_data_data_stats_acked())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.stats.numReps=0x"+Long.toHexString(get_data_data_stats_numReps())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.stats.reports.type=";
+        for (int i = 0; i < 2; i++) {
+          s += "0x"+Long.toHexString(getElement_data_data_stats_reports_type(i) & 0xff)+" ";
+        }
+        s += "]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.stats.reports.data.cache.level=";
+        for (int i = 0; i < 2; i++) {
+          s += "0x"+Long.toHexString(getElement_data_data_stats_reports_data_cache_level(i) & 0xff)+" ";
+        }
+        s += "]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.stats.reports.data.cache.mote=";
+        for (int i = 0; i < 2; i++) {
+          s += "0x"+Long.toHexString(getElement_data_data_stats_reports_data_cache_mote(i) & 0xff)+" ";
+        }
+        s += "]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.stats.reports.number=";
+        for (int i = 0; i < 2; i++) {
+          s += "0x"+Long.toHexString(getElement_data_data_stats_reports_number(i) & 0xff)+" ";
+        }
+        s += "]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       return s;
     }
@@ -1527,7 +1558,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
      */
     public static int offset_data_data_wConfHeader_nbCount(int index1) {
         int offset = 64;
-        if (index1 < 0 || index1 >= 3) throw new ArrayIndexOutOfBoundsException();
+        if (index1 < 0 || index1 >= 10) throw new ArrayIndexOutOfBoundsException();
         offset += 0 + index1 * 8;
         return (offset / 8);
     }
@@ -1537,7 +1568,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
      */
     public static int offsetBits_data_data_wConfHeader_nbCount(int index1) {
         int offset = 64;
-        if (index1 < 0 || index1 >= 3) throw new ArrayIndexOutOfBoundsException();
+        if (index1 < 0 || index1 >= 10) throw new ArrayIndexOutOfBoundsException();
         offset += 0 + index1 * 8;
         return offset;
     }
@@ -1546,7 +1577,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * Return the entire array 'data.data.wConfHeader.nbCount' as a short[]
      */
     public short[] get_data_data_wConfHeader_nbCount() {
-        short[] tmp = new short[3];
+        short[] tmp = new short[10];
         for (int index0 = 0; index0 < numElements_data_data_wConfHeader_nbCount(0); index0++) {
             tmp[index0] = getElement_data_data_wConfHeader_nbCount(index0);
         }
@@ -1580,14 +1611,14 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * Return the total size, in bytes, of the array 'data.data.wConfHeader.nbCount'
      */
     public static int totalSize_data_data_wConfHeader_nbCount() {
-        return (24 / 8);
+        return (80 / 8);
     }
 
     /**
      * Return the total size, in bits, of the array 'data.data.wConfHeader.nbCount'
      */
     public static int totalSizeBits_data_data_wConfHeader_nbCount() {
-        return 24;
+        return 80;
     }
 
     /**
@@ -1615,7 +1646,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * Return the number of elements in the array 'data.data.wConfHeader.nbCount'
      */
     public static int numElements_data_data_wConfHeader_nbCount() {
-        return 3;
+        return 10;
     }
 
     /**
@@ -1623,7 +1654,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * for the given dimension.
      */
     public static int numElements_data_data_wConfHeader_nbCount(int dimension) {
-      int array_dims[] = { 3,  };
+      int array_dims[] = { 10,  };
         if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
         if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");
         return array_dims[dimension];
@@ -1645,7 +1676,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * Read the array 'data.data.wConfHeader.nbCount' as a String
      */
     public String getString_data_data_wConfHeader_nbCount() { 
-         char carr[] = new char[Math.min(net.tinyos.message.Message.MAX_CONVERTED_STRING_LENGTH,3)];
+         char carr[] = new char[Math.min(net.tinyos.message.Message.MAX_CONVERTED_STRING_LENGTH,10)];
          int i;
          for (i = 0; i < carr.length; i++) {
              if ((char)getElement_data_data_wConfHeader_nbCount(i) == (char)0) break;
@@ -2030,6 +2061,631 @@ public class BroadcastPack extends net.tinyos.message.Message {
      */
     public static int sizeBits_data_data_stats_acked() {
         return 16;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.stats.numReps
+    //   Field type: short
+    //   Offset (bits): 136
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.stats.numReps' is signed (false).
+     */
+    public static boolean isSigned_data_data_stats_numReps() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.stats.numReps' is an array (false).
+     */
+    public static boolean isArray_data_data_stats_numReps() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.stats.numReps'
+     */
+    public static int offset_data_data_stats_numReps() {
+        return (136 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.stats.numReps'
+     */
+    public static int offsetBits_data_data_stats_numReps() {
+        return 136;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.stats.numReps'
+     */
+    public short get_data_data_stats_numReps() {
+        return (short)getUIntElement(offsetBits_data_data_stats_numReps(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.stats.numReps'
+     */
+    public void set_data_data_stats_numReps(short value) {
+        setUIntElement(offsetBits_data_data_stats_numReps(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.stats.numReps'
+     */
+    public static int size_data_data_stats_numReps() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.stats.numReps'
+     */
+    public static int sizeBits_data_data_stats_numReps() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.stats.reports.type
+    //   Field type: short[]
+    //   Offset (bits): 0
+    //   Size of each element (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.stats.reports.type' is signed (false).
+     */
+    public static boolean isSigned_data_data_stats_reports_type() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.stats.reports.type' is an array (true).
+     */
+    public static boolean isArray_data_data_stats_reports_type() {
+        return true;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.stats.reports.type'
+     */
+    public static int offset_data_data_stats_reports_type(int index1) {
+        int offset = 0;
+        if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
+        offset += 144 + index1 * 48;
+        return (offset / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.stats.reports.type'
+     */
+    public static int offsetBits_data_data_stats_reports_type(int index1) {
+        int offset = 0;
+        if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
+        offset += 144 + index1 * 48;
+        return offset;
+    }
+
+    /**
+     * Return the entire array 'data.data.stats.reports.type' as a short[]
+     */
+    public short[] get_data_data_stats_reports_type() {
+        short[] tmp = new short[2];
+        for (int index0 = 0; index0 < numElements_data_data_stats_reports_type(0); index0++) {
+            tmp[index0] = getElement_data_data_stats_reports_type(index0);
+        }
+        return tmp;
+    }
+
+    /**
+     * Set the contents of the array 'data.data.stats.reports.type' from the given short[]
+     */
+    public void set_data_data_stats_reports_type(short[] value) {
+        for (int index0 = 0; index0 < value.length; index0++) {
+            setElement_data_data_stats_reports_type(index0, value[index0]);
+        }
+    }
+
+    /**
+     * Return an element (as a short) of the array 'data.data.stats.reports.type'
+     */
+    public short getElement_data_data_stats_reports_type(int index1) {
+        return (short)getUIntElement(offsetBits_data_data_stats_reports_type(index1), 8);
+    }
+
+    /**
+     * Set an element of the array 'data.data.stats.reports.type'
+     */
+    public void setElement_data_data_stats_reports_type(int index1, short value) {
+        setUIntElement(offsetBits_data_data_stats_reports_type(index1), 8, value);
+    }
+
+    /**
+     * Return the total size, in bytes, of the array 'data.data.stats.reports.type'
+     */
+    public static int totalSize_data_data_stats_reports_type() {
+        return (96 / 8);
+    }
+
+    /**
+     * Return the total size, in bits, of the array 'data.data.stats.reports.type'
+     */
+    public static int totalSizeBits_data_data_stats_reports_type() {
+        return 96;
+    }
+
+    /**
+     * Return the size, in bytes, of each element of the array 'data.data.stats.reports.type'
+     */
+    public static int elementSize_data_data_stats_reports_type() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of each element of the array 'data.data.stats.reports.type'
+     */
+    public static int elementSizeBits_data_data_stats_reports_type() {
+        return 8;
+    }
+
+    /**
+     * Return the number of dimensions in the array 'data.data.stats.reports.type'
+     */
+    public static int numDimensions_data_data_stats_reports_type() {
+        return 1;
+    }
+
+    /**
+     * Return the number of elements in the array 'data.data.stats.reports.type'
+     */
+    public static int numElements_data_data_stats_reports_type() {
+        return 2;
+    }
+
+    /**
+     * Return the number of elements in the array 'data.data.stats.reports.type'
+     * for the given dimension.
+     */
+    public static int numElements_data_data_stats_reports_type(int dimension) {
+      int array_dims[] = { 2,  };
+        if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
+        if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");
+        return array_dims[dimension];
+    }
+
+    /**
+     * Fill in the array 'data.data.stats.reports.type' with a String
+     */
+    public void setString_data_data_stats_reports_type(String s) { 
+         int len = s.length();
+         int i;
+         for (i = 0; i < len; i++) {
+             setElement_data_data_stats_reports_type(i, (short)s.charAt(i));
+         }
+         setElement_data_data_stats_reports_type(i, (short)0); //null terminate
+    }
+
+    /**
+     * Read the array 'data.data.stats.reports.type' as a String
+     */
+    public String getString_data_data_stats_reports_type() { 
+         char carr[] = new char[Math.min(net.tinyos.message.Message.MAX_CONVERTED_STRING_LENGTH,2)];
+         int i;
+         for (i = 0; i < carr.length; i++) {
+             if ((char)getElement_data_data_stats_reports_type(i) == (char)0) break;
+             carr[i] = (char)getElement_data_data_stats_reports_type(i);
+         }
+         return new String(carr,0,i);
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.stats.reports.data.cache.level
+    //   Field type: short[]
+    //   Offset (bits): 8
+    //   Size of each element (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.stats.reports.data.cache.level' is signed (false).
+     */
+    public static boolean isSigned_data_data_stats_reports_data_cache_level() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.stats.reports.data.cache.level' is an array (true).
+     */
+    public static boolean isArray_data_data_stats_reports_data_cache_level() {
+        return true;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.stats.reports.data.cache.level'
+     */
+    public static int offset_data_data_stats_reports_data_cache_level(int index1) {
+        int offset = 8;
+        if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
+        offset += 144 + index1 * 48;
+        return (offset / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.stats.reports.data.cache.level'
+     */
+    public static int offsetBits_data_data_stats_reports_data_cache_level(int index1) {
+        int offset = 8;
+        if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
+        offset += 144 + index1 * 48;
+        return offset;
+    }
+
+    /**
+     * Return the entire array 'data.data.stats.reports.data.cache.level' as a short[]
+     */
+    public short[] get_data_data_stats_reports_data_cache_level() {
+        short[] tmp = new short[2];
+        for (int index0 = 0; index0 < numElements_data_data_stats_reports_data_cache_level(0); index0++) {
+            tmp[index0] = getElement_data_data_stats_reports_data_cache_level(index0);
+        }
+        return tmp;
+    }
+
+    /**
+     * Set the contents of the array 'data.data.stats.reports.data.cache.level' from the given short[]
+     */
+    public void set_data_data_stats_reports_data_cache_level(short[] value) {
+        for (int index0 = 0; index0 < value.length; index0++) {
+            setElement_data_data_stats_reports_data_cache_level(index0, value[index0]);
+        }
+    }
+
+    /**
+     * Return an element (as a short) of the array 'data.data.stats.reports.data.cache.level'
+     */
+    public short getElement_data_data_stats_reports_data_cache_level(int index1) {
+        return (short)getUIntElement(offsetBits_data_data_stats_reports_data_cache_level(index1), 8);
+    }
+
+    /**
+     * Set an element of the array 'data.data.stats.reports.data.cache.level'
+     */
+    public void setElement_data_data_stats_reports_data_cache_level(int index1, short value) {
+        setUIntElement(offsetBits_data_data_stats_reports_data_cache_level(index1), 8, value);
+    }
+
+    /**
+     * Return the total size, in bytes, of the array 'data.data.stats.reports.data.cache.level'
+     */
+    public static int totalSize_data_data_stats_reports_data_cache_level() {
+        return (96 / 8);
+    }
+
+    /**
+     * Return the total size, in bits, of the array 'data.data.stats.reports.data.cache.level'
+     */
+    public static int totalSizeBits_data_data_stats_reports_data_cache_level() {
+        return 96;
+    }
+
+    /**
+     * Return the size, in bytes, of each element of the array 'data.data.stats.reports.data.cache.level'
+     */
+    public static int elementSize_data_data_stats_reports_data_cache_level() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of each element of the array 'data.data.stats.reports.data.cache.level'
+     */
+    public static int elementSizeBits_data_data_stats_reports_data_cache_level() {
+        return 8;
+    }
+
+    /**
+     * Return the number of dimensions in the array 'data.data.stats.reports.data.cache.level'
+     */
+    public static int numDimensions_data_data_stats_reports_data_cache_level() {
+        return 1;
+    }
+
+    /**
+     * Return the number of elements in the array 'data.data.stats.reports.data.cache.level'
+     */
+    public static int numElements_data_data_stats_reports_data_cache_level() {
+        return 2;
+    }
+
+    /**
+     * Return the number of elements in the array 'data.data.stats.reports.data.cache.level'
+     * for the given dimension.
+     */
+    public static int numElements_data_data_stats_reports_data_cache_level(int dimension) {
+      int array_dims[] = { 2,  };
+        if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
+        if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");
+        return array_dims[dimension];
+    }
+
+    /**
+     * Fill in the array 'data.data.stats.reports.data.cache.level' with a String
+     */
+    public void setString_data_data_stats_reports_data_cache_level(String s) { 
+         int len = s.length();
+         int i;
+         for (i = 0; i < len; i++) {
+             setElement_data_data_stats_reports_data_cache_level(i, (short)s.charAt(i));
+         }
+         setElement_data_data_stats_reports_data_cache_level(i, (short)0); //null terminate
+    }
+
+    /**
+     * Read the array 'data.data.stats.reports.data.cache.level' as a String
+     */
+    public String getString_data_data_stats_reports_data_cache_level() { 
+         char carr[] = new char[Math.min(net.tinyos.message.Message.MAX_CONVERTED_STRING_LENGTH,2)];
+         int i;
+         for (i = 0; i < carr.length; i++) {
+             if ((char)getElement_data_data_stats_reports_data_cache_level(i) == (char)0) break;
+             carr[i] = (char)getElement_data_data_stats_reports_data_cache_level(i);
+         }
+         return new String(carr,0,i);
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.stats.reports.data.cache.mote
+    //   Field type: int[]
+    //   Offset (bits): 16
+    //   Size of each element (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.stats.reports.data.cache.mote' is signed (false).
+     */
+    public static boolean isSigned_data_data_stats_reports_data_cache_mote() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.stats.reports.data.cache.mote' is an array (true).
+     */
+    public static boolean isArray_data_data_stats_reports_data_cache_mote() {
+        return true;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.stats.reports.data.cache.mote'
+     */
+    public static int offset_data_data_stats_reports_data_cache_mote(int index1) {
+        int offset = 16;
+        if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
+        offset += 144 + index1 * 48;
+        return (offset / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.stats.reports.data.cache.mote'
+     */
+    public static int offsetBits_data_data_stats_reports_data_cache_mote(int index1) {
+        int offset = 16;
+        if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
+        offset += 144 + index1 * 48;
+        return offset;
+    }
+
+    /**
+     * Return the entire array 'data.data.stats.reports.data.cache.mote' as a int[]
+     */
+    public int[] get_data_data_stats_reports_data_cache_mote() {
+        int[] tmp = new int[2];
+        for (int index0 = 0; index0 < numElements_data_data_stats_reports_data_cache_mote(0); index0++) {
+            tmp[index0] = getElement_data_data_stats_reports_data_cache_mote(index0);
+        }
+        return tmp;
+    }
+
+    /**
+     * Set the contents of the array 'data.data.stats.reports.data.cache.mote' from the given int[]
+     */
+    public void set_data_data_stats_reports_data_cache_mote(int[] value) {
+        for (int index0 = 0; index0 < value.length; index0++) {
+            setElement_data_data_stats_reports_data_cache_mote(index0, value[index0]);
+        }
+    }
+
+    /**
+     * Return an element (as a int) of the array 'data.data.stats.reports.data.cache.mote'
+     */
+    public int getElement_data_data_stats_reports_data_cache_mote(int index1) {
+        return (int)getUIntElement(offsetBits_data_data_stats_reports_data_cache_mote(index1), 16);
+    }
+
+    /**
+     * Set an element of the array 'data.data.stats.reports.data.cache.mote'
+     */
+    public void setElement_data_data_stats_reports_data_cache_mote(int index1, int value) {
+        setUIntElement(offsetBits_data_data_stats_reports_data_cache_mote(index1), 16, value);
+    }
+
+    /**
+     * Return the total size, in bytes, of the array 'data.data.stats.reports.data.cache.mote'
+     */
+    public static int totalSize_data_data_stats_reports_data_cache_mote() {
+        return (96 / 8);
+    }
+
+    /**
+     * Return the total size, in bits, of the array 'data.data.stats.reports.data.cache.mote'
+     */
+    public static int totalSizeBits_data_data_stats_reports_data_cache_mote() {
+        return 96;
+    }
+
+    /**
+     * Return the size, in bytes, of each element of the array 'data.data.stats.reports.data.cache.mote'
+     */
+    public static int elementSize_data_data_stats_reports_data_cache_mote() {
+        return (16 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of each element of the array 'data.data.stats.reports.data.cache.mote'
+     */
+    public static int elementSizeBits_data_data_stats_reports_data_cache_mote() {
+        return 16;
+    }
+
+    /**
+     * Return the number of dimensions in the array 'data.data.stats.reports.data.cache.mote'
+     */
+    public static int numDimensions_data_data_stats_reports_data_cache_mote() {
+        return 1;
+    }
+
+    /**
+     * Return the number of elements in the array 'data.data.stats.reports.data.cache.mote'
+     */
+    public static int numElements_data_data_stats_reports_data_cache_mote() {
+        return 2;
+    }
+
+    /**
+     * Return the number of elements in the array 'data.data.stats.reports.data.cache.mote'
+     * for the given dimension.
+     */
+    public static int numElements_data_data_stats_reports_data_cache_mote(int dimension) {
+      int array_dims[] = { 2,  };
+        if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
+        if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");
+        return array_dims[dimension];
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.stats.reports.number
+    //   Field type: int[]
+    //   Offset (bits): 32
+    //   Size of each element (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.stats.reports.number' is signed (false).
+     */
+    public static boolean isSigned_data_data_stats_reports_number() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.stats.reports.number' is an array (true).
+     */
+    public static boolean isArray_data_data_stats_reports_number() {
+        return true;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.stats.reports.number'
+     */
+    public static int offset_data_data_stats_reports_number(int index1) {
+        int offset = 32;
+        if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
+        offset += 144 + index1 * 48;
+        return (offset / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.stats.reports.number'
+     */
+    public static int offsetBits_data_data_stats_reports_number(int index1) {
+        int offset = 32;
+        if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
+        offset += 144 + index1 * 48;
+        return offset;
+    }
+
+    /**
+     * Return the entire array 'data.data.stats.reports.number' as a int[]
+     */
+    public int[] get_data_data_stats_reports_number() {
+        int[] tmp = new int[2];
+        for (int index0 = 0; index0 < numElements_data_data_stats_reports_number(0); index0++) {
+            tmp[index0] = getElement_data_data_stats_reports_number(index0);
+        }
+        return tmp;
+    }
+
+    /**
+     * Set the contents of the array 'data.data.stats.reports.number' from the given int[]
+     */
+    public void set_data_data_stats_reports_number(int[] value) {
+        for (int index0 = 0; index0 < value.length; index0++) {
+            setElement_data_data_stats_reports_number(index0, value[index0]);
+        }
+    }
+
+    /**
+     * Return an element (as a int) of the array 'data.data.stats.reports.number'
+     */
+    public int getElement_data_data_stats_reports_number(int index1) {
+        return (int)getUIntElement(offsetBits_data_data_stats_reports_number(index1), 16);
+    }
+
+    /**
+     * Set an element of the array 'data.data.stats.reports.number'
+     */
+    public void setElement_data_data_stats_reports_number(int index1, int value) {
+        setUIntElement(offsetBits_data_data_stats_reports_number(index1), 16, value);
+    }
+
+    /**
+     * Return the total size, in bytes, of the array 'data.data.stats.reports.number'
+     */
+    public static int totalSize_data_data_stats_reports_number() {
+        return (96 / 8);
+    }
+
+    /**
+     * Return the total size, in bits, of the array 'data.data.stats.reports.number'
+     */
+    public static int totalSizeBits_data_data_stats_reports_number() {
+        return 96;
+    }
+
+    /**
+     * Return the size, in bytes, of each element of the array 'data.data.stats.reports.number'
+     */
+    public static int elementSize_data_data_stats_reports_number() {
+        return (16 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of each element of the array 'data.data.stats.reports.number'
+     */
+    public static int elementSizeBits_data_data_stats_reports_number() {
+        return 16;
+    }
+
+    /**
+     * Return the number of dimensions in the array 'data.data.stats.reports.number'
+     */
+    public static int numDimensions_data_data_stats_reports_number() {
+        return 1;
+    }
+
+    /**
+     * Return the number of elements in the array 'data.data.stats.reports.number'
+     */
+    public static int numElements_data_data_stats_reports_number() {
+        return 2;
+    }
+
+    /**
+     * Return the number of elements in the array 'data.data.stats.reports.number'
+     * for the given dimension.
+     */
+    public static int numElements_data_data_stats_reports_number(int dimension) {
+      int array_dims[] = { 2,  };
+        if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
+        if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");
+        return array_dims[dimension];
     }
 
 }
