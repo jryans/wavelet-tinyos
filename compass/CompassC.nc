@@ -7,7 +7,7 @@
 configuration CompassC {}
 implementation {
   components Main, DelugeC, NetworkC, TimerC, BigPackM,
-             WaveletM, LedsC, StateC, SensorControlC;
+             WaveletM, LedsC, StateC, SensorControlC, NetworkStatsC;
 #ifdef BEEP
   components BeepC;
 #endif
@@ -19,6 +19,9 @@ implementation {
   WaveletM.Message -> NetworkC;
   WaveletM.Router -> NetworkC;
   BigPackM.Message -> NetworkC;
+  
+  /*** NetworkStats: sends packet stats when requested ***/
+  NetworkStatsC.Message -> NetworkC;
   
   /*** State: state machine library ***/
   Main.StdControl -> StateC;

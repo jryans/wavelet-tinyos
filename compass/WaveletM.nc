@@ -34,10 +34,10 @@ module WaveletM
 }
 implementation
 { 
-  #if 0 // TinyOS Plugin Workaround
+#if 0 // TinyOS Plugin Workaround
   typedef char msgData;
   typedef char WaveletLevel;
-  #endif
+#endif
   
   /*** Variables and Constants ***/ 
   uint8_t curLevel; // The current wavelet transform level

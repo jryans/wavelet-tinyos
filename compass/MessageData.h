@@ -8,6 +8,7 @@
 #include "MoteCommand.h"
 #include "RawData.h"
 #include "WaveletData.h"
+#include "NetworkStats.h"
 
 struct MessageData {
 	uint16_t src;
@@ -20,6 +21,7 @@ struct MessageData {
 		WaveletConfData wConfData;
     WaveletConfHeader wConfHeader;
     WaveletState wState;
+    NetworkStats stats;
 	} data;
 } __attribute__ ((packed));
 
@@ -31,7 +33,8 @@ enum { // Identifies the type of data stored
 	WAVELETDATA,
 	WAVELETCONFDATA,
 	WAVELETCONFHEADER,
-	WAVELETSTATE
+	WAVELETSTATE,
+	NETWORKSTATS
 };
 
 #endif // _MESSAGEDATA_H

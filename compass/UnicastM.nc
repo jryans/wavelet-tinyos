@@ -31,7 +31,7 @@ module UnicastM {
 implementation {
 #if 0 // TinyOS Plugin Workaround
   typedef uint8_t uPack;
-  #endif
+#endif
 
   TOS_MsgPtr tmpPtr;
   uint8_t len = sizeof(uPack);
