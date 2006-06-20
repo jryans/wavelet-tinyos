@@ -69,6 +69,7 @@ implementation {
   };
   
   uint8_t nextState;
+  bool forceNextState;
     
   /*** Internal Functions ***/
   task void runState();
@@ -98,6 +99,7 @@ implementation {
       case S_START_DATASET: {
         call Leds.redOff();
         call Leds.yellowOn();
+        delayState();
         curLevel = 0;
         dataSet++;
         clearNeighborState();
@@ -105,28 +107,25 @@ implementation {
         // If a message is received while reading the sensors,
         // temperature values will be way off.  Using state delays
         // on both sides of the sensor reading work around this.
-        delayState();
         call State.toIdle();
         break; }
       case S_READING_SENSORS: {
-        dbg(DBG_USR2, "DS: %i, Reading sensors...\n", dataSet);
         delayState();
+        dbg(DBG_USR2, "DS: %i, Reading sensors...\n", dataSet);
         call SensorData.readSensors();
         break; }
       case S_UPDATING: {
+        delayState();
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Sending values to predict nodes...\n",
             dataSet, curLevel + 1);
-        delayState();
         sendValuesToNeighbors();
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Waiting to hear from predict nodes...\n",
             dataSet, curLevel + 1);
-        call State.toIdle();
         break; }
       case S_PREDICTING: {
+        delayState();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Waiting to hear from update nodes...\n",
             dataSet, curLevel + 1);
-        delayState();
-        call State.toIdle();
         break; }  
       case S_CACHE: {
         delayState();
@@ -134,18 +133,18 @@ implementation {
         call State.toIdle();
         break; }
       case S_PREDICTED: {
+        delayState();
         calcNewValues();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Sending values to update nodes...\n",
             dataSet, curLevel + 1);
-        delayState();
         sendValuesToNeighbors();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
         call State.toIdle();
         break; }
       case S_UPDATED: {
+        delayState();
         calcNewValues();
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
-        delayState();
         call State.toIdle();
         break; }
       case S_DONE: {
@@ -159,12 +158,12 @@ implementation {
         call State.toIdle();
         break; }
       case S_SKIPLEVEL: {
-        dbg(DBG_USR2, "Skip: DS: %i, L: %i, Nothing to do, level done!\n", dataSet, curLevel + 1);
         delayState();
+        dbg(DBG_USR2, "Skip: DS: %i, L: %i, Nothing to do, level done!\n", dataSet, curLevel + 1);
         call State.toIdle();
         break; }
       case S_OFFLINE: {
-        dbg(DBG_USR2, "Wavelet: Offline");
+        dbg(DBG_USR2, "Wavelet: Offline\n");
         call Leds.redOff();
         call Leds.yellowOff();
         call State.toIdle();
@@ -178,6 +177,7 @@ implementation {
    */
   void delayState() {
     uint32_t delay;
+    forceNextState = FALSE; // Defaults to request instead of force
     switch (call State.getState()) {
     case S_START_DATASET: {
       nextState = S_READING_SENSORS;
@@ -190,10 +190,12 @@ implementation {
       break; }
     case S_UPDATING: {
       nextState = S_CACHE;
+      forceNextState = TRUE;
       delay = 2500;
       break; }
     case S_PREDICTING: {
       nextState = S_CACHE;
+      forceNextState = TRUE;
       delay = 1500;
       break; }
     case S_CACHE: {
@@ -465,13 +467,20 @@ implementation {
    * Enforces delays between each state change.
    */
   event result_t StateTimer.fired() {
-    if (call State.requestState(nextState) == FAIL) {
-      dbg(DBG_USR2, "Wavelet: Not enough time before moving to state %i!\n", nextState);
-#ifdef BEEP
-      call Beep.play(1, 250);
-#endif
-    } else {
+    if (forceNextState) {
+      call State.forceState(nextState);
+      dbg(DBG_USR2, "Wavelet: Forced to state %i\n", nextState);
       post runState();
+    } else {
+      if (call State.requestState(nextState) == FAIL) {
+        dbg(DBG_USR2, "Wavelet: Not enough time before moving to state %i!\n", nextState);
+#ifdef BEEP
+        call Beep.play(1, 250);
+#endif
+      } else {
+        dbg(DBG_USR2, "Wavelet: Moved to state %i\n", nextState);
+        post runState();
+      }
     }
     return SUCCESS;
   }
