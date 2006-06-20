@@ -13,7 +13,8 @@
 /*** Constants ***/
 
 enum {
-  WT_MAX_LEVELS = 3,
+  WT_MAX_LEVELS = 10, // Should be able to go up to 22 without changing
+                      // config transfer algorithm.
   WT_MOTE_PER_CONFDATA = 3
 };
 

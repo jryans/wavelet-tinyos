@@ -10,8 +10,7 @@
 includes MessageData;
 includes Sensors;
 
-module WaveletM 
-{
+module WaveletM {
   uses {
     /*** I/O and Hardware ***/
     interface Message;
@@ -21,6 +20,7 @@ module WaveletM
 #ifdef BEEP
     interface Beep;
 #endif
+    interface Stats;
     
     /*** State Management ***/
     interface State;
@@ -32,8 +32,7 @@ module WaveletM
   }
   provides interface StdControl;
 }
-implementation
-{ 
+implementation { 
 #if 0 // TinyOS Plugin Workaround
   typedef char msgData;
   typedef char WaveletLevel;
@@ -42,11 +41,15 @@ implementation
   /*** Variables and Constants ***/ 
   uint8_t curLevel; // The current wavelet transform level
   uint8_t dataSet; // Identifies the current data set number
-  uint8_t waitingFor; // Number of motes we are waiting on
   
   uint8_t numLevels; // Total number of wavelet levels
   WaveletLevel *level; // Array of WaveletLevels
   
+#ifdef RAW
+  float rawVals[WT_SENSORS];
+#endif
+  
+  /*** State Management ***/
   // Defines all possible mote states
   enum {
     S_IDLE = 0,
@@ -55,7 +58,7 @@ implementation
     S_READING_SENSORS = 3,
     S_UPDATING = 4,
     S_PREDICTING = 5,
-//    S_CALCULATING = 6,
+    S_CACHE = 6,
     S_PREDICTED = 7,
     S_UPDATED = 8,
     S_SKIPLEVEL = 9,
@@ -66,9 +69,6 @@ implementation
   };
   
   uint8_t nextState;
-#ifdef RAW
-  float rawVals[WT_SENSORS];
-#endif
     
   /*** Internal Functions ***/
   task void runState();
@@ -81,6 +81,8 @@ implementation
   void calcNewValues();
   void delayState();
   void newDataSet();
+  void clearNeighborState();
+  void checkData();
   
   /**
    * This is the heart of the wavelet algorithm's state management.
@@ -98,6 +100,7 @@ implementation
         call Leds.yellowOn();
         curLevel = 0;
         dataSet++;
+        clearNeighborState();
         dbg(DBG_USR2, "DS: %i, Starting data set...\n", dataSet);
         // If a message is received while reading the sensors,
         // temperature values will be way off.  Using state delays
@@ -114,17 +117,22 @@ implementation
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Sending values to predict nodes...\n",
             dataSet, curLevel + 1);
         delayState();
-        waitingFor = level[curLevel].nbCount - 1;
         sendValuesToNeighbors();
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Waiting to hear from predict nodes...\n",
             dataSet, curLevel + 1);
+        call State.toIdle();
         break; }
       case S_PREDICTING: {
-        waitingFor = level[curLevel].nbCount - 1;
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Waiting to hear from update nodes...\n",
             dataSet, curLevel + 1);
         delayState();
+        call State.toIdle();
         break; }  
+      case S_CACHE: {
+        delayState();
+        checkData();
+        call State.toIdle();
+        break; }
       case S_PREDICTED: {
         calcNewValues();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Sending values to update nodes...\n",
@@ -181,12 +189,18 @@ implementation
                                 : (delay = 500);
       break; }
     case S_UPDATING: {
-      nextState = S_UPDATED;
+      nextState = S_CACHE;
       delay = 2500;
       break; }
     case S_PREDICTING: {
-      nextState = S_PREDICTED;
+      nextState = S_CACHE;
       delay = 1500;
+      break; }
+    case S_CACHE: {
+      (level[curLevel].nb[0].data.state == S_UPDATING) 
+        ? (nextState = S_UPDATED)
+        : (nextState = S_PREDICTED);                         
+      delay = 500;
       break; }
     case S_PREDICTED: {
       nextState = S_DONE;
@@ -199,8 +213,8 @@ implementation
       break; }
     case S_SKIPLEVEL: {
       nextState = nextWaveletLevel();
-      (nextState == S_UPDATING) ? (delay = 4000)
-                                : (delay = 3500);
+      (nextState == S_UPDATING) ? (delay = 4500)
+                                : (delay = 4000);
       break; }
     }
     call StateTimer.start(TIMER_ONE_SHOT, delay);
@@ -279,6 +293,35 @@ implementation
       for (sensor = 0; sensor < WT_SENSORS; sensor++)
         level[curLevel].nb[0].data.value[sensor] += (sign * level[curLevel].nb[mote].info.coeff
                                                      * level[curLevel].nb[mote].data.value[sensor]);
+    }
+  }
+  
+  /**
+   * Clears the stored state of each neighbor mote.
+   */
+  void clearNeighborState() {
+    uint8_t lvl, mote;
+    for (lvl = 0; lvl < numLevels; lvl++) {
+      for (mote = 1; mote < level[lvl].nbCount; mote++) {
+        level[lvl].nb[mote].data.state = S_START_DATASET;
+      }
+    }
+  }
+  
+  /**
+   * Reports any cache uses to NetworkStats.
+   */
+  void checkData() {
+    uint8_t mote;
+    StatsReport report;
+    for (mote = 1; mote < level[curLevel].nbCount; mote++) {
+      if (level[curLevel].nb[mote].data.state == S_START_DATASET) {
+        report.type = WT_CACHE;
+        report.number = 1;
+        report.data.cache.level = curLevel + 1;
+        report.data.cache.mote = level[curLevel].nb[mote].info.id;
+        call Stats.file(report);
+      } 
     }
   }
 
@@ -368,9 +411,7 @@ implementation
           if (mote < level[curLevel].nbCount) {
             dbg(DBG_USR2, "Predict: DS: %i, L: %i, Got values from update mote %i\n",
                 dataSet, curLevel + 1, msg.src);
-            level[curLevel].nb[mote].data = msg.data.wData;
-            if (--waitingFor == 0) // Problem area?
-              call State.toIdle();  
+            level[curLevel].nb[mote].data = msg.data.wData; 
           } else {
             dbg(DBG_USR2, "Predict: DS: %i, L: %i, BAD NEIGHBOR! Got values from update mote %i\n",
                 dataSet, curLevel + 1, msg.src);
@@ -387,8 +428,6 @@ implementation
             dbg(DBG_USR2, "Update: DS: %i, L: %i, Got values from predict mote %i\n",
                 dataSet, curLevel + 1, msg.src);
             level[curLevel].nb[mote].data = msg.data.wData;
-            if (--waitingFor == 0) // Problem area?
-              call State.toIdle();
           } else {
             dbg(DBG_USR2, "Update: DS: %i, L: %i, BAD NEIGHBOR! Got values from predict mote %i\n",
                 dataSet, curLevel + 1, msg.src);
