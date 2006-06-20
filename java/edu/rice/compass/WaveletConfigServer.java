@@ -9,6 +9,7 @@ import net.tinyos.message.*;
 import java.io.*;
 import java.beans.*;
 import java.util.*;
+import com.martiansoftware.jsap.*;
 
 public class WaveletConfigServer implements MessageListener {
 
@@ -24,6 +25,7 @@ public class WaveletConfigServer implements MessageListener {
 	static final short WAVELETCONFDATA = 3;
 	static final short WAVELETCONFHEADER = 4;
 	static final short WAVELETSTATE = 5;
+	static final short NETWORKSTATS = 6;
 
 	/** * State Control ** */
 	static final short S_STARTUP = 1;
@@ -46,10 +48,31 @@ public class WaveletConfigServer implements MessageListener {
 	private Timer setTimer = new Timer();
 	private SetTracker setTracker = new SetTracker();
 
-	public static void main(String[] args) throws IOException,
-			ClassNotFoundException {
-		if (args[0].equals("pack")) {
+	public static void main(String[] args) throws Exception {
+		SimpleJSAP parser = new SimpleJSAP("WaveletConfigServer",
+				"Controls TinyOS motes running CompassC", new Parameter[] {
+						new Switch("pack", JSAP.NO_SHORTFLAG, "pack"),
+						new Switch("prog", JSAP.NO_SHORTFLAG, "prog"),
+						new FlaggedOption("setlength", JSAP.LONG_PARSER, JSAP.NO_DEFAULT,
+								JSAP.NOT_REQUIRED, 'l', "length"),
+						new FlaggedOption("sets", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
+								JSAP.NOT_REQUIRED, 's', "sets"),
+						new Switch("clear", 'c', "clear"),
+						new Switch("stats", JSAP.NO_SHORTFLAG, "stats"),
+						new FlaggedOption("dest", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
+								JSAP.NOT_REQUIRED, 'd', "dest") });
+
+		JSAPResult config = parser.parse(args);
+		if (parser.messagePrinted())
+			System.exit(1);
+
+		if (config.getBoolean("clear")) {
+			moteSend = new MoteSend(true);
+		} else {
 			moteSend = new MoteSend(false);
+		}
+
+		if (config.getBoolean("pack")) {
 			if (args[1].equals("b")) {
 				BroadcastPack tPack = new BroadcastPack();
 				tPack.set_data_type(MOTECOMMAND);
@@ -63,15 +86,10 @@ public class WaveletConfigServer implements MessageListener {
 				moteSend.sendPack(tPack);
 			}
 			System.exit(0);
-		} else if (args[0].equals("prog")) {
-			if ((args.length > 3) && (args[3].equals("clear"))) {
-				moteSend = new MoteSend(true);
-			} else {
-				moteSend = new MoteSend(false);
-			}
+		} else if (config.getBoolean("prog")) {
 			forceStartup();
-			setLength = Integer.parseInt(args[1]);
-			numSets = Integer.parseInt(args[2]);
+			setLength = config.getLong("setlength");
+			numSets = config.getInt("sets");
 			// Fixed path name for now
 			String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletConfig.xml";
 			FileInputStream fs = new FileInputStream(path);
@@ -88,10 +106,22 @@ public class WaveletConfigServer implements MessageListener {
 			mData = new MoteData(numSets, WT_SENSORS, mote.length);
 			resultsDone = wc.mScale.length;
 			rawDone = wc.mScale.length;
-			// Setup data listener
-			moteListen.registerListener(new UnicastPack(), new WaveletConfigServer());
-			System.out.println("Ready to hear from motes...");
+			listen();
+		} else if (config.getBoolean("stats")) {
+			listen();
+			int dest = config.getInt("dest");
+			UnicastPack req = new UnicastPack();
+			req.set_data_dest(dest);
+			req.set_data_type(NETWORKSTATS);
+			moteSend.sendPack(req);
+			System.out.println("Sent stats request to mote " + dest);
 		}
+	}
+
+	private static void listen() {
+		// Setup data listener
+		moteListen.registerListener(new UnicastPack(), new WaveletConfigServer());
+		System.out.println("Ready to hear from motes...");
 	}
 
 	public void messageReceived(int to, Message m) {
@@ -149,7 +179,8 @@ public class WaveletConfigServer implements MessageListener {
 							startDataSet();
 							System.out
 									.println("Last mote was " + id + ", sent start command");
-							setTimer.scheduleAtFixedRate(setTracker, setLength / 1024 * 1000, setLength / 1024 * 1000);
+							setTimer.scheduleAtFixedRate(setTracker, setLength / 1024 * 1000,
+									setLength / 1024 * 1000);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -174,6 +205,18 @@ public class WaveletConfigServer implements MessageListener {
 				rawDone--;
 			}
 			break;
+		case NETWORKSTATS:
+			int rcvd = pack.get_data_data_stats_rcvd();
+			int sent = pack.get_data_data_stats_sent();
+			int acked = pack.get_data_data_stats_acked();
+			System.out.println("Stats for mote " + pack.get_data_src() + ":");
+			System.out.println("Received:  " + rcvd);
+			System.out.println("Avg. RSSI: "
+					+ (pack.get_data_data_stats_rssi() / rcvd - 45));
+			System.out.println("Sent:      " + sent);
+			System.out.println("ACKed:     " + acked + " (" + (acked * 100 / sent)
+					+ "%)");
+			System.exit(0);
 		}
 	}
 

@@ -164,6 +164,18 @@ public class UnicastPack extends net.tinyos.message.Message {
       try {
         s += "  [data.data.wState.dataSetTime=0x"+Long.toHexString(get_data_data_wState_dataSetTime())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.stats.rcvd=0x"+Long.toHexString(get_data_data_stats_rcvd())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.stats.rssi="+Float.toString(get_data_data_stats_rssi())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.stats.sent=0x"+Long.toHexString(get_data_data_stats_sent())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.stats.acked=0x"+Long.toHexString(get_data_data_stats_acked())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       return s;
     }
 
@@ -1766,6 +1778,258 @@ public class UnicastPack extends net.tinyos.message.Message {
      */
     public static int sizeBits_data_data_wState_dataSetTime() {
         return 32;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.stats.rcvd
+    //   Field type: int
+    //   Offset (bits): 48
+    //   Size (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.stats.rcvd' is signed (false).
+     */
+    public static boolean isSigned_data_data_stats_rcvd() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.stats.rcvd' is an array (false).
+     */
+    public static boolean isArray_data_data_stats_rcvd() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.stats.rcvd'
+     */
+    public static int offset_data_data_stats_rcvd() {
+        return (48 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.stats.rcvd'
+     */
+    public static int offsetBits_data_data_stats_rcvd() {
+        return 48;
+    }
+
+    /**
+     * Return the value (as a int) of the field 'data.data.stats.rcvd'
+     */
+    public int get_data_data_stats_rcvd() {
+        return (int)getUIntElement(offsetBits_data_data_stats_rcvd(), 16);
+    }
+
+    /**
+     * Set the value of the field 'data.data.stats.rcvd'
+     */
+    public void set_data_data_stats_rcvd(int value) {
+        setUIntElement(offsetBits_data_data_stats_rcvd(), 16, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.stats.rcvd'
+     */
+    public static int size_data_data_stats_rcvd() {
+        return (16 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.stats.rcvd'
+     */
+    public static int sizeBits_data_data_stats_rcvd() {
+        return 16;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.stats.rssi
+    //   Field type: float
+    //   Offset (bits): 64
+    //   Size (bits): 32
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.stats.rssi' is signed (false).
+     */
+    public static boolean isSigned_data_data_stats_rssi() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.stats.rssi' is an array (false).
+     */
+    public static boolean isArray_data_data_stats_rssi() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.stats.rssi'
+     */
+    public static int offset_data_data_stats_rssi() {
+        return (64 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.stats.rssi'
+     */
+    public static int offsetBits_data_data_stats_rssi() {
+        return 64;
+    }
+
+    /**
+     * Return the value (as a float) of the field 'data.data.stats.rssi'
+     */
+    public float get_data_data_stats_rssi() {
+        return (float)getFloatElement(offsetBits_data_data_stats_rssi(), 32);
+    }
+
+    /**
+     * Set the value of the field 'data.data.stats.rssi'
+     */
+    public void set_data_data_stats_rssi(float value) {
+        setFloatElement(offsetBits_data_data_stats_rssi(), 32, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.stats.rssi'
+     */
+    public static int size_data_data_stats_rssi() {
+        return (32 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.stats.rssi'
+     */
+    public static int sizeBits_data_data_stats_rssi() {
+        return 32;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.stats.sent
+    //   Field type: int
+    //   Offset (bits): 96
+    //   Size (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.stats.sent' is signed (false).
+     */
+    public static boolean isSigned_data_data_stats_sent() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.stats.sent' is an array (false).
+     */
+    public static boolean isArray_data_data_stats_sent() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.stats.sent'
+     */
+    public static int offset_data_data_stats_sent() {
+        return (96 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.stats.sent'
+     */
+    public static int offsetBits_data_data_stats_sent() {
+        return 96;
+    }
+
+    /**
+     * Return the value (as a int) of the field 'data.data.stats.sent'
+     */
+    public int get_data_data_stats_sent() {
+        return (int)getUIntElement(offsetBits_data_data_stats_sent(), 16);
+    }
+
+    /**
+     * Set the value of the field 'data.data.stats.sent'
+     */
+    public void set_data_data_stats_sent(int value) {
+        setUIntElement(offsetBits_data_data_stats_sent(), 16, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.stats.sent'
+     */
+    public static int size_data_data_stats_sent() {
+        return (16 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.stats.sent'
+     */
+    public static int sizeBits_data_data_stats_sent() {
+        return 16;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.stats.acked
+    //   Field type: int
+    //   Offset (bits): 112
+    //   Size (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.stats.acked' is signed (false).
+     */
+    public static boolean isSigned_data_data_stats_acked() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.stats.acked' is an array (false).
+     */
+    public static boolean isArray_data_data_stats_acked() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.stats.acked'
+     */
+    public static int offset_data_data_stats_acked() {
+        return (112 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.stats.acked'
+     */
+    public static int offsetBits_data_data_stats_acked() {
+        return 112;
+    }
+
+    /**
+     * Return the value (as a int) of the field 'data.data.stats.acked'
+     */
+    public int get_data_data_stats_acked() {
+        return (int)getUIntElement(offsetBits_data_data_stats_acked(), 16);
+    }
+
+    /**
+     * Set the value of the field 'data.data.stats.acked'
+     */
+    public void set_data_data_stats_acked(int value) {
+        setUIntElement(offsetBits_data_data_stats_acked(), 16, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.stats.acked'
+     */
+    public static int size_data_data_stats_acked() {
+        return (16 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.stats.acked'
+     */
+    public static int sizeBits_data_data_stats_acked() {
+        return 16;
     }
 
 }
