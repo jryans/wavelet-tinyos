@@ -60,6 +60,24 @@ typedef struct {
   WaveletConfMote moteConf[WT_MOTE_PER_CONFDATA]; // Array of MoteInfos
 } __attribute__ ((packed)) WaveletConfData;
 
+/*** New Big Pack ***/
+
+typedef struct wn { // Describes each neighbor mote
+  uint16_t id; // ID number of the mote 
+  uint8_t state; // State this mote will have in this level
+  float coeff; // WT coeff for the mote
+} __attribute__ ((packed)) ExtWaveletNeighbor;
+
+typedef struct wl {
+  uint8_t nbCount; // Number of neighbors at this level
+  ExtWaveletNeighbor *nb; // Array of ExtWaveletNeighbors
+} __attribute__ ((packed)) ExtWaveletLevel;
+
+typedef struct wc {
+  uint8_t numLevels; 
+  ExtWaveletLevel *level; // Array of ExtWaveletLevels
+} __attribute__ ((packed)) NewWaveletConf;
+
 /*** State Control ***/
 
 // Used by the PC to query and set state

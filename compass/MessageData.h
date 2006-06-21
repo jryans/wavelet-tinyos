@@ -8,6 +8,7 @@
 #include "MoteCommand.h"
 #include "WaveletData.h"
 #include "Stats.h"
+#include "BigPack.h"
 
 struct MessageData {
 	uint16_t src;
@@ -16,8 +17,10 @@ struct MessageData {
 	union {
 		MoteCommand moteCmd;
 		WaveletData wData;
-		WaveletConfData wConfData;
+    WaveletConfData wConfData;
     WaveletConfHeader wConfHeader;
+    BigPackHeader bpHeader;
+    BigPackData bpData;
     WaveletState wState;
     MoteStats stats;
 	} data;
@@ -26,12 +29,14 @@ struct MessageData {
 typedef struct MessageData msgData;
   
 enum { // Identifies the type of data stored
-	MOTECOMMAND,
-	WAVELETDATA,
-	WAVELETCONFDATA,
-	WAVELETCONFHEADER,
-	WAVELETSTATE,
-	MOTESTATS
+	MOTECOMMAND = 0,
+	WAVELETDATA = 1,
+	WAVELETCONFDATA = 2,
+	WAVELETCONFHEADER = 3,
+	BIGPACKHEADER = 2,
+	BIGPACKDATA = 3,
+	WAVELETSTATE = 4,
+	MOTESTATS = 5
 };
 
 #endif // _MESSAGEDATA_H

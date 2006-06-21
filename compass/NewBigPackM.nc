@@ -5,7 +5,7 @@
  
 includes MessageData;
  
-module BigPackM {
+module NewBigPackM {
   uses {
     interface Message;
     interface Timer as MsgRepeat;
@@ -27,7 +27,7 @@ implementation {
   
   bool activeRequest = FALSE; // True if a request is in progress
   uint8_t curLevel;
-  uint8_t curPackNum;
+
   uint8_t numLevels;
   uint8_t *nbCount; // Number of neighbors at each level
   
@@ -40,6 +40,11 @@ implementation {
   void freeWavelet();
   void fillWavelet(WaveletConfData *conf);
   void repeatSend(msgData msg, uint16_t bms);
+  
+  uint8_t numPacks;
+  uint8_t curPackNum;
+  uint8_t numBytes;
+  int8_t *bigData;
   
   /*** Timers ***/
   
@@ -67,14 +72,24 @@ implementation {
    * neighbors and their coefficients.
    */
   command result_t WaveletConfig.getConfig() {
+//    msgData msg;
+//    msg.src = TOS_LOCAL_ADDRESS;
+//    msg.dest = 0;
+//    msg.type = WAVELETCONFHEADER;
+//    msg.data.wConfHeader.numLevels = 0;
+//    dbg(DBG_USR2, "BigPack: Requesting wavelet config...\n");
+//    repeatSend(msg, 5000);
+    requestData(WAVELETCONF);
+    return SUCCESS;
+  }
+  
+  void requestData(uint8_t type) {
     msgData msg;
     msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = 0;
-    msg.type = WAVELETCONFHEADER;
-    msg.data.wConfHeader.numLevels = 0;
-    dbg(DBG_USR2, "BigPack: Requesting wavelet config...\n");
-    repeatSend(msg, 5000);
-    return SUCCESS;
+    msg.type = BIGPACKHEADER;
+    msg.data.bpHeader.requestType = type;
+    call Message.send(msg);
   }
   
   /*** Internal Helpers ***/
@@ -178,7 +193,23 @@ implementation {
   event void Message.receive(msgData msg) {
     WaveletConfData *conf;
     switch (msg.type) {
-      case WAVELETCONFHEADER: {
+    case BIGPACKHEADER: {
+      numPacks = msg.data.bpHeader.packTotal;
+      numBytes = msg.data.bpHeader.byteTotal;
+      bigData = malloc(numBytes);
+      curPackNum = 0;
+      sendAck(msg);
+      break; }
+    case BIGPACKDATA: {
+      if (curPackNum == msg.data.bpData.curPack) {
+        uint8_t offset, i;
+        offset = curPackNum * BP_DATA_LEN;
+        for (i = 0; i < BP_DATA_LEN; i++) {
+          
+        }
+      }
+      break; }
+    /*  case WAVELETCONFHEADER: {
         // Turn off message repeat        
         call MsgRepeat.stop();
         // Store basic config parameters
@@ -200,7 +231,7 @@ implementation {
           return;
         }
         sendAck(msg);
-        break; }
+        break; } 
       case WAVELETCONFDATA: {
         if (activeRequest) {
           // Turn off message repeat
@@ -220,7 +251,7 @@ implementation {
             }
           }
         }
-        break; }
+        break; } */
     }   
   }
 }
