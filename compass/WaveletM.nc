@@ -73,7 +73,8 @@ implementation {
     
   /*** Internal Functions ***/
   task void runState();
-  uint8_t nextWaveletLevel();
+  void nextWaveletLevel();
+  uint8_t nextWaveletState();
   void sendResultsToBase();
 #ifdef RAW
   void sendRawToBase();
@@ -94,6 +95,7 @@ implementation {
     switch (call State.getState()) {
       case S_STARTUP: { // Retrieve wavelet config data
         dataSet = 0;
+        call Leds.redOn();
         call WaveletConfig.getConfig();
         break; }
       case S_START_DATASET: {
@@ -145,6 +147,7 @@ implementation {
         delayState();
         calcNewValues();
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
+        nextWaveletLevel();
         call State.toIdle();
         break; }
       case S_DONE: {
@@ -160,6 +163,7 @@ implementation {
       case S_SKIPLEVEL: {
         delayState();
         dbg(DBG_USR2, "Skip: DS: %i, L: %i, Nothing to do, level done!\n", dataSet, curLevel + 1);
+        nextWaveletLevel();
         call State.toIdle();
         break; }
       case S_OFFLINE: {
@@ -181,7 +185,7 @@ implementation {
     switch (call State.getState()) {
     case S_START_DATASET: {
       nextState = S_READING_SENSORS;
-      delay = 1000;
+      delay = 5000;
       break; }  
     case S_READING_SENSORS: {
       nextState = level[curLevel].nb[0].data.state;
@@ -209,12 +213,12 @@ implementation {
       delay = 1000;
       break; }
     case S_UPDATED: {
-      nextState = nextWaveletLevel();
+      nextState = nextWaveletState();
       (nextState == S_UPDATING) ? (delay = 1000)
                                 : (delay = 500);
       break; }
     case S_SKIPLEVEL: {
-      nextState = nextWaveletLevel();
+      nextState = nextWaveletState();
       (nextState == S_UPDATING) ? (delay = 4500)
                                 : (delay = 4000);
       break; }
@@ -222,16 +226,22 @@ implementation {
     call StateTimer.start(TIMER_ONE_SHOT, delay);
   }
   
-  uint8_t nextWaveletLevel() {
+  void nextWaveletLevel() {
     uint8_t newState, i;
-    (curLevel + 1 == numLevels) ? newState = S_DONE 
-                                : (newState = level[curLevel + 1].nb[0].data.state);
+    newState = nextWaveletState();
     if (newState != S_DONE) {
       for (i = 0; i < WT_SENSORS; i++) // Carry data over to next level
         level[curLevel + 1].nb[0].data.value[i] = level[curLevel].nb[0].data.value[i];
       curLevel++;
     }  
-    return newState;
+  }
+  
+  uint8_t nextWaveletState() {
+    if (curLevel + 1 == numLevels) {
+      return S_DONE;
+    } else {
+      return level[curLevel + 1].nb[0].data.state;
+    }
   }
   
   void sendResultsToBase() {
@@ -240,6 +250,8 @@ implementation {
     msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = 0;
     msg.type = WAVELETDATA;
+    msg.data.wData.dataSet = dataSet;
+    msg.data.wData.level = curLevel;
     msg.data.wData.state = S_DONE;
     for (i = 0; i < WT_SENSORS; i++)
       msg.data.wData.value[i] = level[curLevel].nb[0].data.value[i];
@@ -253,6 +265,8 @@ implementation {
     msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = 0;
     msg.type = WAVELETDATA;
+    msg.data.wData.dataSet = dataSet;
+    msg.data.wData.level = curLevel;
     msg.data.wData.state = S_RAW;
     for (i = 0; i < WT_SENSORS; i++)
       msg.data.wData.value[i] = rawVals[i];
@@ -265,6 +279,8 @@ implementation {
     uint8_t mote, i;
     msg.src = TOS_LOCAL_ADDRESS;
     msg.type = WAVELETDATA;
+    msg.data.wData.dataSet = dataSet;
+    msg.data.wData.level = curLevel;
     msg.data.wData.state = call State.getState();
     for (i = 0; i < WT_SENSORS; i++)
       msg.data.wData.value[i] = level[curLevel].nb[0].data.value[i];
@@ -336,12 +352,13 @@ implementation {
   
   command result_t StdControl.start() 
   {
-    if (TOS_LOCAL_ADDRESS == 0) {
-      call State.forceState(S_OFFLINE);
-    } else {
-      call Leds.redOn();
-      call State.forceState(S_STARTUP);
-    }
+//    if (TOS_LOCAL_ADDRESS == 0) {
+//      call State.forceState(S_OFFLINE);
+//    } else {
+//      call Leds.redOn();
+//      call State.forceState(S_STARTUP);
+//    }
+    call State.forceState(S_OFFLINE);
     post runState();
     return SUCCESS;
   }
@@ -400,9 +417,12 @@ implementation {
    * Receive is signaled when a new message arrives
    */
   event void Message.receive(msgData msg) {
-    uint8_t mote;
+    uint8_t mote, sens;
     switch (msg.type) {
     case WAVELETDATA: {
+      if (msg.data.wData.dataSet != dataSet
+          || msg.data.wData.level != curLevel)
+        return; // Rejects data for the wrong data set or level
       switch (call State.getState()) {
       case S_PREDICTING: {
         if (msg.data.wData.state == S_UPDATING) {
@@ -413,7 +433,9 @@ implementation {
           if (mote < level[curLevel].nbCount) {
             dbg(DBG_USR2, "Predict: DS: %i, L: %i, Got values from update mote %i\n",
                 dataSet, curLevel + 1, msg.src);
-            level[curLevel].nb[mote].data = msg.data.wData; 
+            level[curLevel].nb[mote].data.state = msg.data.wData.state;
+            for (sens = 0; sens < WT_SENSORS; sens++)
+              level[curLevel].nb[mote].data.value[sens] = msg.data.wData.value[sens];
           } else {
             dbg(DBG_USR2, "Predict: DS: %i, L: %i, BAD NEIGHBOR! Got values from update mote %i\n",
                 dataSet, curLevel + 1, msg.src);
@@ -429,7 +451,9 @@ implementation {
           if (mote < level[curLevel].nbCount) {
             dbg(DBG_USR2, "Update: DS: %i, L: %i, Got values from predict mote %i\n",
                 dataSet, curLevel + 1, msg.src);
-            level[curLevel].nb[mote].data = msg.data.wData;
+            level[curLevel].nb[mote].data.state = msg.data.wData.state;
+            for (sens = 0; sens < WT_SENSORS; sens++)
+              level[curLevel].nb[mote].data.value[sens] = msg.data.wData.value[sens];
           } else {
             dbg(DBG_USR2, "Update: DS: %i, L: %i, BAD NEIGHBOR! Got values from predict mote %i\n",
                 dataSet, curLevel + 1, msg.src);

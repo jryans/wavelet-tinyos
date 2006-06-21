@@ -28,11 +28,11 @@ typedef struct {
 typedef struct {
 	uint8_t state; // State this mote will have in this level
 	float value[WT_SENSORS];		// Holds one value for each sensor (only two sensors for now)
-} __attribute__ ((packed)) WaveletData;
+} __attribute__ ((packed)) IntWaveletData;
 
-typedef struct { // One MoteInfo and WaveletData for each neighbor
+typedef struct { // One MoteInfo and IntWaveletData for each neighbor
   MoteInfo info;
-  WaveletData data;
+  IntWaveletData data;
 } __attribute__ ((packed)) WaveletNeighbor;
 
 typedef struct {
@@ -40,7 +40,14 @@ typedef struct {
   WaveletNeighbor *nb; // Array of WaveletNeighbors
 } __attribute__ ((packed)) WaveletLevel;
 
-/*** Transmitted Config Data ***/
+/*** Transmitted Data ***/
+
+typedef struct {
+  uint8_t dataSet; // Data set this data belongs to
+	uint8_t level; // Wavelet level this data belongs to
+	uint8_t state; // State this mote has in this level
+	float value[WT_SENSORS];		// Holds one value for each sensor (only two sensors for now)
+} __attribute__ ((packed)) WaveletData;
 
 typedef struct {
   uint8_t numLevels; // Total number of WT levels that will be coming
