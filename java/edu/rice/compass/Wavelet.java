@@ -27,12 +27,12 @@ public class Wavelet {
 	
 	/* Message Types */
 	static final short MOTECOMMAND = 0;
-	static final short RAWDATA = 1;
-	static final short WAVELETDATA = 2;
-	static final short WAVELETCONFDATA = 3;
-	static final short WAVELETCONFHEADER = 4;
-	static final short WAVELETSTATE = 5;
-	static final short MOTESTATS = 6;
+	//static final short RAWDATA = 1;
+	static final short WAVELETDATA = 1;
+	static final short WAVELETCONFDATA = 2;
+	static final short WAVELETCONFHEADER = 3;
+	static final short WAVELETSTATE = 4;
+	static final short MOTESTATS = 5;
 	
 	/* Sensors */
 	static final short TEMP = 0;
