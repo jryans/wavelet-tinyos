@@ -197,6 +197,19 @@ public class WaveletMote {
 		nInfo.set_data_data_wConfData_moteCount((short) nb);
 		return nInfo;
 	}
+	
+	public Packer testPacker() {
+		WaveletNeighbor[] nb = new WaveletNeighbor[neighbors[0].length];
+		for (int i = 0; i < nb.length; i++) {
+			nb[i] = new WaveletNeighbor();
+			nb[i].set_id(neighbors[0][i].id);
+			nb[i].set_state(state[0]);
+			nb[i].set_coeff(neighbors[0][i].coeff);
+		}
+		WaveletLevel level = new WaveletLevel(nb);
+		Packer packer = new Packer(level);
+		return packer;
+	}
 
 	public String toString() {
 		return state.toString() + "/n" + neighbors.toString();

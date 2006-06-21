@@ -158,6 +158,25 @@ public class UnicastPack extends net.tinyos.message.Message {
         s += "]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
+        s += "  [data.data.bpHeader.requestType=0x"+Long.toHexString(get_data_data_bpHeader_requestType())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.bpHeader.packTotal=0x"+Long.toHexString(get_data_data_bpHeader_packTotal())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.bpHeader.bytesTotal=0x"+Long.toHexString(get_data_data_bpHeader_bytesTotal())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.bpData.curPack=0x"+Long.toHexString(get_data_data_bpData_curPack())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.bpData.data=";
+        for (int i = 0; i < 22; i++) {
+          s += "0x"+Long.toHexString(getElement_data_data_bpData_data(i) & 0xff)+" ";
+        }
+        s += "]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
         s += "  [data.data.wState.state=0x"+Long.toHexString(get_data_data_wState_state())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
@@ -1678,6 +1697,411 @@ public class UnicastPack extends net.tinyos.message.Message {
          for (i = 0; i < carr.length; i++) {
              if ((char)getElement_data_data_wConfHeader_nbCount(i) == (char)0) break;
              carr[i] = (char)getElement_data_data_wConfHeader_nbCount(i);
+         }
+         return new String(carr,0,i);
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.bpHeader.requestType
+    //   Field type: short
+    //   Offset (bits): 48
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.bpHeader.requestType' is signed (false).
+     */
+    public static boolean isSigned_data_data_bpHeader_requestType() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.bpHeader.requestType' is an array (false).
+     */
+    public static boolean isArray_data_data_bpHeader_requestType() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.bpHeader.requestType'
+     */
+    public static int offset_data_data_bpHeader_requestType() {
+        return (48 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.bpHeader.requestType'
+     */
+    public static int offsetBits_data_data_bpHeader_requestType() {
+        return 48;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.bpHeader.requestType'
+     */
+    public short get_data_data_bpHeader_requestType() {
+        return (short)getUIntElement(offsetBits_data_data_bpHeader_requestType(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.bpHeader.requestType'
+     */
+    public void set_data_data_bpHeader_requestType(short value) {
+        setUIntElement(offsetBits_data_data_bpHeader_requestType(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.bpHeader.requestType'
+     */
+    public static int size_data_data_bpHeader_requestType() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.bpHeader.requestType'
+     */
+    public static int sizeBits_data_data_bpHeader_requestType() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.bpHeader.packTotal
+    //   Field type: short
+    //   Offset (bits): 56
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.bpHeader.packTotal' is signed (false).
+     */
+    public static boolean isSigned_data_data_bpHeader_packTotal() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.bpHeader.packTotal' is an array (false).
+     */
+    public static boolean isArray_data_data_bpHeader_packTotal() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.bpHeader.packTotal'
+     */
+    public static int offset_data_data_bpHeader_packTotal() {
+        return (56 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.bpHeader.packTotal'
+     */
+    public static int offsetBits_data_data_bpHeader_packTotal() {
+        return 56;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.bpHeader.packTotal'
+     */
+    public short get_data_data_bpHeader_packTotal() {
+        return (short)getUIntElement(offsetBits_data_data_bpHeader_packTotal(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.bpHeader.packTotal'
+     */
+    public void set_data_data_bpHeader_packTotal(short value) {
+        setUIntElement(offsetBits_data_data_bpHeader_packTotal(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.bpHeader.packTotal'
+     */
+    public static int size_data_data_bpHeader_packTotal() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.bpHeader.packTotal'
+     */
+    public static int sizeBits_data_data_bpHeader_packTotal() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.bpHeader.bytesTotal
+    //   Field type: int
+    //   Offset (bits): 64
+    //   Size (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.bpHeader.bytesTotal' is signed (false).
+     */
+    public static boolean isSigned_data_data_bpHeader_bytesTotal() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.bpHeader.bytesTotal' is an array (false).
+     */
+    public static boolean isArray_data_data_bpHeader_bytesTotal() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.bpHeader.bytesTotal'
+     */
+    public static int offset_data_data_bpHeader_bytesTotal() {
+        return (64 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.bpHeader.bytesTotal'
+     */
+    public static int offsetBits_data_data_bpHeader_bytesTotal() {
+        return 64;
+    }
+
+    /**
+     * Return the value (as a int) of the field 'data.data.bpHeader.bytesTotal'
+     */
+    public int get_data_data_bpHeader_bytesTotal() {
+        return (int)getUIntElement(offsetBits_data_data_bpHeader_bytesTotal(), 16);
+    }
+
+    /**
+     * Set the value of the field 'data.data.bpHeader.bytesTotal'
+     */
+    public void set_data_data_bpHeader_bytesTotal(int value) {
+        setUIntElement(offsetBits_data_data_bpHeader_bytesTotal(), 16, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.bpHeader.bytesTotal'
+     */
+    public static int size_data_data_bpHeader_bytesTotal() {
+        return (16 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.bpHeader.bytesTotal'
+     */
+    public static int sizeBits_data_data_bpHeader_bytesTotal() {
+        return 16;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.bpData.curPack
+    //   Field type: short
+    //   Offset (bits): 48
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.bpData.curPack' is signed (false).
+     */
+    public static boolean isSigned_data_data_bpData_curPack() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.bpData.curPack' is an array (false).
+     */
+    public static boolean isArray_data_data_bpData_curPack() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.bpData.curPack'
+     */
+    public static int offset_data_data_bpData_curPack() {
+        return (48 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.bpData.curPack'
+     */
+    public static int offsetBits_data_data_bpData_curPack() {
+        return 48;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.bpData.curPack'
+     */
+    public short get_data_data_bpData_curPack() {
+        return (short)getUIntElement(offsetBits_data_data_bpData_curPack(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.bpData.curPack'
+     */
+    public void set_data_data_bpData_curPack(short value) {
+        setUIntElement(offsetBits_data_data_bpData_curPack(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.bpData.curPack'
+     */
+    public static int size_data_data_bpData_curPack() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.bpData.curPack'
+     */
+    public static int sizeBits_data_data_bpData_curPack() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.bpData.data
+    //   Field type: byte[]
+    //   Offset (bits): 56
+    //   Size of each element (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.bpData.data' is signed (false).
+     */
+    public static boolean isSigned_data_data_bpData_data() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.bpData.data' is an array (true).
+     */
+    public static boolean isArray_data_data_bpData_data() {
+        return true;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.bpData.data'
+     */
+    public static int offset_data_data_bpData_data(int index1) {
+        int offset = 56;
+        if (index1 < 0 || index1 >= 22) throw new ArrayIndexOutOfBoundsException();
+        offset += 0 + index1 * 8;
+        return (offset / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.bpData.data'
+     */
+    public static int offsetBits_data_data_bpData_data(int index1) {
+        int offset = 56;
+        if (index1 < 0 || index1 >= 22) throw new ArrayIndexOutOfBoundsException();
+        offset += 0 + index1 * 8;
+        return offset;
+    }
+
+    /**
+     * Return the entire array 'data.data.bpData.data' as a byte[]
+     */
+    public byte[] get_data_data_bpData_data() {
+        byte[] tmp = new byte[22];
+        for (int index0 = 0; index0 < numElements_data_data_bpData_data(0); index0++) {
+            tmp[index0] = getElement_data_data_bpData_data(index0);
+        }
+        return tmp;
+    }
+
+    /**
+     * Set the contents of the array 'data.data.bpData.data' from the given byte[]
+     */
+    public void set_data_data_bpData_data(byte[] value) {
+        for (int index0 = 0; index0 < value.length; index0++) {
+            setElement_data_data_bpData_data(index0, value[index0]);
+        }
+    }
+
+    /**
+     * Return an element (as a byte) of the array 'data.data.bpData.data'
+     */
+    public byte getElement_data_data_bpData_data(int index1) {
+        return (byte)getSIntElement(offsetBits_data_data_bpData_data(index1), 8);
+    }
+
+    /**
+     * Set an element of the array 'data.data.bpData.data'
+     */
+    public void setElement_data_data_bpData_data(int index1, byte value) {
+        setSIntElement(offsetBits_data_data_bpData_data(index1), 8, value);
+    }
+
+    /**
+     * Return the total size, in bytes, of the array 'data.data.bpData.data'
+     */
+    public static int totalSize_data_data_bpData_data() {
+        return (176 / 8);
+    }
+
+    /**
+     * Return the total size, in bits, of the array 'data.data.bpData.data'
+     */
+    public static int totalSizeBits_data_data_bpData_data() {
+        return 176;
+    }
+
+    /**
+     * Return the size, in bytes, of each element of the array 'data.data.bpData.data'
+     */
+    public static int elementSize_data_data_bpData_data() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of each element of the array 'data.data.bpData.data'
+     */
+    public static int elementSizeBits_data_data_bpData_data() {
+        return 8;
+    }
+
+    /**
+     * Return the number of dimensions in the array 'data.data.bpData.data'
+     */
+    public static int numDimensions_data_data_bpData_data() {
+        return 1;
+    }
+
+    /**
+     * Return the number of elements in the array 'data.data.bpData.data'
+     */
+    public static int numElements_data_data_bpData_data() {
+        return 22;
+    }
+
+    /**
+     * Return the number of elements in the array 'data.data.bpData.data'
+     * for the given dimension.
+     */
+    public static int numElements_data_data_bpData_data(int dimension) {
+      int array_dims[] = { 22,  };
+        if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
+        if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");
+        return array_dims[dimension];
+    }
+
+    /**
+     * Fill in the array 'data.data.bpData.data' with a String
+     */
+    public void setString_data_data_bpData_data(String s) { 
+         int len = s.length();
+         int i;
+         for (i = 0; i < len; i++) {
+             setElement_data_data_bpData_data(i, (byte)s.charAt(i));
+         }
+         setElement_data_data_bpData_data(i, (byte)0); //null terminate
+    }
+
+    /**
+     * Read the array 'data.data.bpData.data' as a String
+     */
+    public String getString_data_data_bpData_data() { 
+         char carr[] = new char[Math.min(net.tinyos.message.Message.MAX_CONVERTED_STRING_LENGTH,22)];
+         int i;
+         for (i = 0; i < carr.length; i++) {
+             if ((char)getElement_data_data_bpData_data(i) == (char)0) break;
+             carr[i] = (char)getElement_data_data_bpData_data(i);
          }
          return new String(carr,0,i);
     }

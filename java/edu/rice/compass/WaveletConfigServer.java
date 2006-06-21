@@ -25,9 +25,6 @@ public class WaveletConfigServer implements MessageListener {
 	private static long setLength;
 	private static int numSets;
 	private static int curSet;
-	private Timer setTimer = new Timer();
-	private SetTracker setTracker = new SetTracker();
-	private SetTimeout setTimeout = new SetTimeout();
 
 	public static void main(String[] args) throws Exception {
 		SimpleJSAP parser = new SimpleJSAP("WaveletConfigServer",
@@ -42,7 +39,8 @@ public class WaveletConfigServer implements MessageListener {
 						new Switch("force", 'f', "force"),
 						new Switch("stats", JSAP.NO_SHORTFLAG, "stats"),
 						new FlaggedOption("dest", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
-								JSAP.NOT_REQUIRED, 'd', "dest") });
+								JSAP.NOT_REQUIRED, 'd', "dest"),
+						new Switch("test", 't', "test") });
 
 		JSAPResult config = parser.parse(args);
 		if (parser.messagePrinted())
@@ -86,8 +84,10 @@ public class WaveletConfigServer implements MessageListener {
 					maxScale = (int) wc.mScale[i];
 			long minSetLen = 6000 + 4000 * (maxScale - 1);
 			if (setLength < minSetLen && !config.getBoolean("force")) {
-				System.out.println("Set length is smaller than " + minSetLen
-						+ ", the minimum time required for the motes to process this data set.");
+				System.out
+						.println("Set length is smaller than "
+								+ minSetLen
+								+ ", the minimum time required for the motes to process this data set.");
 				System.out.println("Run again with --force if you wish to proceed.");
 			}
 			// Setup mote data
@@ -140,45 +140,60 @@ public class WaveletConfigServer implements MessageListener {
 		if (pack.get_data_dest() != 0)
 			return; // This would be quite strange
 		switch (pack.get_data_type()) {
-		case Wavelet.WAVELETCONFHEADER:
-			// If true, this is the initial request, else an ACK.
-			if (pack.get_data_data_wConfHeader_numLevels() == 0) {
-				System.out.println("Got header request from mote " + id);
+		/*
+		 * case Wavelet.WAVELETCONFHEADER: // If true, this is the initial request,
+		 * else an ACK. if (pack.get_data_data_wConfHeader_numLevels() == 0) {
+		 * System.out.println("Got header request from mote " + id); try {
+		 * moteSend.sendPack(mote[id - 1].getHeaderPack()); System.out.println("Sent
+		 * header pack to mote " + id); } catch (IOException e) {
+		 * e.printStackTrace(); } } else { System.out.println("Got header ack from
+		 * mote " + id); try { moteSend .sendPack(mote[id -
+		 * 1].getNextDataPack((short) 0, (short) -1)); System.out.println("Sent data
+		 * pack to mote " + id); } catch (IOException e) { e.printStackTrace(); } }
+		 * break; case Wavelet.WAVELETCONFDATA: System.out.println("Got data ack
+		 * from mote " + id); // Send the next packet if (!mote[id -
+		 * 1].isConfigDone()) { short curLevel =
+		 * pack.get_data_data_wConfData_level(); short curPack =
+		 * pack.get_data_data_wConfData_packNum(); if (mote[id -
+		 * 1].nextPackExists(curLevel, curPack)) { try { moteSend.sendPack(mote[id -
+		 * 1].getNextDataPack(curLevel, curPack)); System.out.println("Sent data
+		 * pack to mote " + id); } catch (IOException e) { e.printStackTrace(); } }
+		 * else { mote[id - 1].setConfigDone(true); System.out.println("Config done
+		 * for mote " + id); attemptStart(); } } break;
+		 */
+		case Wavelet.BIGPACKHEADER:
+			Packer packer = mote[id - 1].testPacker();
+			if (pack.get_data_data_bpHeader_packTotal() == 0) {
 				try {
-					moteSend.sendPack(mote[id - 1].getHeaderPack());
-					System.out.println("Sent header pack to mote " + id);
+					moteSend.sendPack(packer.getHeader());
+					System.out.println("Sent pack header (0/"
+							+ (packer.getNumPacks() + 1) + ") to mote " + id);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			} else {
-				System.out.println("Got header ack from mote " + id);
 				try {
-					moteSend
-							.sendPack(mote[id - 1].getNextDataPack((short) 0, (short) -1));
-					System.out.println("Sent data pack to mote " + id);
+					UnicastPack newPack = packer.getData(0);
+					moteSend.sendPack(newPack);
+					System.out.println("Sent data pack ("
+							+ (newPack.get_data_data_bpData_curPack() + 1) + "/"
+							+ (packer.getNumPacks() + 1) + ") to mote " + id);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			}
 			break;
-		case Wavelet.WAVELETCONFDATA:
-			System.out.println("Got data ack from mote " + id);
-			// Send the next packet
-			if (!mote[id - 1].isConfigDone()) {
-				short curLevel = pack.get_data_data_wConfData_level();
-				short curPack = pack.get_data_data_wConfData_packNum();
-				if (mote[id - 1].nextPackExists(curLevel, curPack)) {
-					try {
-						moteSend.sendPack(mote[id - 1].getNextDataPack(curLevel, curPack));
-						System.out.println("Sent data pack to mote " + id);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				} else {
-					mote[id - 1].setConfigDone(true);
-					System.out.println("Config done for mote " + id);
-					attemptStart();
-				}
+		case Wavelet.BIGPACKDATA:
+			Packer packer2 = mote[id - 1].testPacker();
+			try {
+				UnicastPack newPack = packer2.getData(pack
+						.get_data_data_bpData_curPack() + 1);
+				moteSend.sendPack(newPack);
+				System.out.println("Sent data pack ("
+						+ (newPack.get_data_data_bpData_curPack() + 1) + "/"
+						+ (packer2.getNumPacks() + 1) + ") to mote " + id);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 			break;
 		case Wavelet.WAVELETDATA:
@@ -326,22 +341,6 @@ public class WaveletConfigServer implements MessageListener {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-}
-
-class SetTracker extends TimerTask {
-
-	public void run() {
-		WaveletConfigServer.nextSet();
-	}
-
-}
-
-class SetTimeout extends TimerTask {
-
-	public void run() {
-		WaveletConfigServer.nextSet();
 	}
 
 }
