@@ -186,7 +186,7 @@ implementation {
     switch (call State.getState()) {
     case S_START_DATASET: {
       nextState = S_READING_SENSORS;
-      delay = 5000;
+      delay = 1500;
       break; }  
     case S_READING_SENSORS: {
       nextState = level[curLevel].nb[0].data.state;
