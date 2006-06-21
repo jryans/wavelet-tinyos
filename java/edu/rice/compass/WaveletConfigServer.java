@@ -27,6 +27,7 @@ public class WaveletConfigServer implements MessageListener {
 	private static int curSet;
 	private Timer setTimer = new Timer();
 	private SetTracker setTracker = new SetTracker();
+	private SetTimeout setTimeout = new SetTimeout();
 
 	public static void main(String[] args) throws Exception {
 		SimpleJSAP parser = new SimpleJSAP("WaveletConfigServer",
@@ -164,32 +165,14 @@ public class WaveletConfigServer implements MessageListener {
 				} else {
 					mote[id - 1].setConfigDone(true);
 					System.out.println("Config done for mote " + id);
-				}
-			} else {
-				if (!startSent) {
-					boolean done = true;
-					for (int i = 0; i < mote.length; i++) {
-						if (!mote[i].isConfigDone()) {
-							done = false;
-							break;
-						}
-					}
-					if (done) {
-						try {
-							startSent = true;
-							startDataSet();
-							System.out
-									.println("Last mote was " + id + ", sent start command");
-							setTimer.scheduleAtFixedRate(setTracker, setLength / 1024 * 1000,
-									setLength / 1024 * 1000);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
+					attemptStart();
 				}
 			}
 			break;
 		case Wavelet.WAVELETDATA:
+			// Check if data is from the next set
+			setCheck(pack.get_data_data_wData_dataSet() - 1);			
+			// Store mote data
 			if (pack.get_data_data_wData_state() == Wavelet.S_DONE) {
 				mData.value[curSet][Wavelet.TEMP * 2 + Wavelet.WT_OFFSET][id - 1] = pack
 						.getElement_data_data_wData_value(Wavelet.TEMP);
@@ -219,6 +202,8 @@ public class WaveletConfigServer implements MessageListener {
 					+ "%)");
 			for (int i = 0; i < pack.get_data_data_stats_numReps(); i++) {
 				System.out.println("Report " + (i + 1) + ":");
+				System.out.println("  Count: "
+						+ pack.getElement_data_data_stats_reports_number(i));
 				System.out.print("  Type:  ");
 				switch (pack.getElement_data_data_stats_reports_type(i)) {
 				case Wavelet.WT_CACHE:
@@ -234,8 +219,37 @@ public class WaveletConfigServer implements MessageListener {
 			break;
 		}
 	}
+	
+	synchronized private void setCheck(int msgSet) {
+		if (msgSet > curSet)
+			nextSet();
+	}
 
-	static void nextSet() {
+	private void attemptStart() {
+		if (!startSent) {
+			boolean done = true;
+			for (int i = 0; i < mote.length; i++) {
+				if (!mote[i].isConfigDone()) {
+					done = false;
+					break;
+				}
+			}
+			if (done) {
+				try {
+					startSent = true;
+					startDataSet();
+					System.out.println("Start command sent!");
+//				setTimer.scheduleAtFixedRate(setTracker, setLength / 1024 * 1000,
+//				  setLength / 1024 * 1000);
+					//setTimer.schedule(setTimeout, setLength * 2);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	synchronized static void nextSet() {
 		int[] check = dataCheck();
 		if (check[Wavelet.RAW_OFFSET] == 0 && check[Wavelet.WT_OFFSET] == 0) {
 			System.out.println("Data set " + (curSet + 1) + " complete!");
@@ -305,6 +319,14 @@ public class WaveletConfigServer implements MessageListener {
 }
 
 class SetTracker extends TimerTask {
+
+	public void run() {
+		WaveletConfigServer.nextSet();
+	}
+
+}
+
+class SetTimeout extends TimerTask {
 
 	public void run() {
 		WaveletConfigServer.nextSet();

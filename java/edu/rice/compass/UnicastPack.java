@@ -109,6 +109,12 @@ public class UnicastPack extends net.tinyos.message.Message {
         s += "]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
+        s += "  [data.data.wData.dataSet=0x"+Long.toHexString(get_data_data_wData_dataSet())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.wData.level=0x"+Long.toHexString(get_data_data_wData_level())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
         s += "  [data.data.wData.state=0x"+Long.toHexString(get_data_data_wData_state())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
@@ -656,9 +662,135 @@ public class UnicastPack extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wData.state
+    // Accessor methods for field: data.data.wData.dataSet
     //   Field type: short
     //   Offset (bits): 48
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.wData.dataSet' is signed (false).
+     */
+    public static boolean isSigned_data_data_wData_dataSet() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.wData.dataSet' is an array (false).
+     */
+    public static boolean isArray_data_data_wData_dataSet() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.wData.dataSet'
+     */
+    public static int offset_data_data_wData_dataSet() {
+        return (48 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.wData.dataSet'
+     */
+    public static int offsetBits_data_data_wData_dataSet() {
+        return 48;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.wData.dataSet'
+     */
+    public short get_data_data_wData_dataSet() {
+        return (short)getUIntElement(offsetBits_data_data_wData_dataSet(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.wData.dataSet'
+     */
+    public void set_data_data_wData_dataSet(short value) {
+        setUIntElement(offsetBits_data_data_wData_dataSet(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.wData.dataSet'
+     */
+    public static int size_data_data_wData_dataSet() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.wData.dataSet'
+     */
+    public static int sizeBits_data_data_wData_dataSet() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.wData.level
+    //   Field type: short
+    //   Offset (bits): 56
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.wData.level' is signed (false).
+     */
+    public static boolean isSigned_data_data_wData_level() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.wData.level' is an array (false).
+     */
+    public static boolean isArray_data_data_wData_level() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.wData.level'
+     */
+    public static int offset_data_data_wData_level() {
+        return (56 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.wData.level'
+     */
+    public static int offsetBits_data_data_wData_level() {
+        return 56;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.wData.level'
+     */
+    public short get_data_data_wData_level() {
+        return (short)getUIntElement(offsetBits_data_data_wData_level(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.wData.level'
+     */
+    public void set_data_data_wData_level(short value) {
+        setUIntElement(offsetBits_data_data_wData_level(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.wData.level'
+     */
+    public static int size_data_data_wData_level() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.wData.level'
+     */
+    public static int sizeBits_data_data_wData_level() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.wData.state
+    //   Field type: short
+    //   Offset (bits): 64
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
@@ -680,14 +812,14 @@ public class UnicastPack extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'data.data.wData.state'
      */
     public static int offset_data_data_wData_state() {
-        return (48 / 8);
+        return (64 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'data.data.wData.state'
      */
     public static int offsetBits_data_data_wData_state() {
-        return 48;
+        return 64;
     }
 
     /**
@@ -721,7 +853,7 @@ public class UnicastPack extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: data.data.wData.value
     //   Field type: float[]
-    //   Offset (bits): 56
+    //   Offset (bits): 72
     //   Size of each element (bits): 32
     /////////////////////////////////////////////////////////
 
@@ -743,7 +875,7 @@ public class UnicastPack extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'data.data.wData.value'
      */
     public static int offset_data_data_wData_value(int index1) {
-        int offset = 56;
+        int offset = 72;
         if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
         offset += 0 + index1 * 32;
         return (offset / 8);
@@ -753,7 +885,7 @@ public class UnicastPack extends net.tinyos.message.Message {
      * Return the offset (in bits) of the field 'data.data.wData.value'
      */
     public static int offsetBits_data_data_wData_value(int index1) {
-        int offset = 56;
+        int offset = 72;
         if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
         offset += 0 + index1 * 32;
         return offset;
