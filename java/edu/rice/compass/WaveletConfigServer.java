@@ -39,6 +39,7 @@ public class WaveletConfigServer implements MessageListener {
 						new FlaggedOption("sets", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, 's', "sets"),
 						new Switch("clear", 'c', "clear"),
+						new Switch("force", 'f', "force"),
 						new Switch("stats", JSAP.NO_SHORTFLAG, "stats"),
 						new FlaggedOption("dest", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, 'd', "dest") });
@@ -78,6 +79,17 @@ public class WaveletConfigServer implements MessageListener {
 			// Read in the config data
 			wc = (WaveletConfig) obj.readObject();
 			obj.close();
+			// Check for valid set length
+			int maxScale = 0;
+			for (int i = 0; i < wc.mScale.length; i++)
+				if (wc.mScale[i] > maxScale)
+					maxScale = (int) wc.mScale[i];
+			long minSetLen = 6000 + 4000 * (maxScale - 1);
+			if (setLength < minSetLen && !config.getBoolean("force")) {
+				System.out.println("Set length is smaller than " + minSetLen
+						+ ", the minimum time required for the motes to process this data set.");
+				System.out.println("Run again with --force if you wish to proceed.");
+			}
 			// Setup mote data
 			mote = new WaveletMote[wc.mScale.length];
 			for (int i = 0; i < mote.length; i++)
@@ -171,7 +183,7 @@ public class WaveletConfigServer implements MessageListener {
 			break;
 		case Wavelet.WAVELETDATA:
 			// Check if data is from the next set
-			setCheck(pack.get_data_data_wData_dataSet() - 1);			
+			setCheck(pack.get_data_data_wData_dataSet() - 1);
 			// Store mote data
 			if (pack.get_data_data_wData_state() == Wavelet.S_DONE) {
 				mData.value[curSet][Wavelet.TEMP * 2 + Wavelet.WT_OFFSET][id - 1] = pack
@@ -219,7 +231,7 @@ public class WaveletConfigServer implements MessageListener {
 			break;
 		}
 	}
-	
+
 	synchronized private void setCheck(int msgSet) {
 		if (msgSet > curSet)
 			nextSet();
@@ -239,9 +251,9 @@ public class WaveletConfigServer implements MessageListener {
 					startSent = true;
 					startDataSet();
 					System.out.println("Start command sent!");
-//				setTimer.scheduleAtFixedRate(setTracker, setLength / 1024 * 1000,
-//				  setLength / 1024 * 1000);
-					//setTimer.schedule(setTimeout, setLength * 2);
+					// setTimer.scheduleAtFixedRate(setTracker, setLength / 1024 * 1000,
+					// setLength / 1024 * 1000);
+					// setTimer.schedule(setTimeout, setLength * 2);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
