@@ -20,19 +20,11 @@ enum {
 
 /*** Internal Wavelet Data ***/
 
-typedef struct {
+typedef struct { // Describes each neighbor mote
   uint16_t id; // ID number of the mote 
-  float coeff; // WT coeff for the mote (neg: predict, pos: update)
-} __attribute__ ((packed)) MoteInfo;
-
-typedef struct {
-	uint8_t state; // State this mote will have in this level
+  uint8_t state; // State this mote will have in this level
+  float coeff; // WT coeff for the mote
 	float value[WT_SENSORS];		// Holds one value for each sensor (only two sensors for now)
-} __attribute__ ((packed)) IntWaveletData;
-
-typedef struct { // One MoteInfo and IntWaveletData for each neighbor
-  MoteInfo info;
-  IntWaveletData data;
 } __attribute__ ((packed)) WaveletNeighbor;
 
 typedef struct {

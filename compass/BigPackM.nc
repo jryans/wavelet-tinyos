@@ -133,9 +133,9 @@ implementation {
     WaveletNeighbor *pNB;
     for (mote = 0; mote < conf->moteCount; mote++) {
       pNB = &pLevel[curLevel].nb[curPackNum * WT_MOTE_PER_CONFDATA + mote];
-      pNB->info.id = conf->moteConf[mote].id;
-      pNB->info.coeff = conf->moteConf[mote].coeff;
-      pNB->data.state = conf->moteConf[mote].state;
+      pNB->id = conf->moteConf[mote].id;
+      pNB->coeff = conf->moteConf[mote].coeff;
+      pNB->state = conf->moteConf[mote].state;
     }
     if (++curPackNum * WT_MOTE_PER_CONFDATA >= nbCount[curLevel]) {
       curPackNum = 0;

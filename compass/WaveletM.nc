@@ -189,7 +189,7 @@ implementation {
       delay = 1500;
       break; }  
     case S_READING_SENSORS: {
-      nextState = level[curLevel].nb[0].data.state;
+      nextState = level[curLevel].nb[0].state;
       (nextState == S_UPDATING) ? (delay = 1000)
                                 : (delay = 500);
       break; }
@@ -204,7 +204,7 @@ implementation {
       delay = 1500;
       break; }
     case S_CACHE: {
-      (level[curLevel].nb[0].data.state == S_UPDATING) 
+      (level[curLevel].nb[0].state == S_UPDATING) 
         ? (nextState = S_UPDATED)
         : (nextState = S_PREDICTED);                         
       delay = 500;
@@ -216,14 +216,14 @@ implementation {
     case S_UPDATED: {
       (curLevel + 1 == numLevels) 
         ? (nextState = S_DONE)
-        : (nextState = level[curLevel + 1].nb[0].data.state);
+        : (nextState = level[curLevel + 1].nb[0].state);
       (nextState == S_UPDATING) ? (delay = 1000)
                                 : (delay = 500);
       break; }
     case S_SKIPLEVEL: {
       (curLevel + 1 == numLevels) 
         ? (nextState = S_DONE)
-        : (nextState = level[curLevel + 1].nb[0].data.state);
+        : (nextState = level[curLevel + 1].nb[0].state);
       (nextState == S_UPDATING) ? (delay = 4500)
                                 : (delay = 4000);
       break; }
@@ -242,7 +242,7 @@ implementation {
     uint8_t i;
     if (nextState != S_DONE) {
       for (i = 0; i < WT_SENSORS; i++) // Carry data over to next level
-        level[curLevel + 1].nb[0].data.value[i] = level[curLevel].nb[0].data.value[i];
+        level[curLevel + 1].nb[0].value[i] = level[curLevel].nb[0].value[i];
       curLevel++;
     }  
   }
@@ -262,7 +262,7 @@ implementation {
     msg.data.wData.level = curLevel;
     msg.data.wData.state = S_DONE;
     for (i = 0; i < WT_SENSORS; i++)
-      msg.data.wData.value[i] = level[curLevel].nb[0].data.value[i];
+      msg.data.wData.value[i] = level[curLevel].nb[0].value[i];
     call Message.send(msg);
   }
   
@@ -303,9 +303,9 @@ implementation {
     msg.data.wData.level = curLevel;
     msg.data.wData.state = call State.getState();
     for (i = 0; i < WT_SENSORS; i++)
-      msg.data.wData.value[i] = level[curLevel].nb[0].data.value[i];
+      msg.data.wData.value[i] = level[curLevel].nb[0].value[i];
     for (mote = 1; mote < level[curLevel].nbCount; mote++) {
-      msg.dest = level[curLevel].nb[mote].info.id;
+      msg.dest = level[curLevel].nb[mote].id;
       if (call State.getState() == S_UPDATING) { // U nodes sending scaling values
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Sending values to predict node %i...\n",
             dataSet, curLevel + 1, msg.dest);
@@ -334,8 +334,8 @@ implementation {
     (call State.getState() == S_PREDICTED) ? (sign = -1) : (sign = 1);
     for (mote = 1; mote < level[curLevel].nbCount; mote++) {
       for (sensor = 0; sensor < WT_SENSORS; sensor++)
-        level[curLevel].nb[0].data.value[sensor] += (sign * level[curLevel].nb[mote].info.coeff
-                                                     * level[curLevel].nb[mote].data.value[sensor]);
+        level[curLevel].nb[0].value[sensor] += (sign * level[curLevel].nb[mote].coeff
+                                                     * level[curLevel].nb[mote].value[sensor]);
     }
   }
   
@@ -351,7 +351,7 @@ implementation {
     uint8_t lvl, mote;
     for (lvl = 0; lvl < numLevels; lvl++) {
       for (mote = 1; mote < level[lvl].nbCount; mote++) {
-        level[lvl].nb[mote].data.state = S_START_DATASET;
+        level[lvl].nb[mote].state = S_START_DATASET;
       }
     }
   }
@@ -366,11 +366,11 @@ implementation {
     uint8_t mote;
     StatsReport report;
     for (mote = 1; mote < level[curLevel].nbCount; mote++) {
-      if (level[curLevel].nb[mote].data.state == S_START_DATASET) {
+      if (level[curLevel].nb[mote].state == S_START_DATASET) {
         report.type = WT_CACHE;
         report.number = 1;
         report.data.cache.level = curLevel + 1;
-        report.data.cache.mote = level[curLevel].nb[mote].info.id;
+        report.data.cache.mote = level[curLevel].nb[mote].id;
         call Stats.file(report);
       } 
     }
@@ -404,7 +404,7 @@ implementation {
   event void SensorData.readDone(RawData newVals) {
     uint8_t i;
     for (i = 0; i < WT_SENSORS; i++) {
-      level[0].nb[0].data.value[i] = newVals.value[i];
+      level[0].nb[0].value[i] = newVals.value[i];
 #ifdef RAW
       rawVals[i] = newVals.value[i];
 #endif      
@@ -460,15 +460,15 @@ implementation {
       case S_PREDICTING: {
         if (msg.data.wData.state == S_UPDATING) {
           for (mote = 1; mote < level[curLevel].nbCount; mote++) {
-            if (level[curLevel].nb[mote].info.id == msg.src)
+            if (level[curLevel].nb[mote].id == msg.src)
               break;
           }
           if (mote < level[curLevel].nbCount) {
             dbg(DBG_USR2, "Predict: DS: %i, L: %i, Got values from update mote %i\n",
                 dataSet, curLevel + 1, msg.src);
-            level[curLevel].nb[mote].data.state = msg.data.wData.state;
+            level[curLevel].nb[mote].state = msg.data.wData.state;
             for (sens = 0; sens < WT_SENSORS; sens++)
-              level[curLevel].nb[mote].data.value[sens] = msg.data.wData.value[sens];
+              level[curLevel].nb[mote].value[sens] = msg.data.wData.value[sens];
           } else {
             dbg(DBG_USR2, "Predict: DS: %i, L: %i, BAD NEIGHBOR! Got values from update mote %i\n",
                 dataSet, curLevel + 1, msg.src);
@@ -478,15 +478,15 @@ implementation {
       case S_UPDATING: {
         if (msg.data.wData.state == S_PREDICTED) {
           for (mote = 1; mote < level[curLevel].nbCount; mote++) {
-            if (level[curLevel].nb[mote].info.id == msg.src)
+            if (level[curLevel].nb[mote].id == msg.src)
               break;
           }
           if (mote < level[curLevel].nbCount) {
             dbg(DBG_USR2, "Update: DS: %i, L: %i, Got values from predict mote %i\n",
                 dataSet, curLevel + 1, msg.src);
-            level[curLevel].nb[mote].data.state = msg.data.wData.state;
+            level[curLevel].nb[mote].state = msg.data.wData.state;
             for (sens = 0; sens < WT_SENSORS; sens++)
-              level[curLevel].nb[mote].data.value[sens] = msg.data.wData.value[sens];
+              level[curLevel].nb[mote].value[sens] = msg.data.wData.value[sens];
           } else {
             dbg(DBG_USR2, "Update: DS: %i, L: %i, BAD NEIGHBOR! Got values from predict mote %i\n",
                 dataSet, curLevel + 1, msg.src);
