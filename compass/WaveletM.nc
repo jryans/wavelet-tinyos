@@ -71,10 +71,9 @@ implementation {
   uint8_t nextState;
   bool forceNextState;
     
-  /*** Internal Functions ***/
+  /*** Functions Declarations ***/
   task void runState();
   void nextWaveletLevel();
-  uint8_t nextWaveletState();
   void sendResultsToBase();
 #ifdef RAW
   void sendRawToBase();
@@ -85,6 +84,8 @@ implementation {
   void newDataSet();
   void clearNeighborState();
   void checkData();
+  
+  /*** State Management ***/
   
   /**
    * This is the heart of the wavelet algorithm's state management.
@@ -99,9 +100,9 @@ implementation {
         call WaveletConfig.getConfig();
         break; }
       case S_START_DATASET: {
+        delayState();
         call Leds.redOff();
         call Leds.yellowOn();
-        delayState();
         curLevel = 0;
         dataSet++;
         clearNeighborState();
@@ -213,12 +214,16 @@ implementation {
       delay = 1000;
       break; }
     case S_UPDATED: {
-      nextState = nextWaveletState();
+      (curLevel + 1 == numLevels) 
+        ? (nextState = S_DONE)
+        : (nextState = level[curLevel + 1].nb[0].data.state);
       (nextState == S_UPDATING) ? (delay = 1000)
                                 : (delay = 500);
       break; }
     case S_SKIPLEVEL: {
-      nextState = nextWaveletState();
+      (curLevel + 1 == numLevels) 
+        ? (nextState = S_DONE)
+        : (nextState = level[curLevel + 1].nb[0].data.state);
       (nextState == S_UPDATING) ? (delay = 4500)
                                 : (delay = 4000);
       break; }
@@ -226,24 +231,27 @@ implementation {
     call StateTimer.start(TIMER_ONE_SHOT, delay);
   }
   
+  /*** Helper Functions ***/
+  
+  /**
+   * If this mote is not done, then it advances to the next wavelet 
+   * level and copies the calculated values to the next level.
+   * Called during S_UPDATED and S_SKIPLEVEL.
+   */ 
   void nextWaveletLevel() {
-    uint8_t newState, i;
-    newState = nextWaveletState();
-    if (newState != S_DONE) {
+    uint8_t i;
+    if (nextState != S_DONE) {
       for (i = 0; i < WT_SENSORS; i++) // Carry data over to next level
         level[curLevel + 1].nb[0].data.value[i] = level[curLevel].nb[0].data.value[i];
       curLevel++;
     }  
   }
   
-  uint8_t nextWaveletState() {
-    if (curLevel + 1 == numLevels) {
-      return S_DONE;
-    } else {
-      return level[curLevel + 1].nb[0].data.state;
-    }
-  }
-  
+  /**
+   * Once this mote has finished a data set, its results are packaged
+   * up and sent to the computer.
+   * Called during S_DONE.
+   */
   void sendResultsToBase() {
     msgData msg;
     uint8_t i;
@@ -258,7 +266,12 @@ implementation {
     call Message.send(msg);
   }
   
-#ifdef RAW  
+#ifdef RAW
+  /**
+   * Once this mote has finished a data set, its raw values are packaged
+   * up and sent to the computer.  Only used for testing.
+   * Called during S_DONE.
+   */  
   void sendRawToBase() {
     msgData msg;
     uint8_t i;
@@ -274,6 +287,13 @@ implementation {
   }
 #endif
   
+  /**
+   * For each level where a mote is not skipped or already done,
+   * it will be in one of two states:
+   * 1. S_UPDATING: Sends scaling values to predict motes and waits
+   * 2. S_PREDICTED: Sends its newly calculated predict values
+   * Called during S_UPDATED and S_PREDICTED.
+   */ 
   void sendValuesToNeighbors() {
     msgData msg;
     uint8_t mote, i;
@@ -298,8 +318,13 @@ implementation {
   }
   
   /**
-   * Calculates new data values by updating or predicting depending on the
-   * sign of the coefficients.  Predict nodes subtract and update nodes add.
+   * Calculates new data values based on data received from neighbors.
+   * The specific algorithm is either:
+   * 1. S_PREDICTED: Subtracts each neighbor's value multiplied by the coefficient for 
+   * that neighbor from this mote's value.
+   * 1. S_UPDATED: Adds each neighbor's value multiplied by the coefficient for 
+   * that neighbor to this mote's value.
+   * Called during S_PREDICTED and S_UPDATED.
    */
   void calcNewValues() {
     uint8_t mote, sensor;
@@ -315,7 +340,12 @@ implementation {
   }
   
   /**
-   * Clears the stored state of each neighbor mote.
+   * The simple caching system currently used tries to track if
+   * we have received a value from each neighbor we're supposed to
+   * hear from during this level.  This is checked by recording the
+   * neighbor's state during when it is received.  At the beginning
+   * of a new data set, these states are cleared.
+   * Called during S_START_DATASET.
    */
   void clearNeighborState() {
     uint8_t lvl, mote;
@@ -327,7 +357,10 @@ implementation {
   }
   
   /**
-   * Reports any cache uses to NetworkStats.
+   * Reports any cache hits to Stats by checking if each neighbor's
+   * state is still the initial state or was changed, indicatng that
+   * new data was received.
+   * Called during S_CACHE.
    */
   void checkData() {
     uint8_t mote;
