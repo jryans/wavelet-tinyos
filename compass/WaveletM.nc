@@ -385,12 +385,6 @@ implementation {
   
   command result_t StdControl.start() 
   {
-//    if (TOS_LOCAL_ADDRESS == 0) {
-//      call State.forceState(S_OFFLINE);
-//    } else {
-//      call Leds.redOn();
-//      call State.forceState(S_STARTUP);
-//    }
     call State.forceState(S_OFFLINE);
     post runState();
     return SUCCESS;
@@ -401,12 +395,12 @@ implementation {
     return SUCCESS;
   }
   
-  event void SensorData.readDone(RawData newVals) {
+  event void SensorData.readDone(float newVals[NUM_SENSORS]) {
     uint8_t i;
     for (i = 0; i < WT_SENSORS; i++) {
-      level[0].nb[0].value[i] = newVals.value[i];
+      level[0].nb[0].value[i] = newVals[i];
 #ifdef RAW
-      rawVals[i] = newVals.value[i];
+      rawVals[i] = newVals[i];
 #endif      
     }
     call State.toIdle();

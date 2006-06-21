@@ -3,7 +3,7 @@
  * @author Ryan Stinnett
  */
 
-includes RawData;
+includes Sensors;
 
 interface SensorData {
 	/**
@@ -16,5 +16,5 @@ interface SensorData {
 	 * to applications.
 	 * @param data Struct containing the requested values
 	 */
-	event void readDone(RawData data);
+	event void readDone(float data[NUM_SENSORS]);
 }

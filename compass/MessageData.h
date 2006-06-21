@@ -6,7 +6,6 @@
 #define _MESSAGEDATA_H
 
 #include "MoteCommand.h"
-#include "RawData.h"
 #include "WaveletData.h"
 #include "Stats.h"
 
@@ -16,7 +15,6 @@ struct MessageData {
 	uint8_t type;
 	union {
 		MoteCommand moteCmd;
-		RawData raw;
 		WaveletData wData;
 		WaveletConfData wConfData;
     WaveletConfHeader wConfHeader;
@@ -29,7 +27,6 @@ typedef struct MessageData msgData;
   
 enum { // Identifies the type of data stored
 	MOTECOMMAND,
-	RAWDATA,
 	WAVELETDATA,
 	WAVELETCONFDATA,
 	WAVELETCONFHEADER,

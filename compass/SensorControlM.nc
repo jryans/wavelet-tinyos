@@ -10,7 +10,6 @@
  */
  
 includes Sensors;
-includes RawData;
 
 module SensorControlM {
   provides {
@@ -29,7 +28,7 @@ module SensorControlM {
 
 implementation {
   uint8_t sensToGo;
-  RawData curData;
+  float curData[NUM_SENSORS];
   task void readData();
   task void dataDone();
   
@@ -85,14 +84,14 @@ implementation {
     call TempControl.stop();
     call LightControl.stop();
     dbg(DBG_USR1, "Values read from sensors: Light = %i, Temp = %i, Volt = %i\n",
-        curData.value[LIGHT], curData.value[TEMP], curData.value[VOLT]);
+        curData[LIGHT], curData[TEMP], curData[VOLT]);
     atomic { signal SensorData.readDone(curData); }
   }
 
   async event result_t TempADC.dataReady(uint16_t data)
   {
     atomic {
-      curData.value[TEMP] = data;
+      curData[TEMP] = data;
       if (--sensToGo == 0)
         post dataDone();
     }
@@ -102,7 +101,7 @@ implementation {
   async event result_t LightADC.dataReady(uint16_t data)
   {
     atomic {
-      curData.value[LIGHT] = data; 
+      curData[LIGHT] = data; 
       if (--sensToGo == 0)
         post dataDone();
     }
@@ -112,7 +111,7 @@ implementation {
   async event result_t VoltADC.dataReady(uint16_t data)
   {
     atomic {
-      curData.value[VOLT] = data; 
+      curData[VOLT] = data; 
       if (--sensToGo == 0)
         post dataDone();
     }
