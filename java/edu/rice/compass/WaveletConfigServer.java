@@ -167,7 +167,7 @@ public class WaveletConfigServer implements MessageListener {
 				try {
 					moteSend.sendPack(packer.getHeader());
 					System.out.println("Sent pack header (0/"
-							+ (packer.getNumPacks() + 1) + ") to mote " + id);
+							+ packer.getNumPacks() + ") to mote " + id);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -177,7 +177,7 @@ public class WaveletConfigServer implements MessageListener {
 					moteSend.sendPack(newPack);
 					System.out.println("Sent data pack ("
 							+ (newPack.get_data_data_bpData_curPack() + 1) + "/"
-							+ (packer.getNumPacks() + 1) + ") to mote " + id);
+							+ packer.getNumPacks() + ") to mote " + id);
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -191,7 +191,7 @@ public class WaveletConfigServer implements MessageListener {
 				moteSend.sendPack(newPack);
 				System.out.println("Sent data pack ("
 						+ (newPack.get_data_data_bpData_curPack() + 1) + "/"
-						+ (packer2.getNumPacks() + 1) + ") to mote " + id);
+						+ packer2.getNumPacks() + ") to mote " + id);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

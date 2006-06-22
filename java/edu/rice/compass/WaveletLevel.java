@@ -9,7 +9,7 @@ package edu.rice.compass;
 public class WaveletLevel extends net.tinyos.message.Message {		
 
     public WaveletLevel(WaveletNeighbor nb[]) {
-    	super(size_nbCount() + elementSize_nb() * nb.length);
+    	super(size_nbCount() + size_nbPtr() + elementSize_nb() * nb.length);
     	set_nbCount((short)nb.length);
     	set_nb(nb);
     }
@@ -80,9 +80,24 @@ public class WaveletLevel extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
+    // TEMP STORAGE SPACE, WILL BE OVERWRITTEN!
+    // Accessor methods for field: nbPtr
+    //   Field type: unsigned int
+    //   Offset (bits): 8
+    //   Size (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return the size, in bytes, of the field 'nbPtr'
+     */
+    private static int size_nbPtr() {
+        return (16 / 8);
+    }
+
+    /////////////////////////////////////////////////////////
     // Accessor methods for field: nb
     //   Field type: WaveletNeighbor[]
-    //   Offset (bits): 8
+    //   Offset (bits): 24
     //   Size of each element (bits): exNB.dataLength() * 8
     /////////////////////////////////////////////////////////
 
@@ -104,7 +119,7 @@ public class WaveletLevel extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'nb'
      */
     public int offset_nb(int index1) {
-        int offset = 8;
+        int offset = 24;
         if (index1 < 0 || index1 >= get_nbCount()) throw new ArrayIndexOutOfBoundsException();
         offset += 0 + index1 * elementSizeBits_nb();
         return (offset / 8);
@@ -114,7 +129,7 @@ public class WaveletLevel extends net.tinyos.message.Message {
      * Return the offset (in bits) of the field 'nb'
      */
     public int offsetBits_nb(int index1) {
-        int offset = 8;
+        int offset = 24;
         if (index1 < 0 || index1 >= get_nbCount()) throw new ArrayIndexOutOfBoundsException();
         offset += 0 + index1 * elementSizeBits_nb();
         return offset;
@@ -151,7 +166,7 @@ public class WaveletLevel extends net.tinyos.message.Message {
      * Set an element of the array 'nb'
      */
     public void setElement_nb(int index1, WaveletNeighbor value) {
-        dataSet(value, offsetBits_nb(index1));
+        dataSet(value, offset_nb(index1));
     }
 
     /**

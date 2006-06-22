@@ -25,15 +25,24 @@ public class Packer {
 
 	public UnicastPack getHeader() {
 		UnicastPack pack = new UnicastPack();
+		pack.set_data_dest(1); // test!
 		pack.set_data_type(Wavelet.BIGPACKHEADER);
 		pack.set_data_data_bpHeader_requestType(type);
 		pack.set_data_data_bpHeader_packTotal((short)numPacks);
-		pack.set_data_data_bpHeader_bytesTotal(msg.dataLength());
+		pack.set_data_data_bpHeader_byteTotal(msg.dataLength());
+		pack.setElement_data_data_bpHeader_block_length(0, 3);
+		pack.setElement_data_data_bpHeader_block_repCount(0, (short)1);
+		pack.setElement_data_data_bpHeader_block_length(1, 7);
+		pack.setElement_data_data_bpHeader_block_repCount(1, (short)1);
+		pack.setElement_data_data_bpHeader_ptr_addrOfBlock(0, (short)1);
+		pack.setElement_data_data_bpHeader_ptr_destBlock(0, (short)0);
+		pack.setElement_data_data_bpHeader_ptr_destOffset(0, (short)1);
 		return pack;
 	}
 
 	public UnicastPack getData(int packNum) {
 		UnicastPack pack = new UnicastPack();
+		pack.set_data_dest(1); // test!
 		pack.set_data_type(Wavelet.BIGPACKDATA);
 		pack.set_data_data_bpData_curPack((short)packNum);
 		int firstByte = packNum * Wavelet.BP_DATA_LEN;
