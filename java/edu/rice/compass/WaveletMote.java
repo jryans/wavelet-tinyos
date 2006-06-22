@@ -9,6 +9,8 @@ import java.util.*;
 
 public class WaveletMote {
 
+	private Packer packer = new Packer();
+
 	private int id; // ID number of the mote represented
 
 	short state[]; // Mote's state at each scale level that it is used in
@@ -16,19 +18,19 @@ public class WaveletMote {
 
 	private short nextLevel = 0;
 	private short nextPack = 0;
-	//private boolean sending = false;
+	// private boolean sending = false;
 	private boolean configDone;
-	
+
 	// Array indices: nbs[level][nb_index]
 	NeighborInfo neighbors[][]; // Mote's neighbors during each state
-	
+
 	// Tracks data reception from each mote
 	private boolean rawDone;
 	private boolean resultDone;
 
 	public WaveletMote(int id, WaveletConfig wc) {
 		this.id = id;
-		//sending = true;
+		// sending = true;
 		configDone = false;
 		dataTransform(wc);
 	}
@@ -123,6 +125,7 @@ public class WaveletMote {
 				break;
 			}
 		}
+		setupPacker();
 	}
 
 	public UnicastPack getHeaderPack() {
@@ -167,7 +170,7 @@ public class WaveletMote {
 		}
 		return nInfo;
 	}
-	
+
 	public boolean nextPackExists(short nextLevel, short nextPack) {
 		if (++nextPack * Wavelet.WT_MOTE_PER_CONFDATA >= neighbors[nextLevel].length) {
 			nextPack = 0;
@@ -197,8 +200,8 @@ public class WaveletMote {
 		nInfo.set_data_data_wConfData_moteCount((short) nb);
 		return nInfo;
 	}
-	
-	public Packer testPacker() {
+
+	public void setupPacker() {
 		WaveletNeighbor[] nb = new WaveletNeighbor[neighbors[0].length];
 		for (int i = 0; i < nb.length; i++) {
 			nb[i] = new WaveletNeighbor();
@@ -207,8 +210,25 @@ public class WaveletMote {
 			nb[i].set_coeff(neighbors[0][i].coeff);
 		}
 		WaveletLevel level = new WaveletLevel(nb);
-		Packer packer = new Packer(level);
-		return packer;
+		packer.setMessage(level);
+	}
+
+	public UnicastPack getHeader() {
+		UnicastPack pack = packer.getHeader();
+		//pack.set_data_dest(id);
+		pack.set_data_dest(1);
+		return pack;
+	}
+
+	public UnicastPack getData(int packNum) {
+		UnicastPack pack = packer.getData(packNum);
+		//pack.set_data_dest(id);
+		pack.set_data_dest(1);
+		return pack;
+	}
+	
+	public int getNumPacks() {
+		return packer.getNumPacks();
 	}
 
 	public String toString() {
@@ -234,9 +254,10 @@ public class WaveletMote {
 	public boolean isConfigDone() {
 		return configDone;
 	}
-
-	public void setConfigDone(boolean configDone) {
-		this.configDone = configDone;
+	
+	public boolean isConfigDone(int curPack) {
+		configDone = !packer.morePacksExist(curPack);
+		return configDone;
 	}
 
 }

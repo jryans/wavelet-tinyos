@@ -167,16 +167,16 @@ public class UnicastPack extends net.tinyos.message.Message {
         s += "  [data.data.bpHeader.byteTotal=0x"+Long.toHexString(get_data_data_bpHeader_byteTotal())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.bpHeader.block.length=";
+        s += "  [data.data.bpHeader.block.start=";
         for (int i = 0; i < 2; i++) {
-          s += "0x"+Long.toHexString(getElement_data_data_bpHeader_block_length(i) & 0xff)+" ";
+          s += "0x"+Long.toHexString(getElement_data_data_bpHeader_block_start(i) & 0xff)+" ";
         }
         s += "]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.bpHeader.block.repCount=";
+        s += "  [data.data.bpHeader.block.length=";
         for (int i = 0; i < 2; i++) {
-          s += "0x"+Long.toHexString(getElement_data_data_bpHeader_block_repCount(i) & 0xff)+" ";
+          s += "0x"+Long.toHexString(getElement_data_data_bpHeader_block_length(i) & 0xff)+" ";
         }
         s += "]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
@@ -1926,9 +1926,137 @@ public class UnicastPack extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.bpHeader.block.length
+    // Accessor methods for field: data.data.bpHeader.block.start
     //   Field type: int[]
     //   Offset (bits): 0
+    //   Size of each element (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.bpHeader.block.start' is signed (false).
+     */
+    public static boolean isSigned_data_data_bpHeader_block_start() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.bpHeader.block.start' is an array (true).
+     */
+    public static boolean isArray_data_data_bpHeader_block_start() {
+        return true;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.bpHeader.block.start'
+     */
+    public static int offset_data_data_bpHeader_block_start(int index1) {
+        int offset = 0;
+        if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
+        offset += 80 + index1 * 32;
+        return (offset / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.bpHeader.block.start'
+     */
+    public static int offsetBits_data_data_bpHeader_block_start(int index1) {
+        int offset = 0;
+        if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
+        offset += 80 + index1 * 32;
+        return offset;
+    }
+
+    /**
+     * Return the entire array 'data.data.bpHeader.block.start' as a int[]
+     */
+    public int[] get_data_data_bpHeader_block_start() {
+        int[] tmp = new int[2];
+        for (int index0 = 0; index0 < numElements_data_data_bpHeader_block_start(0); index0++) {
+            tmp[index0] = getElement_data_data_bpHeader_block_start(index0);
+        }
+        return tmp;
+    }
+
+    /**
+     * Set the contents of the array 'data.data.bpHeader.block.start' from the given int[]
+     */
+    public void set_data_data_bpHeader_block_start(int[] value) {
+        for (int index0 = 0; index0 < value.length; index0++) {
+            setElement_data_data_bpHeader_block_start(index0, value[index0]);
+        }
+    }
+
+    /**
+     * Return an element (as a int) of the array 'data.data.bpHeader.block.start'
+     */
+    public int getElement_data_data_bpHeader_block_start(int index1) {
+        return (int)getUIntElement(offsetBits_data_data_bpHeader_block_start(index1), 16);
+    }
+
+    /**
+     * Set an element of the array 'data.data.bpHeader.block.start'
+     */
+    public void setElement_data_data_bpHeader_block_start(int index1, int value) {
+        setUIntElement(offsetBits_data_data_bpHeader_block_start(index1), 16, value);
+    }
+
+    /**
+     * Return the total size, in bytes, of the array 'data.data.bpHeader.block.start'
+     */
+    public static int totalSize_data_data_bpHeader_block_start() {
+        return (64 / 8);
+    }
+
+    /**
+     * Return the total size, in bits, of the array 'data.data.bpHeader.block.start'
+     */
+    public static int totalSizeBits_data_data_bpHeader_block_start() {
+        return 64;
+    }
+
+    /**
+     * Return the size, in bytes, of each element of the array 'data.data.bpHeader.block.start'
+     */
+    public static int elementSize_data_data_bpHeader_block_start() {
+        return (16 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of each element of the array 'data.data.bpHeader.block.start'
+     */
+    public static int elementSizeBits_data_data_bpHeader_block_start() {
+        return 16;
+    }
+
+    /**
+     * Return the number of dimensions in the array 'data.data.bpHeader.block.start'
+     */
+    public static int numDimensions_data_data_bpHeader_block_start() {
+        return 1;
+    }
+
+    /**
+     * Return the number of elements in the array 'data.data.bpHeader.block.start'
+     */
+    public static int numElements_data_data_bpHeader_block_start() {
+        return 2;
+    }
+
+    /**
+     * Return the number of elements in the array 'data.data.bpHeader.block.start'
+     * for the given dimension.
+     */
+    public static int numElements_data_data_bpHeader_block_start(int dimension) {
+      int array_dims[] = { 2,  };
+        if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
+        if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");
+        return array_dims[dimension];
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.bpHeader.block.length
+    //   Field type: int[]
+    //   Offset (bits): 16
     //   Size of each element (bits): 16
     /////////////////////////////////////////////////////////
 
@@ -1950,9 +2078,9 @@ public class UnicastPack extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'data.data.bpHeader.block.length'
      */
     public static int offset_data_data_bpHeader_block_length(int index1) {
-        int offset = 0;
+        int offset = 16;
         if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
-        offset += 80 + index1 * 24;
+        offset += 80 + index1 * 32;
         return (offset / 8);
     }
 
@@ -1960,9 +2088,9 @@ public class UnicastPack extends net.tinyos.message.Message {
      * Return the offset (in bits) of the field 'data.data.bpHeader.block.length'
      */
     public static int offsetBits_data_data_bpHeader_block_length(int index1) {
-        int offset = 0;
+        int offset = 16;
         if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
-        offset += 80 + index1 * 24;
+        offset += 80 + index1 * 32;
         return offset;
     }
 
@@ -2004,14 +2132,14 @@ public class UnicastPack extends net.tinyos.message.Message {
      * Return the total size, in bytes, of the array 'data.data.bpHeader.block.length'
      */
     public static int totalSize_data_data_bpHeader_block_length() {
-        return (48 / 8);
+        return (64 / 8);
     }
 
     /**
      * Return the total size, in bits, of the array 'data.data.bpHeader.block.length'
      */
     public static int totalSizeBits_data_data_bpHeader_block_length() {
-        return 48;
+        return 64;
     }
 
     /**
@@ -2054,159 +2182,6 @@ public class UnicastPack extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.bpHeader.block.repCount
-    //   Field type: short[]
-    //   Offset (bits): 16
-    //   Size of each element (bits): 8
-    /////////////////////////////////////////////////////////
-
-    /**
-     * Return whether the field 'data.data.bpHeader.block.repCount' is signed (false).
-     */
-    public static boolean isSigned_data_data_bpHeader_block_repCount() {
-        return false;
-    }
-
-    /**
-     * Return whether the field 'data.data.bpHeader.block.repCount' is an array (true).
-     */
-    public static boolean isArray_data_data_bpHeader_block_repCount() {
-        return true;
-    }
-
-    /**
-     * Return the offset (in bytes) of the field 'data.data.bpHeader.block.repCount'
-     */
-    public static int offset_data_data_bpHeader_block_repCount(int index1) {
-        int offset = 16;
-        if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
-        offset += 80 + index1 * 24;
-        return (offset / 8);
-    }
-
-    /**
-     * Return the offset (in bits) of the field 'data.data.bpHeader.block.repCount'
-     */
-    public static int offsetBits_data_data_bpHeader_block_repCount(int index1) {
-        int offset = 16;
-        if (index1 < 0 || index1 >= 2) throw new ArrayIndexOutOfBoundsException();
-        offset += 80 + index1 * 24;
-        return offset;
-    }
-
-    /**
-     * Return the entire array 'data.data.bpHeader.block.repCount' as a short[]
-     */
-    public short[] get_data_data_bpHeader_block_repCount() {
-        short[] tmp = new short[2];
-        for (int index0 = 0; index0 < numElements_data_data_bpHeader_block_repCount(0); index0++) {
-            tmp[index0] = getElement_data_data_bpHeader_block_repCount(index0);
-        }
-        return tmp;
-    }
-
-    /**
-     * Set the contents of the array 'data.data.bpHeader.block.repCount' from the given short[]
-     */
-    public void set_data_data_bpHeader_block_repCount(short[] value) {
-        for (int index0 = 0; index0 < value.length; index0++) {
-            setElement_data_data_bpHeader_block_repCount(index0, value[index0]);
-        }
-    }
-
-    /**
-     * Return an element (as a short) of the array 'data.data.bpHeader.block.repCount'
-     */
-    public short getElement_data_data_bpHeader_block_repCount(int index1) {
-        return (short)getUIntElement(offsetBits_data_data_bpHeader_block_repCount(index1), 8);
-    }
-
-    /**
-     * Set an element of the array 'data.data.bpHeader.block.repCount'
-     */
-    public void setElement_data_data_bpHeader_block_repCount(int index1, short value) {
-        setUIntElement(offsetBits_data_data_bpHeader_block_repCount(index1), 8, value);
-    }
-
-    /**
-     * Return the total size, in bytes, of the array 'data.data.bpHeader.block.repCount'
-     */
-    public static int totalSize_data_data_bpHeader_block_repCount() {
-        return (48 / 8);
-    }
-
-    /**
-     * Return the total size, in bits, of the array 'data.data.bpHeader.block.repCount'
-     */
-    public static int totalSizeBits_data_data_bpHeader_block_repCount() {
-        return 48;
-    }
-
-    /**
-     * Return the size, in bytes, of each element of the array 'data.data.bpHeader.block.repCount'
-     */
-    public static int elementSize_data_data_bpHeader_block_repCount() {
-        return (8 / 8);
-    }
-
-    /**
-     * Return the size, in bits, of each element of the array 'data.data.bpHeader.block.repCount'
-     */
-    public static int elementSizeBits_data_data_bpHeader_block_repCount() {
-        return 8;
-    }
-
-    /**
-     * Return the number of dimensions in the array 'data.data.bpHeader.block.repCount'
-     */
-    public static int numDimensions_data_data_bpHeader_block_repCount() {
-        return 1;
-    }
-
-    /**
-     * Return the number of elements in the array 'data.data.bpHeader.block.repCount'
-     */
-    public static int numElements_data_data_bpHeader_block_repCount() {
-        return 2;
-    }
-
-    /**
-     * Return the number of elements in the array 'data.data.bpHeader.block.repCount'
-     * for the given dimension.
-     */
-    public static int numElements_data_data_bpHeader_block_repCount(int dimension) {
-      int array_dims[] = { 2,  };
-        if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
-        if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");
-        return array_dims[dimension];
-    }
-
-    /**
-     * Fill in the array 'data.data.bpHeader.block.repCount' with a String
-     */
-    public void setString_data_data_bpHeader_block_repCount(String s) { 
-         int len = s.length();
-         int i;
-         for (i = 0; i < len; i++) {
-             setElement_data_data_bpHeader_block_repCount(i, (short)s.charAt(i));
-         }
-         setElement_data_data_bpHeader_block_repCount(i, (short)0); //null terminate
-    }
-
-    /**
-     * Read the array 'data.data.bpHeader.block.repCount' as a String
-     */
-    public String getString_data_data_bpHeader_block_repCount() { 
-         char carr[] = new char[Math.min(net.tinyos.message.Message.MAX_CONVERTED_STRING_LENGTH,2)];
-         int i;
-         for (i = 0; i < carr.length; i++) {
-             if ((char)getElement_data_data_bpHeader_block_repCount(i) == (char)0) break;
-             carr[i] = (char)getElement_data_data_bpHeader_block_repCount(i);
-         }
-         return new String(carr,0,i);
-    }
-
-    /////////////////////////////////////////////////////////
     // Accessor methods for field: data.data.bpHeader.ptr.addrOfBlock
     //   Field type: short[]
     //   Offset (bits): 0
@@ -2233,7 +2208,7 @@ public class UnicastPack extends net.tinyos.message.Message {
     public static int offset_data_data_bpHeader_ptr_addrOfBlock(int index1) {
         int offset = 0;
         if (index1 < 0 || index1 >= 1) throw new ArrayIndexOutOfBoundsException();
-        offset += 128 + index1 * 24;
+        offset += 144 + index1 * 24;
         return (offset / 8);
     }
 
@@ -2243,7 +2218,7 @@ public class UnicastPack extends net.tinyos.message.Message {
     public static int offsetBits_data_data_bpHeader_ptr_addrOfBlock(int index1) {
         int offset = 0;
         if (index1 < 0 || index1 >= 1) throw new ArrayIndexOutOfBoundsException();
-        offset += 128 + index1 * 24;
+        offset += 144 + index1 * 24;
         return offset;
     }
 
@@ -2386,7 +2361,7 @@ public class UnicastPack extends net.tinyos.message.Message {
     public static int offset_data_data_bpHeader_ptr_destBlock(int index1) {
         int offset = 8;
         if (index1 < 0 || index1 >= 1) throw new ArrayIndexOutOfBoundsException();
-        offset += 128 + index1 * 24;
+        offset += 144 + index1 * 24;
         return (offset / 8);
     }
 
@@ -2396,7 +2371,7 @@ public class UnicastPack extends net.tinyos.message.Message {
     public static int offsetBits_data_data_bpHeader_ptr_destBlock(int index1) {
         int offset = 8;
         if (index1 < 0 || index1 >= 1) throw new ArrayIndexOutOfBoundsException();
-        offset += 128 + index1 * 24;
+        offset += 144 + index1 * 24;
         return offset;
     }
 
@@ -2539,7 +2514,7 @@ public class UnicastPack extends net.tinyos.message.Message {
     public static int offset_data_data_bpHeader_ptr_destOffset(int index1) {
         int offset = 16;
         if (index1 < 0 || index1 >= 1) throw new ArrayIndexOutOfBoundsException();
-        offset += 128 + index1 * 24;
+        offset += 144 + index1 * 24;
         return (offset / 8);
     }
 
@@ -2549,7 +2524,7 @@ public class UnicastPack extends net.tinyos.message.Message {
     public static int offsetBits_data_data_bpHeader_ptr_destOffset(int index1) {
         int offset = 16;
         if (index1 < 0 || index1 >= 1) throw new ArrayIndexOutOfBoundsException();
-        offset += 128 + index1 * 24;
+        offset += 144 + index1 * 24;
         return offset;
     }
 
