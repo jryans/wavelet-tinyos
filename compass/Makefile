@@ -1,4 +1,4 @@
-COMPONENT = CompassC
+COMPONENT = TestC
 
 CFLAGS += -I%T/lib/Transceiver 
 CFLAGS += -I%T/lib/State
@@ -16,6 +16,6 @@ CFLAGS += -DBEEP
 CFLAGS += -DRAW
 
 # Enables CC2420 features, like ACKs
-CFLAGS += -DCC2420
+# CFLAGS += -DCC2420
 
 include $(TOSROOT)/apps/Makerules
