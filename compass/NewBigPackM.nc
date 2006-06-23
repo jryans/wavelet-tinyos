@@ -21,21 +21,12 @@ module NewBigPackM {
 implementation {
 #if 0 // TinyOS Plugin Workaround
   typedef char msgData;
-  typedef char WaveletLevel;
-  typedef char WaveletConfData;
   typedef char ExtWaveletLevel;
   typedef char BigPackBlock;
   typedef char BigPackPtr;
 #endif
   
   bool activeRequest = FALSE; // True if a request is in progress
-  uint8_t curLevel;
-
-  uint8_t numLevels;
-  uint8_t *nbCount; // Number of neighbors at each level
-  
-  WaveletLevel *pLevel; // Array of WaveletLevels
-  
   
   result_t allocWavelet();
   void freeWavelet();
@@ -51,8 +42,14 @@ implementation {
   bool bdAlloc = FALSE;
   
   int8_t *mainBlock;
-  BigPackBlock block[MAX_BLOCKS];
-  BigPackPtr ptr[MAX_PTRS];
+  
+  BigPackBlock *block;
+  uint8_t numBlocks;
+  bool bpbAlloc = FALSE;
+  
+  BigPackPtr *ptr;
+  uint8_t numPtrs;
+  bool bppAlloc = FALSE;
   
   msgData repeatMsg; // Message to repeat
   
@@ -268,37 +265,50 @@ implementation {
       return;
     switch (msg.type) {
     case BIGPACKHEADER: {
-      if (!bdAlloc) {
+      if (!bdAlloc && !bpbAlloc && !bppAlloc) {
         uint8_t i;
         // Turn off message repeat
         call MsgRepeat.stop();
         // Store header data
         numPacks = msg.data.bpHeader.packTotal;
         numBytes = msg.data.bpHeader.byteTotal;
+        numBlocks = msg.data.bpHeader.numBlocks;
+        numPtrs = msg.data.bpHeader.numPtrs;
+        // Allocate temporary arrays
         dbg(DBG_USR2, "BigPack: Rcvd BP header (0/%i)\n", numPacks);
         if ((bigData = malloc(numBytes)) == NULL) {
           dbg(DBG_USR2, "BigPack: Couldn't allocate bigData!\n");
           return;
         } 
         bdAlloc = TRUE;
+        if ((block = malloc(numBlocks * sizeof(BigPackBlock))) == NULL) {
+          dbg(DBG_USR2, "BigPack: Couldn't allocate block!\n");
+          return;
+        } 
+        bpbAlloc = TRUE;
+        if ((ptr = malloc(numPtrs * sizeof(BigPackPtr))) == NULL) {
+          dbg(DBG_USR2, "BigPack: Couldn't allocate ptr!\n");
+          return;
+        } 
+        bppAlloc = TRUE;
         curPackNum = 0;
-        // Store block and pointer info
-		for (i = 0; i < MAX_BLOCKS; i++) 
-	      block[i] = msg.data.bpHeader.block[i];
-		for (i = 0; i < MAX_PTRS; i++)
-		  ptr[i] = msg.data.bpHeader.ptr[i];
         // Send an ACK
         sendAck(msg);
       }
       break; }
     case BIGPACKDATA: {
       if (curPackNum == msg.data.bpData.curPack) {
-        uint8_t offset, i;
+        uint8_t base_offset, i, block_offset, ptr_offset, data_offset;
         // Turn off message repeat
         call MsgRepeat.stop();
         dbg(DBG_USR2, "BigPack: Rcvd BP data (%i/%i)\n", curPackNum + 1, numPacks);
+        // Calculate offsets
+        block_offset = curPackNum * BP_DATA_LEN;
+        ptr_offset = block_offset - numBlocks * sizeof(BigPackBlock);
+        data_offset = ptr_offset - numPtrs * sizeof(BigPackPtr);
         // Store pack data
-        offset = curPackNum * BP_DATA_LEN;
+        // ...
+        
         if (++curPackNum == numPacks) { 
           // Last pack is shorter than others
           for (i = 0; (offset + i) < numBytes; i++)
