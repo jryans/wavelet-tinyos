@@ -16,7 +16,7 @@ public class WaveletConf extends BigPack {
 		int arrayDataLen = 0;
 		for (int i = 0; i < lvl.length; i++)
 			arrayDataLen += lvl[i].dataLength();
-		addPointer(addBlock(staticDataLen, arrayDataLen), 
+		addPointer((BigPackBlock)blocks.lastElement(), 
 				       addBlock(offset_lvlCount(), staticDataLen), 
 				       offset_lvlPtr());
 	}

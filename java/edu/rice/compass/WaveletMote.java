@@ -12,12 +12,12 @@ public class WaveletMote {
 	private Packer packer = new Packer();
 
 	private int id; // ID number of the mote represented
-
 	short state[]; // Mote's state at each scale level that it is used in
-	// This could easily be less than total number of levels
+	               // This could easily be less than total number of levels
 
 	private short nextLevel = 0;
 	private short nextPack = 0;
+
 	// private boolean sending = false;
 	private boolean configDone;
 
@@ -107,7 +107,8 @@ public class WaveletMote {
 				for (int nb = 0; nb < updInfo[levelIdx].size(); nb++) {
 					UpdateNB curNb = (UpdateNB) updInfo[levelIdx].get(nb);
 					// For nb of an update node, look up the coeff based on:
-					// Dim 1: ID of predict node, Dim 2: Index in predict nb list
+					// Dim 1: ID of predict node, Dim 2: Index in predict nb
+					// list
 					double[] nbCoeff = (double[]) wc.mUpdCoeff[curNb.predID];
 					neighbors[levelIdx][nb + 1] = new NeighborInfo(curNb.predID + 1,
 							(float) nbCoeff[curNb.coeffIndex]);
@@ -202,31 +203,34 @@ public class WaveletMote {
 	}
 
 	public void setupPacker() {
-		WaveletNeighbor[] nb = new WaveletNeighbor[neighbors[0].length];
-		for (int i = 0; i < nb.length; i++) {
-			nb[i] = new WaveletNeighbor();
-			nb[i].set_id(neighbors[0][i].id);
-			nb[i].set_state(state[0]);
-			nb[i].set_coeff(neighbors[0][i].coeff);
+		WaveletLevel[] lvl = new WaveletLevel[neighbors.length];
+		for (int l = 0; l < lvl.length; l++) {
+			WaveletNeighbor[] nb = new WaveletNeighbor[neighbors[l].length];
+			for (int i = 0; i < nb.length; i++) {
+				nb[i] = new WaveletNeighbor();
+				nb[i].set_id(neighbors[l][i].id);
+				nb[i].set_state(state[l]);
+				nb[i].set_coeff(neighbors[l][i].coeff);
+			}
+			lvl[l] = new WaveletLevel(nb);
 		}
-		WaveletLevel level = new WaveletLevel(nb);
-		packer.setMessage(level);
+		packer.setMessage(new WaveletConf(lvl));
 	}
 
 	public UnicastPack getHeader() {
 		UnicastPack pack = packer.getHeader();
-		//pack.set_data_dest(id);
+		// pack.set_data_dest(id);
 		pack.set_data_dest(1);
 		return pack;
 	}
 
 	public UnicastPack getData(int packNum) {
 		UnicastPack pack = packer.getData(packNum);
-		//pack.set_data_dest(id);
+		// pack.set_data_dest(id);
 		pack.set_data_dest(1);
 		return pack;
 	}
-	
+
 	public int getNumPacks() {
 		return packer.getNumPacks();
 	}
@@ -254,7 +258,7 @@ public class WaveletMote {
 	public boolean isConfigDone() {
 		return configDone;
 	}
-	
+
 	public boolean isConfigDone(int curPack) {
 		configDone = !packer.morePacksExist(curPack);
 		return configDone;
@@ -264,6 +268,7 @@ public class WaveletMote {
 
 class NeighborInfo {
 	int id;
+
 	float coeff;
 
 	NeighborInfo(int id, float coeff) {
@@ -278,6 +283,7 @@ class NeighborInfo {
 
 class UpdateNB {
 	int predID;
+
 	int coeffIndex;
 
 	UpdateNB(int predID, int coeffIndex) {
