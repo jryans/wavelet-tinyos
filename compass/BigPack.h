@@ -17,6 +17,7 @@ typedef struct bp {
   uint8_t addrOfBlock; // Block ID whose address will be the value of the pointer
   uint8_t destBlock; // Block ID that contains the pointer
   uint8_t destOffset; // Pointer's location as an offset from the start of destBlock
+  bool blockArray; // TRUE if this points to an array of blocks, rather than just a single block
 } __attribute__ ((packed)) BigPackPtr;
 
 /* enum {

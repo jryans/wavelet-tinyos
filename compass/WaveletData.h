@@ -75,7 +75,7 @@ typedef struct wl {
 
 typedef struct wc {
   uint8_t numLevels; 
-  ExtWaveletLevel *level; // Array of ExtWaveletLevels
+  ExtWaveletLevel **level; // Array of ExtWaveletLevels
 } __attribute__ ((packed)) NewWaveletConf;
 
 /*** State Control ***/

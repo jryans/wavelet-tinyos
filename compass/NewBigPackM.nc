@@ -34,6 +34,8 @@ implementation {
   int8_t *bigData;
   bool bdAlloc = FALSE;
   
+  #define MAX_BLOCKS 10 // Remove this!
+  int8_t *blockAddr[10];
   int8_t *mainBlock;
   
   BigPackBlock *block;
@@ -174,7 +176,6 @@ implementation {
   }
   
   void rebuildBlocks() {
-    int8_t *blockAddr[numBlocks];
     uint16_t start;
     uint8_t b, i;
     int8_t **tmp;
@@ -204,9 +205,15 @@ implementation {
       dbg(DBG_USR2, "BigPack:   Addr of Block: %i\n", ptr[b].addrOfBlock + 1);
       dbg(DBG_USR2, "BigPack:   Dest Block:    %i\n", ptr[b].destBlock + 1);
       dbg(DBG_USR2, "BigPack:   Dest Offset:   %i\n", ptr[b].destOffset);
-      dbg(DBG_USR2, "BigPack:   Source Addr:   %p\n", (void *)blockAddr[ptr[b].addrOfBlock]);
+      dbg(DBG_USR2, "BigPack:   Dest Offset:   %i\n", ptr[b].destOffset);
       tmp = &blockAddr[ptr[b].destBlock][ptr[b].destOffset];
-      *tmp = blockAddr[ptr[b].addrOfBlock];
+      if (ptr[b].blockArray) {
+        dbg(DBG_USR2, "BigPack:   Block Array:   Yes\n");
+        *tmp = &blockAddr[ptr[b].addrOfBlock];
+      } else {
+        dbg(DBG_USR2, "BigPack:   Block Array:   No\n");
+        *tmp = blockAddr[ptr[b].addrOfBlock];
+      }
       dbg(DBG_USR2, "BigPack:   Ptr Value:     %p\n", (void *)*tmp);
     }
     // Free temp data
@@ -216,15 +223,15 @@ implementation {
   void displayData() {
     uint8_t i, l;
     NewWaveletConf *bob = (NewWaveletConf *) mainBlock;
-    ExtWaveletLevel *lvl = bob->level;
+    ExtWaveletLevel **lvl = (ExtWaveletLevel **) bob->level;
     dbg(DBG_USR2, "BigPack: Wavelet Config Test\n");
     for (l = 0; l < bob->numLevels; l++) {
       dbg(DBG_USR2, "BigPack: Level #%i\n", l + 1);
-      for (i = 0; i < lvl[l].nbCount; i++) {
+      for (i = 0; i < lvl[l]->nbCount; i++) {
         dbg(DBG_USR2, "BigPack:   Neighbor #%i\n", i + 1);
-        dbg(DBG_USR2, "BigPack:     ID:    %i\n", lvl[l].nb[i].id);
-        dbg(DBG_USR2, "BigPack:     State: %i\n", lvl[l].nb[i].state);
-        dbg(DBG_USR2, "BigPack:     Coeff: %f\n", lvl[l].nb[i].coeff);
+        dbg(DBG_USR2, "BigPack:     ID:    %i\n", lvl[l]->nb[i].id);
+        dbg(DBG_USR2, "BigPack:     State: %i\n", lvl[l]->nb[i].state);
+        dbg(DBG_USR2, "BigPack:     Coeff: %f\n", lvl[l]->nb[i].coeff);
       }
     }
   }
