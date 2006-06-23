@@ -15,25 +15,18 @@ module NewBigPackM {
   }
   provides {
     interface WaveletConfig;
-    interface StdControl;
   }
 }
 implementation {
 #if 0 // TinyOS Plugin Workaround
   typedef char msgData;
   typedef char ExtWaveletLevel;
+  typedef char NewWaveletConf;
   typedef char BigPackBlock;
   typedef char BigPackPtr;
 #endif
-  
-  bool activeRequest = FALSE; // True if a request is in progress
-  
-  result_t allocWavelet();
-  void freeWavelet();
-  void fillWavelet(WaveletConfData *conf);
-  void requestData(uint8_t type);
-  
-  /*** New Stuff ***/
+
+  /*** Variables and Function Prototypes ***/
   
   uint8_t numPacks;
   uint8_t curPackNum;
@@ -51,15 +44,19 @@ implementation {
   uint8_t numPtrs;
   bool bppAlloc = FALSE;
   
+  bool activeRequest = FALSE; // True if a request is in progress
   msgData repeatMsg; // Message to repeat
   
+  result_t allocTemp();
+  void freeTemp();
+  void requestData(uint8_t type);
   void sendAck(msgData msg);
   void repeatSend(msgData msg, uint16_t bms);
   
   /*** Timers ***/
   
   /**
-   * Helper function for repeating a message until get a response
+   * Helper function for repeating a message until we get a response
    */ 
   void repeatSend(msgData msg, uint16_t bms) {
     repeatMsg = msg;
@@ -118,74 +115,49 @@ implementation {
   }
   
   /**
-   * Allocates an empty array of WaveletLevels
+   * Allocates temporary data used to rebuild an incoming
+   * struct.
    */
-  result_t allocWavelet() {
-    uint8_t level;
-    if ((pLevel = malloc(numLevels * sizeof(WaveletLevel))) == NULL) {
-#ifdef BEEP
-      call Beep.play(1, 250);
-#endif
+  result_t allocTemp() {
+    uint16_t bpbSize = numBlocks * sizeof(BigPackBlock);
+    uint16_t bppSize = numPtrs * sizeof(BigPackPtr);
+    if ((bigData = malloc(numBytes - bpbSize - bppSize)) == NULL) {
+      dbg(DBG_USR2, "BigPack: Couldn't allocate bigData!\n");
       return FAIL;
-    }
-    for (level = 0; level < numLevels; level++) {
-      pLevel[level].nbCount = nbCount[level];
-      if ((pLevel[level].nb = 
-           malloc(nbCount[level] * sizeof(WaveletNeighbor)))
-          == NULL) {
-#ifdef BEEP
-        call Beep.play(2, 250);
-#endif
-        return FAIL;
-    }
-    }
+    } 
+    bdAlloc = TRUE;
+    if ((block = malloc(bpbSize)) == NULL) {
+      dbg(DBG_USR2, "BigPack: Couldn't allocate block!\n");
+      return FAIL;
+    } 
+    bpbAlloc = TRUE;
+    if ((ptr = malloc(bppSize)) == NULL) {
+      dbg(DBG_USR2, "BigPack: Couldn't allocate ptr!\n");
+      return FAIL;
+    } 
+    bppAlloc = TRUE;
     return SUCCESS;
   }
   
   /**
-   * Free an array of WaveletLevels.
+   * Free the temp data.
    */ 
-  void freeWavelet() {
-    uint8_t level;
-    for (level = 0; level < numLevels; level++)
-      free(pLevel[level].nb); 
-    free(pLevel);
-    free(nbCount);
-  }
-  
-  /**
-   * Copies the received mote info into our WaveletLevel array and
-   * advances curLevel and curPackNum.
-   */ 
-  void fillWavelet(WaveletConfData *conf) {
-    uint8_t mote;
-    WaveletNeighbor *pNB;
-    for (mote = 0; mote < conf->moteCount; mote++) {
-      pNB = &pLevel[curLevel].nb[curPackNum * WT_MOTE_PER_CONFDATA + mote];
-      pNB->id = conf->moteConf[mote].id;
-      pNB->coeff = conf->moteConf[mote].coeff;
-      pNB->state = conf->moteConf[mote].state;
+  void freeTemp() {
+    if (bdAlloc) {
+      free(bigData);
+      bdAlloc = FALSE;
     }
-    if (++curPackNum * WT_MOTE_PER_CONFDATA >= nbCount[curLevel]) {
-      curPackNum = 0;
-      if (++curLevel >= numLevels)
-        curLevel = 0; // Done!
+    if (bpbAlloc) {
+      free(block);
+      bpbAlloc = FALSE;
+    }
+    if (bppAlloc) {
+      free(ptr);
+      bppAlloc = FALSE;
     }
   }
    
   /*** Other Commands and Events ***/
-  
-  command result_t StdControl.init() {
-    return SUCCESS;
-  }
-
-  command result_t StdControl.start() {
-    return SUCCESS;
-  }
-
-  command result_t StdControl.stop() {
-    return SUCCESS;
-  }
   
   /**
    * sendDone is signaled when the send has completed
@@ -202,13 +174,13 @@ implementation {
   }
   
   void rebuildBlocks() {
-    int8_t *blockAddr[2];
+    int8_t *blockAddr[numBlocks];
     uint16_t start;
     uint8_t b, i;
     int8_t **tmp;
     dbg(DBG_USR2, "BigPack: Blocks and Pointers\n");
     // Allocate and fill each block
-    for (b = 0; b < MAX_BLOCKS; b++) {
+    for (b = 0; b < numBlocks; b++) {
       start = block[b].start;
       dbg(DBG_USR2, "BigPack: Block #%i\n", b + 1);
       dbg(DBG_USR2, "BigPack:   Start:  %i\n", start);
@@ -226,35 +198,35 @@ implementation {
     }
     // Main block is the last block
     mainBlock = blockAddr[b - 1];
-    // Free bigData
-    if (bdAlloc) {
-      free(bigData);
-      bdAlloc = FALSE;
-    }
     // Recreate each pointer needed
-    for (b = 0; b < MAX_PTRS; b++) {
+    for (b = 0; b < numPtrs; b++) {
       dbg(DBG_USR2, "BigPack: Pointer #%i\n", b + 1);
-      dbg(DBG_USR2, "BigPack:   Addr of Block : %i\n", ptr[b].addrOfBlock + 1);
-      dbg(DBG_USR2, "BigPack:   Dest Block    : %i\n", ptr[b].destBlock + 1);
-      dbg(DBG_USR2, "BigPack:   Dest Offset   : %i\n", ptr[b].destOffset);
-      dbg(DBG_USR2, "BigPack:   Source Addr   : %p\n", (void *)blockAddr[ptr[b].addrOfBlock]);
+      dbg(DBG_USR2, "BigPack:   Addr of Block: %i\n", ptr[b].addrOfBlock + 1);
+      dbg(DBG_USR2, "BigPack:   Dest Block:    %i\n", ptr[b].destBlock + 1);
+      dbg(DBG_USR2, "BigPack:   Dest Offset:   %i\n", ptr[b].destOffset);
+      dbg(DBG_USR2, "BigPack:   Source Addr:   %p\n", (void *)blockAddr[ptr[b].addrOfBlock]);
       tmp = &blockAddr[ptr[b].destBlock][ptr[b].destOffset];
       *tmp = blockAddr[ptr[b].addrOfBlock];
-      dbg(DBG_USR2, "BigPack:   Ptr Value     : %p\n", (void *)*tmp);
+      dbg(DBG_USR2, "BigPack:   Ptr Value:     %p\n", (void *)*tmp);
     }
+    // Free temp data
+    freeTemp();
   }
   
   void displayData() {
-    uint8_t i;
-    ExtWaveletLevel *lvl = (ExtWaveletLevel *) mainBlock;
-    dbg(DBG_USR2, "BigPack: Wavelet Level Test\n");
-    dbg(DBG_USR2, "BigPack: nbCount = %i\n", lvl->nbCount);
-    for (i = 0; i < lvl->nbCount; i++) {
-      dbg(DBG_USR2, "BigPack: Neighbor #%i\n", i + 1);
-      dbg(DBG_USR2, "BigPack: id = %i, state = %i, coeff = %i\n", lvl->nb[i].id,
-          lvl->nb[i].state, lvl->nb[i].coeff);
+    uint8_t i, l;
+    NewWaveletConf *bob = (NewWaveletConf *) mainBlock;
+    ExtWaveletLevel *lvl = bob->level;
+    dbg(DBG_USR2, "BigPack: Wavelet Config Test\n");
+    for (l = 0; l < bob->numLevels; l++) {
+      dbg(DBG_USR2, "BigPack: Level #%i\n", l + 1);
+      for (i = 0; i < lvl[l].nbCount; i++) {
+        dbg(DBG_USR2, "BigPack:   Neighbor #%i\n", i + 1);
+        dbg(DBG_USR2, "BigPack:     ID:    %i\n", lvl[l].nb[i].id);
+        dbg(DBG_USR2, "BigPack:     State: %i\n", lvl[l].nb[i].state);
+        dbg(DBG_USR2, "BigPack:     Coeff: %f\n", lvl[l].nb[i].coeff);
+      }
     }
-    
   }
     
   /**
@@ -266,7 +238,6 @@ implementation {
     switch (msg.type) {
     case BIGPACKHEADER: {
       if (!bdAlloc && !bpbAlloc && !bppAlloc) {
-        uint8_t i;
         // Turn off message repeat
         call MsgRepeat.stop();
         // Store header data
@@ -274,23 +245,9 @@ implementation {
         numBytes = msg.data.bpHeader.byteTotal;
         numBlocks = msg.data.bpHeader.numBlocks;
         numPtrs = msg.data.bpHeader.numPtrs;
-        // Allocate temporary arrays
         dbg(DBG_USR2, "BigPack: Rcvd BP header (0/%i)\n", numPacks);
-        if ((bigData = malloc(numBytes)) == NULL) {
-          dbg(DBG_USR2, "BigPack: Couldn't allocate bigData!\n");
-          return;
-        } 
-        bdAlloc = TRUE;
-        if ((block = malloc(numBlocks * sizeof(BigPackBlock))) == NULL) {
-          dbg(DBG_USR2, "BigPack: Couldn't allocate block!\n");
-          return;
-        } 
-        bpbAlloc = TRUE;
-        if ((ptr = malloc(numPtrs * sizeof(BigPackPtr))) == NULL) {
-          dbg(DBG_USR2, "BigPack: Couldn't allocate ptr!\n");
-          return;
-        } 
-        bppAlloc = TRUE;
+        // Allocate temporary arrays
+        if (allocTemp() == FAIL) return;
         curPackNum = 0;
         // Send an ACK
         sendAck(msg);
@@ -298,31 +255,37 @@ implementation {
       break; }
     case BIGPACKDATA: {
       if (curPackNum == msg.data.bpData.curPack) {
-        uint8_t base_offset, i, block_offset, ptr_offset, data_offset;
+        uint8_t i;
+        int16_t base_offset, blk_offset, ptr_offset, data_offset, stopAt;
+        // Byte level access to block and data
+        int8_t *tmpBlk = (int8_t *)block; 
+        int8_t *tmpPtr = (int8_t *)ptr;
         // Turn off message repeat
         call MsgRepeat.stop();
         dbg(DBG_USR2, "BigPack: Rcvd BP data (%i/%i)\n", curPackNum + 1, numPacks);
         // Calculate offsets
-        block_offset = curPackNum * BP_DATA_LEN;
-        ptr_offset = block_offset - numBlocks * sizeof(BigPackBlock);
-        data_offset = ptr_offset - numPtrs * sizeof(BigPackPtr);
+        base_offset = curPackNum * BP_DATA_LEN;
+        (++curPackNum == numPacks) ? (stopAt = numBytes - base_offset)
+                                   : (stopAt = BP_DATA_LEN);
         // Store pack data
-        // ...
-        
-        if (++curPackNum == numPacks) { 
-          // Last pack is shorter than others
-          for (i = 0; (offset + i) < numBytes; i++)
-            bigData[offset + i] = msg.data.bpData.data[i];
+        for (i = 0; i < stopAt; i++) {
+          blk_offset = base_offset + i;
+          ptr_offset = blk_offset - numBlocks * sizeof(BigPackBlock);
+          data_offset = ptr_offset - numPtrs * sizeof(BigPackPtr);
+          if (data_offset >= 0) { // Byte is data
+            bigData[data_offset] = msg.data.bpData.data[i];
+          } else if (ptr_offset >= 0) { // Byte is pointer data
+            tmpPtr[ptr_offset] = msg.data.bpData.data[i];
+          } else { // Byte is block data
+            tmpBlk[blk_offset] = msg.data.bpData.data[i];
+          }
+        }
+        if (curPackNum == numPacks) { 
           rebuildBlocks();
-          displayData(); // Done!
-          // Send data back and go unactive
-          //activeRequest = FALSE;
           dbg(DBG_USR2, "BigPack: BP data complete\n");
-          signal WaveletConfig.configDone(pLevel, numLevels, SUCCESS);
-        } else {
-          // All other packs use up the entire data length
-          for (i = 0; i < BP_DATA_LEN; i++)
-            bigData[offset + i] = msg.data.bpData.data[i];
+          displayData(); // Done!
+          //signal WaveletConfig.configDone(pLevel, numLevels, SUCCESS);
+          activeRequest = FALSE;
         }
         // Send an ACK
         sendAck(msg);

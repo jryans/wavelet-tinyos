@@ -47,7 +47,7 @@ implementation {
   //WaveletM.State -> StateC.State[unique("State")];
   
   /*** BigPack: receives multi-packet data ***/
-  Main.StdControl -> NewBigPackM;
+  //Main.StdControl -> NewBigPackM;
   //WaveletM.WaveletConfig -> BigPackM;
 #ifdef BEEP
   NewBigPackM.Beep -> BeepC;
