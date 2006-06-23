@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.5.0" class="java.beans.XMLDecoder"> 
+ <object class="edu.rice.compass.WaveletConfig"> 
+  <void property="MPredCoeff"> 
+   <array class="java.lang.Object" length="8"> 
+    <void index="1"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>0.4290966275184154</double> 
+      </void> 
+      <void index="1"> 
+       <double>0.3581509905961073</double> 
+      </void> 
+      <void index="2"> 
+       <double>0.2127523818854772</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void index="2"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>0.8553599416823426</double> 
+      </void> 
+      <void index="1"> 
+       <double>0.6905971078194333</double> 
+      </void> 
+      <void index="2"> 
+       <double>-0.5459570495017754</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void index="4"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>0.7474151094258867</double> 
+      </void> 
+      <void index="1"> 
+       <double>0.6125187912913151</double> 
+      </void> 
+      <void index="2"> 
+       <double>-0.359933900717202</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void index="5"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>0.5636473048660504</double> 
+      </void> 
+      <void index="1"> 
+       <double>0.23507127440355197</double> 
+      </void> 
+      <void index="2"> 
+       <double>0.20128142073039756</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void index="6"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>0.661397713498768</double> 
+      </void> 
+      <void index="1"> 
+       <double>0.2768646111582932</double> 
+      </void> 
+      <void index="2"> 
+       <double>0.06173767534293878</double> 
+      </void> 
+     </array> 
+    </void> 
+   </array> 
+  </void> 
+  <void property="MPredNB"> 
+   <array class="java.lang.Object" length="8"> 
+    <void index="1"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>1.0</double> 
+      </void> 
+      <void index="1"> 
+       <double>8.0</double> 
+      </void> 
+      <void index="2"> 
+       <double>4.0</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void index="2"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>4.0</double> 
+      </void> 
+      <void index="1"> 
+       <double>1.0</double> 
+      </void> 
+      <void index="2"> 
+       <double>8.0</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void index="4"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>8.0</double> 
+      </void> 
+      <void index="1"> 
+       <double>4.0</double> 
+      </void> 
+      <void index="2"> 
+       <double>1.0</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void index="5"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>3.0</double> 
+      </void> 
+      <void index="1"> 
+       <double>7.0</double> 
+      </void> 
+      <void index="2"> 
+       <double>4.0</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void index="6"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>3.0</double> 
+      </void> 
+      <void index="1"> 
+       <double>1.0</double> 
+      </void> 
+      <void index="2"> 
+       <double>2.0</double> 
+      </void> 
+     </array> 
+    </void> 
+   </array> 
+  </void> 
+  <void property="MScale"> 
+   <array class="double" length="8"> 
+    <void index="1"> 
+     <double>3.0</double> 
+    </void> 
+    <void index="2"> 
+     <double>3.0</double> 
+    </void> 
+    <void index="4"> 
+     <double>3.0</double> 
+    </void> 
+    <void index="5"> 
+     <double>1.0</double> 
+    </void> 
+    <void index="6"> 
+     <double>2.0</double> 
+    </void> 
+   </array> 
+  </void> 
+  <void property="MUpdCoeff"> 
+   <array class="java.lang.Object" length="8"> 
+    <void index="1"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>0.1236934903826101</double> 
+      </void> 
+      <void index="1"> 
+       <double>0.03337739851928385</double> 
+      </void> 
+      <void index="2"> 
+       <double>0.16339831576666233</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void index="2"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>0.3614150105136886</double> 
+      </void> 
+      <void index="1"> 
+       <double>0.2735932981766194</double> 
+      </void> 
+      <void index="2"> 
+       <double>0.07382629851578766</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void index="4"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>0.03101266917867053</double> 
+      </void> 
+      <void index="1"> 
+       <double>0.15182183561417267</double> 
+      </void> 
+      <void index="2"> 
+       <double>0.11493002651403937</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void index="5"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>0.28884375759139136</double> 
+      </void> 
+      <void index="1"> 
+       <double>0.2281477585653311</double> 
+      </void> 
+      <void index="2"> 
+       <double>0.22190594925638765</double> 
+      </void> 
+     </array> 
+    </void> 
+    <void index="6"> 
+     <array class="double" length="3"> 
+      <void index="0"> 
+       <double>0.34084245130742297</double> 
+      </void> 
+      <void index="1"> 
+       <double>0.19213977011394545</double> 
+      </void> 
+      <void index="2"> 
+       <double>0.15409731434855317</double> 
+      </void> 
+     </array> 
+    </void> 
+   </array> 
+  </void> 
+ </object> 
+</java> 

@@ -6,221 +6,106 @@
 
 package edu.rice.compass;
 
-public class WaveletConf extends net.tinyos.message.Message {
+public class WaveletConf extends BigPack {
 
-    /** The default size of this message type in bytes. */
-    public static final int DEFAULT_MESSAGE_SIZE = 3;
+	private static int staticDataLen = size_lvlCount() + size_lvlPtr();
 
-    /** The Active Message type associated with this message. */
-    public static final int AM_TYPE = -1;
+	public WaveletConf(WaveletLevel lvl[]) {
+		super(staticDataLen, lvl);
+		set_lvlCount((short) lvl.length);
+		int arrayDataLen = 0;
+		for (int i = 0; i < lvl.length; i++)
+			arrayDataLen += lvl[i].dataLength();
+		addPointer(addBlock(staticDataLen, arrayDataLen), 
+				       addBlock(offset_lvlCount(), staticDataLen), 
+				       offset_lvlPtr());
+	}
 
-    /** Create a new WaveletConf of size 3. */
-    public WaveletConf() {
-        super(DEFAULT_MESSAGE_SIZE);
-        amTypeSet(AM_TYPE);
-    }
+	// Message-type-specific access methods appear below.
 
-    /** Create a new WaveletConf of the given data_length. */
-    public WaveletConf(int data_length) {
-        super(data_length);
-        amTypeSet(AM_TYPE);
-    }
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: lvlCount
+	// Field type: short
+	// Offset (bits): 0
+	// Size (bits): 8
+	// ///////////////////////////////////////////////////////
 
-    /**
-     * Create a new WaveletConf with the given data_length
-     * and base offset.
-     */
-    public WaveletConf(int data_length, int base_offset) {
-        super(data_length, base_offset);
-        amTypeSet(AM_TYPE);
-    }
+	/**
+	 * Return whether the field 'lvlCount' is signed (false).
+	 */
+	public static boolean isSigned_lvlCount() {
+		return false;
+	}
 
-    /**
-     * Create a new WaveletConf using the given byte array
-     * as backing store.
-     */
-    public WaveletConf(byte[] data) {
-        super(data);
-        amTypeSet(AM_TYPE);
-    }
+	/**
+	 * Return whether the field 'lvlCount' is an array (false).
+	 */
+	public static boolean isArray_lvlCount() {
+		return false;
+	}
 
-    /**
-     * Create a new WaveletConf using the given byte array
-     * as backing store, with the given base offset.
-     */
-    public WaveletConf(byte[] data, int base_offset) {
-        super(data, base_offset);
-        amTypeSet(AM_TYPE);
-    }
+	/**
+	 * Return the offset (in bytes) of the field 'lvlCount'
+	 */
+	public static int offset_lvlCount() {
+		return (0 / 8);
+	}
 
-    /**
-     * Create a new WaveletConf using the given byte array
-     * as backing store, with the given base offset and data length.
-     */
-    public WaveletConf(byte[] data, int base_offset, int data_length) {
-        super(data, base_offset, data_length);
-        amTypeSet(AM_TYPE);
-    }
+	/**
+	 * Return the offset (in bits) of the field 'lvlCount'
+	 */
+	public static int offsetBits_lvlCount() {
+		return 0;
+	}
 
-    /**
-     * Create a new WaveletConf embedded in the given message
-     * at the given base offset.
-     */
-    public WaveletConf(net.tinyos.message.Message msg, int base_offset) {
-        super(msg, base_offset, DEFAULT_MESSAGE_SIZE);
-        amTypeSet(AM_TYPE);
-    }
+	/**
+	 * Return the value (as a short) of the field 'lvlCount'
+	 */
+	public short get_lvlCount() {
+		return (short) getUIntElement(offsetBits_lvlCount(), 8);
+	}
 
-    /**
-     * Create a new WaveletConf embedded in the given message
-     * at the given base offset and length.
-     */
-    public WaveletConf(net.tinyos.message.Message msg, int base_offset, int data_length) {
-        super(msg, base_offset, data_length);
-        amTypeSet(AM_TYPE);
-    }
+	/**
+	 * Set the value of the field 'lvlCount'
+	 */
+	public void set_lvlCount(short value) {
+		setUIntElement(offsetBits_lvlCount(), 8, value);
+	}
 
-    /**
-    /* Return a String representation of this message. Includes the
-     * message type name and the non-indexed field values.
-     */
-    public String toString() {
-      String s = "Message <WaveletConf> \n";
-      try {
-        s += "  [numLevels=0x"+Long.toHexString(get_numLevels())+"]\n";
-      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
-      try {
-        s += "  [level=0x"+Long.toHexString(get_level())+"]\n";
-      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
-      return s;
-    }
+	/**
+	 * Return the size, in bytes, of the field 'lvlCount'
+	 */
+	public static int size_lvlCount() {
+		return (8 / 8);
+	}
 
-    // Message-type-specific access methods appear below.
+	/**
+	 * Return the size, in bits, of the field 'lvlCount'
+	 */
+	public static int sizeBits_lvlCount() {
+		return 8;
+	}
 
-    /////////////////////////////////////////////////////////
-    // Accessor methods for field: numLevels
-    //   Field type: short, unsigned
-    //   Offset (bits): 0
-    //   Size (bits): 8
-    /////////////////////////////////////////////////////////
+	// ///////////////////////////////////////////////////////
+	// TEMP STORAGE SPACE, WILL BE OVERWRITTEN!
+	// Accessor methods for field: lvlPtr
+	// Field type: unsigned int
+	// Offset (bits): 8
+	// Size (bits): 16
+	// ///////////////////////////////////////////////////////
 
-    /**
-     * Return whether the field 'numLevels' is signed (false).
-     */
-    public static boolean isSigned_numLevels() {
-        return false;
-    }
+	/**
+	 * Return the size, in bytes, of the field 'lvlPtr'
+	 */
+	private static int size_lvlPtr() {
+		return (16 / 8);
+	}
 
-    /**
-     * Return whether the field 'numLevels' is an array (false).
-     */
-    public static boolean isArray_numLevels() {
-        return false;
-    }
-
-    /**
-     * Return the offset (in bytes) of the field 'numLevels'
-     */
-    public static int offset_numLevels() {
-        return (0 / 8);
-    }
-
-    /**
-     * Return the offset (in bits) of the field 'numLevels'
-     */
-    public static int offsetBits_numLevels() {
-        return 0;
-    }
-
-    /**
-     * Return the value (as a short) of the field 'numLevels'
-     */
-    public short get_numLevels() {
-        return (short)getUIntElement(offsetBits_numLevels(), 8);
-    }
-
-    /**
-     * Set the value of the field 'numLevels'
-     */
-    public void set_numLevels(short value) {
-        setUIntElement(offsetBits_numLevels(), 8, value);
-    }
-
-    /**
-     * Return the size, in bytes, of the field 'numLevels'
-     */
-    public static int size_numLevels() {
-        return (8 / 8);
-    }
-
-    /**
-     * Return the size, in bits, of the field 'numLevels'
-     */
-    public static int sizeBits_numLevels() {
-        return 8;
-    }
-
-    /////////////////////////////////////////////////////////
-    // Accessor methods for field: level
-    //   Field type: int, unsigned
-    //   Offset (bits): 8
-    //   Size (bits): 16
-    /////////////////////////////////////////////////////////
-
-    /**
-     * Return whether the field 'level' is signed (false).
-     */
-    public static boolean isSigned_level() {
-        return false;
-    }
-
-    /**
-     * Return whether the field 'level' is an array (false).
-     */
-    public static boolean isArray_level() {
-        return false;
-    }
-
-    /**
-     * Return the offset (in bytes) of the field 'level'
-     */
-    public static int offset_level() {
-        return (8 / 8);
-    }
-
-    /**
-     * Return the offset (in bits) of the field 'level'
-     */
-    public static int offsetBits_level() {
-        return 8;
-    }
-
-    /**
-     * Return the value (as a int) of the field 'level'
-     */
-    public int get_level() {
-        return (int)getUIntElement(offsetBits_level(), 16);
-    }
-
-    /**
-     * Set the value of the field 'level'
-     */
-    public void set_level(int value) {
-        setUIntElement(offsetBits_level(), 16, value);
-    }
-
-    /**
-     * Return the size, in bytes, of the field 'level'
-     */
-    public static int size_level() {
-        return (16 / 8);
-    }
-
-    /**
-     * Return the size, in bits, of the field 'level'
-     */
-    public static int sizeBits_level() {
-        return 16;
-    }
+	/**
+	 * Return the offset (in bytes) of the field 'lvlPtr'
+	 */
+	public static int offset_lvlPtr() {
+		return (8 / 8);
+	}
 
 }
