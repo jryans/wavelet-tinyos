@@ -140,7 +140,7 @@ public class WaveletConfigServer implements MessageListener {
 		if (pack.get_data_dest() != 0)
 			return; // This would be quite strange
 		//WaveletMote theMote = mote[id - 1];
-		WaveletMote theMote = mote[5];
+		WaveletMote theMote = mote[4];
 		switch (pack.get_data_type()) {
 		case Wavelet.BIGPACKHEADER:
 			// If true, this is the initial request, else an ACK.

@@ -9,12 +9,12 @@ package edu.rice.compass;
 public class BigPackPtr extends net.tinyos.message.Message {
 
     /** The default size of this message type in bytes. */
-    public static final int DEFAULT_MESSAGE_SIZE = 3;
+    public static final int DEFAULT_MESSAGE_SIZE = 4;
 
     /** The Active Message type associated with this message. */
     public static final int AM_TYPE = -1;
 
-    /** Create a new BigPackPtr of size 3. */
+    /** Create a new BigPackPtr of size 4. */
     public BigPackPtr() {
         super(DEFAULT_MESSAGE_SIZE);
         amTypeSet(AM_TYPE);
@@ -94,6 +94,9 @@ public class BigPackPtr extends net.tinyos.message.Message {
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [destOffset=0x"+Long.toHexString(get_destOffset())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [blockArray=0x"+Long.toHexString(get_blockArray())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       return s;
     }
@@ -286,6 +289,69 @@ public class BigPackPtr extends net.tinyos.message.Message {
      * Return the size, in bits, of the field 'destOffset'
      */
     public static int sizeBits_destOffset() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: blockArray
+    //   Field type: short, unsigned
+    //   Offset (bits): 24
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'blockArray' is signed (false).
+     */
+    public static boolean isSigned_blockArray() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'blockArray' is an array (false).
+     */
+    public static boolean isArray_blockArray() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'blockArray'
+     */
+    public static int offset_blockArray() {
+        return (24 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'blockArray'
+     */
+    public static int offsetBits_blockArray() {
+        return 24;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'blockArray'
+     */
+    public short get_blockArray() {
+        return (short)getUIntElement(offsetBits_blockArray(), 8);
+    }
+
+    /**
+     * Set the value of the field 'blockArray'
+     */
+    public void set_blockArray(short value) {
+        setUIntElement(offsetBits_blockArray(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'blockArray'
+     */
+    public static int size_blockArray() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'blockArray'
+     */
+    public static int sizeBits_blockArray() {
         return 8;
     }
 

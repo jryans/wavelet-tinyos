@@ -13,10 +13,7 @@ public class WaveletConf extends BigPack {
 	public WaveletConf(WaveletLevel lvl[]) {
 		super(staticDataLen, lvl);
 		set_lvlCount((short) lvl.length);
-		int arrayDataLen = 0;
-		for (int i = 0; i < lvl.length; i++)
-			arrayDataLen += lvl[i].dataLength();
-		addPointer((BigPackBlock)blocks.lastElement(), 
+		addArray((BigPackBlock)blocks.get(firstMainBlk), 
 				       addBlock(offset_lvlCount(), staticDataLen), 
 				       offset_lvlPtr());
 	}
