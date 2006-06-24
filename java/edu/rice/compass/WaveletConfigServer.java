@@ -8,7 +8,6 @@ package edu.rice.compass;
 import net.tinyos.message.*;
 import java.io.*;
 import java.beans.*;
-import java.util.*;
 import com.martiansoftware.jsap.*;
 
 public class WaveletConfigServer implements MessageListener {
@@ -39,8 +38,7 @@ public class WaveletConfigServer implements MessageListener {
 						new Switch("force", 'f', "force"),
 						new Switch("stats", JSAP.NO_SHORTFLAG, "stats"),
 						new FlaggedOption("dest", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
-								JSAP.NOT_REQUIRED, 'd', "dest"),
-						new Switch("test", 't', "test") });
+								JSAP.NOT_REQUIRED, 'd', "dest") });
 
 		JSAPResult config = parser.parse(args);
 		if (parser.messagePrinted())
@@ -253,9 +251,6 @@ public class WaveletConfigServer implements MessageListener {
 					startSent = true;
 					startDataSet();
 					System.out.println("Start command sent!");
-					// setTimer.scheduleAtFixedRate(setTracker, setLength / 1024 * 1000,
-					// setLength / 1024 * 1000);
-					// setTimer.schedule(setTimeout, setLength * 2);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

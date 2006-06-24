@@ -19,6 +19,15 @@ public class WaveletNeighbor extends net.tinyos.message.Message {
         super(DEFAULT_MESSAGE_SIZE);
         amTypeSet(AM_TYPE);
     }
+    
+    /** Create a new WaveletNeighbor with the given id, coeff, and state */
+    public WaveletNeighbor(int id, short state, float coeff) {
+        super(DEFAULT_MESSAGE_SIZE);
+        amTypeSet(AM_TYPE);
+        set_id(id);
+        set_state(state);
+        set_coeff(coeff);
+    }
 
     /** Create a new WaveletNeighbor of the given data_length. */
     public WaveletNeighbor(int data_length) {

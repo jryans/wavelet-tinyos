@@ -111,19 +111,6 @@ public abstract class BigPack extends Message {
 		pointers.add(ptr);
 	}
 
-	/**
-	 * Arranges every block from offset to offset + gap * count together for use
-	 * as an array and returns the first of these.
-	 */
-	/*
-	 * protected BigPackBlock arrangeArray(int offset, int gap, int count) {
-	 * BigPackBlock firstBlk = (BigPackBlock) blocks.get(offset); for (int i = 0;
-	 * i < count; i++) { int loc = offset + i * (gap - 1); BigPackBlock tmp =
-	 * (BigPackBlock) blocks.remove(loc); for (int p = 0; p < pointers.size();
-	 * p++) { BigPackPtr ptr = (BigPackPtr) pointers.get(p); if (ptr.get) } }
-	 * return firstBlk; }
-	 */
-
 	public int numBlocks() {
 		return blocks.size();
 	}

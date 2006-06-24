@@ -7,9 +7,6 @@ package edu.rice.compass;
 
 public class Wavelet {
 
-	/* Wavelet Config */
-	static final short WT_MOTE_PER_CONFDATA = 3;
-
 	/* Wavelet States */
 	static final short S_IDLE = 0;
 	static final short S_STARTUP = 1;
@@ -28,8 +25,6 @@ public class Wavelet {
 	/* Message Types */
 	static final short MOTECOMMAND = 0;
 	static final short WAVELETDATA = 1;
-	static final short WAVELETCONFDATA = 2; // leaving...
-	static final short WAVELETCONFHEADER = 3; // leaving...
 	static final short BIGPACKHEADER = 2;
 	static final short BIGPACKDATA = 3;
 	static final short WAVELETSTATE = 4;

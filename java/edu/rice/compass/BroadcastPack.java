@@ -118,42 +118,27 @@ public class BroadcastPack extends net.tinyos.message.Message {
         s += "]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wConfData.level=0x"+Long.toHexString(get_data_data_wConfData_level())+"]\n";
+        s += "  [data.data.bpHeader.requestType=0x"+Long.toHexString(get_data_data_bpHeader_requestType())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wConfData.packNum=0x"+Long.toHexString(get_data_data_wConfData_packNum())+"]\n";
+        s += "  [data.data.bpHeader.packTotal=0x"+Long.toHexString(get_data_data_bpHeader_packTotal())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wConfData.moteCount=0x"+Long.toHexString(get_data_data_wConfData_moteCount())+"]\n";
+        s += "  [data.data.bpHeader.byteTotal=0x"+Long.toHexString(get_data_data_bpHeader_byteTotal())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wConfData.moteConf.id=";
-        for (int i = 0; i < 3; i++) {
-          s += "0x"+Long.toHexString(getElement_data_data_wConfData_moteConf_id(i) & 0xff)+" ";
-        }
-        s += "]\n";
+        s += "  [data.data.bpHeader.numBlocks=0x"+Long.toHexString(get_data_data_bpHeader_numBlocks())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wConfData.moteConf.state=";
-        for (int i = 0; i < 3; i++) {
-          s += "0x"+Long.toHexString(getElement_data_data_wConfData_moteConf_state(i) & 0xff)+" ";
-        }
-        s += "]\n";
+        s += "  [data.data.bpHeader.numPtrs=0x"+Long.toHexString(get_data_data_bpHeader_numPtrs())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wConfData.moteConf.coeff=";
-        for (int i = 0; i < 3; i++) {
-          s += Float.toString(getElement_data_data_wConfData_moteConf_coeff(i))+" ";
-        }
-        s += "]\n";
+        s += "  [data.data.bpData.curPack=0x"+Long.toHexString(get_data_data_bpData_curPack())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wConfHeader.numLevels=0x"+Long.toHexString(get_data_data_wConfHeader_numLevels())+"]\n";
-      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
-      try {
-        s += "  [data.data.wConfHeader.nbCount=";
-        for (int i = 0; i < 10; i++) {
-          s += "0x"+Long.toHexString(getElement_data_data_wConfHeader_nbCount(i) & 0xff)+" ";
+        s += "  [data.data.bpData.data=";
+        for (int i = 0; i < 22; i++) {
+          s += "0x"+Long.toHexString(getElement_data_data_bpData_data(i) & 0xff)+" ";
         }
         s += "]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
@@ -844,840 +829,532 @@ public class BroadcastPack extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wConfData.level
+    // Accessor methods for field: data.data.bpHeader.requestType
     //   Field type: short
     //   Offset (bits): 56
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wConfData.level' is signed (false).
+     * Return whether the field 'data.data.bpHeader.requestType' is signed (false).
      */
-    public static boolean isSigned_data_data_wConfData_level() {
+    public static boolean isSigned_data_data_bpHeader_requestType() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wConfData.level' is an array (false).
+     * Return whether the field 'data.data.bpHeader.requestType' is an array (false).
      */
-    public static boolean isArray_data_data_wConfData_level() {
+    public static boolean isArray_data_data_bpHeader_requestType() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wConfData.level'
+     * Return the offset (in bytes) of the field 'data.data.bpHeader.requestType'
      */
-    public static int offset_data_data_wConfData_level() {
+    public static int offset_data_data_bpHeader_requestType() {
         return (56 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wConfData.level'
+     * Return the offset (in bits) of the field 'data.data.bpHeader.requestType'
      */
-    public static int offsetBits_data_data_wConfData_level() {
+    public static int offsetBits_data_data_bpHeader_requestType() {
         return 56;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.wConfData.level'
+     * Return the value (as a short) of the field 'data.data.bpHeader.requestType'
      */
-    public short get_data_data_wConfData_level() {
-        return (short)getUIntElement(offsetBits_data_data_wConfData_level(), 8);
+    public short get_data_data_bpHeader_requestType() {
+        return (short)getUIntElement(offsetBits_data_data_bpHeader_requestType(), 8);
     }
 
     /**
-     * Set the value of the field 'data.data.wConfData.level'
+     * Set the value of the field 'data.data.bpHeader.requestType'
      */
-    public void set_data_data_wConfData_level(short value) {
-        setUIntElement(offsetBits_data_data_wConfData_level(), 8, value);
+    public void set_data_data_bpHeader_requestType(short value) {
+        setUIntElement(offsetBits_data_data_bpHeader_requestType(), 8, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.wConfData.level'
+     * Return the size, in bytes, of the field 'data.data.bpHeader.requestType'
      */
-    public static int size_data_data_wConfData_level() {
+    public static int size_data_data_bpHeader_requestType() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.wConfData.level'
+     * Return the size, in bits, of the field 'data.data.bpHeader.requestType'
      */
-    public static int sizeBits_data_data_wConfData_level() {
+    public static int sizeBits_data_data_bpHeader_requestType() {
         return 8;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wConfData.packNum
+    // Accessor methods for field: data.data.bpHeader.packTotal
     //   Field type: short
     //   Offset (bits): 64
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wConfData.packNum' is signed (false).
+     * Return whether the field 'data.data.bpHeader.packTotal' is signed (false).
      */
-    public static boolean isSigned_data_data_wConfData_packNum() {
+    public static boolean isSigned_data_data_bpHeader_packTotal() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wConfData.packNum' is an array (false).
+     * Return whether the field 'data.data.bpHeader.packTotal' is an array (false).
      */
-    public static boolean isArray_data_data_wConfData_packNum() {
+    public static boolean isArray_data_data_bpHeader_packTotal() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wConfData.packNum'
+     * Return the offset (in bytes) of the field 'data.data.bpHeader.packTotal'
      */
-    public static int offset_data_data_wConfData_packNum() {
+    public static int offset_data_data_bpHeader_packTotal() {
         return (64 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wConfData.packNum'
+     * Return the offset (in bits) of the field 'data.data.bpHeader.packTotal'
      */
-    public static int offsetBits_data_data_wConfData_packNum() {
+    public static int offsetBits_data_data_bpHeader_packTotal() {
         return 64;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.wConfData.packNum'
+     * Return the value (as a short) of the field 'data.data.bpHeader.packTotal'
      */
-    public short get_data_data_wConfData_packNum() {
-        return (short)getUIntElement(offsetBits_data_data_wConfData_packNum(), 8);
+    public short get_data_data_bpHeader_packTotal() {
+        return (short)getUIntElement(offsetBits_data_data_bpHeader_packTotal(), 8);
     }
 
     /**
-     * Set the value of the field 'data.data.wConfData.packNum'
+     * Set the value of the field 'data.data.bpHeader.packTotal'
      */
-    public void set_data_data_wConfData_packNum(short value) {
-        setUIntElement(offsetBits_data_data_wConfData_packNum(), 8, value);
+    public void set_data_data_bpHeader_packTotal(short value) {
+        setUIntElement(offsetBits_data_data_bpHeader_packTotal(), 8, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.wConfData.packNum'
+     * Return the size, in bytes, of the field 'data.data.bpHeader.packTotal'
      */
-    public static int size_data_data_wConfData_packNum() {
+    public static int size_data_data_bpHeader_packTotal() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.wConfData.packNum'
+     * Return the size, in bits, of the field 'data.data.bpHeader.packTotal'
      */
-    public static int sizeBits_data_data_wConfData_packNum() {
+    public static int sizeBits_data_data_bpHeader_packTotal() {
         return 8;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wConfData.moteCount
-    //   Field type: short
+    // Accessor methods for field: data.data.bpHeader.byteTotal
+    //   Field type: int
     //   Offset (bits): 72
-    //   Size (bits): 8
+    //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wConfData.moteCount' is signed (false).
+     * Return whether the field 'data.data.bpHeader.byteTotal' is signed (false).
      */
-    public static boolean isSigned_data_data_wConfData_moteCount() {
+    public static boolean isSigned_data_data_bpHeader_byteTotal() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wConfData.moteCount' is an array (false).
+     * Return whether the field 'data.data.bpHeader.byteTotal' is an array (false).
      */
-    public static boolean isArray_data_data_wConfData_moteCount() {
+    public static boolean isArray_data_data_bpHeader_byteTotal() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wConfData.moteCount'
+     * Return the offset (in bytes) of the field 'data.data.bpHeader.byteTotal'
      */
-    public static int offset_data_data_wConfData_moteCount() {
+    public static int offset_data_data_bpHeader_byteTotal() {
         return (72 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wConfData.moteCount'
+     * Return the offset (in bits) of the field 'data.data.bpHeader.byteTotal'
      */
-    public static int offsetBits_data_data_wConfData_moteCount() {
+    public static int offsetBits_data_data_bpHeader_byteTotal() {
         return 72;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.wConfData.moteCount'
+     * Return the value (as a int) of the field 'data.data.bpHeader.byteTotal'
      */
-    public short get_data_data_wConfData_moteCount() {
-        return (short)getUIntElement(offsetBits_data_data_wConfData_moteCount(), 8);
+    public int get_data_data_bpHeader_byteTotal() {
+        return (int)getUIntElement(offsetBits_data_data_bpHeader_byteTotal(), 16);
     }
 
     /**
-     * Set the value of the field 'data.data.wConfData.moteCount'
+     * Set the value of the field 'data.data.bpHeader.byteTotal'
      */
-    public void set_data_data_wConfData_moteCount(short value) {
-        setUIntElement(offsetBits_data_data_wConfData_moteCount(), 8, value);
+    public void set_data_data_bpHeader_byteTotal(int value) {
+        setUIntElement(offsetBits_data_data_bpHeader_byteTotal(), 16, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.wConfData.moteCount'
+     * Return the size, in bytes, of the field 'data.data.bpHeader.byteTotal'
      */
-    public static int size_data_data_wConfData_moteCount() {
-        return (8 / 8);
+    public static int size_data_data_bpHeader_byteTotal() {
+        return (16 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.wConfData.moteCount'
+     * Return the size, in bits, of the field 'data.data.bpHeader.byteTotal'
      */
-    public static int sizeBits_data_data_wConfData_moteCount() {
-        return 8;
+    public static int sizeBits_data_data_bpHeader_byteTotal() {
+        return 16;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wConfData.moteConf.id
-    //   Field type: short[]
-    //   Offset (bits): 0
-    //   Size of each element (bits): 8
+    // Accessor methods for field: data.data.bpHeader.numBlocks
+    //   Field type: short
+    //   Offset (bits): 88
+    //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wConfData.moteConf.id' is signed (false).
+     * Return whether the field 'data.data.bpHeader.numBlocks' is signed (false).
      */
-    public static boolean isSigned_data_data_wConfData_moteConf_id() {
+    public static boolean isSigned_data_data_bpHeader_numBlocks() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wConfData.moteConf.id' is an array (true).
+     * Return whether the field 'data.data.bpHeader.numBlocks' is an array (false).
      */
-    public static boolean isArray_data_data_wConfData_moteConf_id() {
-        return true;
-    }
-
-    /**
-     * Return the offset (in bytes) of the field 'data.data.wConfData.moteConf.id'
-     */
-    public static int offset_data_data_wConfData_moteConf_id(int index1) {
-        int offset = 0;
-        if (index1 < 0 || index1 >= 3) throw new ArrayIndexOutOfBoundsException();
-        offset += 80 + index1 * 48;
-        return (offset / 8);
-    }
-
-    /**
-     * Return the offset (in bits) of the field 'data.data.wConfData.moteConf.id'
-     */
-    public static int offsetBits_data_data_wConfData_moteConf_id(int index1) {
-        int offset = 0;
-        if (index1 < 0 || index1 >= 3) throw new ArrayIndexOutOfBoundsException();
-        offset += 80 + index1 * 48;
-        return offset;
-    }
-
-    /**
-     * Return the entire array 'data.data.wConfData.moteConf.id' as a short[]
-     */
-    public short[] get_data_data_wConfData_moteConf_id() {
-        short[] tmp = new short[3];
-        for (int index0 = 0; index0 < numElements_data_data_wConfData_moteConf_id(0); index0++) {
-            tmp[index0] = getElement_data_data_wConfData_moteConf_id(index0);
-        }
-        return tmp;
-    }
-
-    /**
-     * Set the contents of the array 'data.data.wConfData.moteConf.id' from the given short[]
-     */
-    public void set_data_data_wConfData_moteConf_id(short[] value) {
-        for (int index0 = 0; index0 < value.length; index0++) {
-            setElement_data_data_wConfData_moteConf_id(index0, value[index0]);
-        }
-    }
-
-    /**
-     * Return an element (as a short) of the array 'data.data.wConfData.moteConf.id'
-     */
-    public short getElement_data_data_wConfData_moteConf_id(int index1) {
-        return (short)getUIntElement(offsetBits_data_data_wConfData_moteConf_id(index1), 8);
-    }
-
-    /**
-     * Set an element of the array 'data.data.wConfData.moteConf.id'
-     */
-    public void setElement_data_data_wConfData_moteConf_id(int index1, short value) {
-        setUIntElement(offsetBits_data_data_wConfData_moteConf_id(index1), 8, value);
-    }
-
-    /**
-     * Return the total size, in bytes, of the array 'data.data.wConfData.moteConf.id'
-     */
-    public static int totalSize_data_data_wConfData_moteConf_id() {
-        return (144 / 8);
-    }
-
-    /**
-     * Return the total size, in bits, of the array 'data.data.wConfData.moteConf.id'
-     */
-    public static int totalSizeBits_data_data_wConfData_moteConf_id() {
-        return 144;
-    }
-
-    /**
-     * Return the size, in bytes, of each element of the array 'data.data.wConfData.moteConf.id'
-     */
-    public static int elementSize_data_data_wConfData_moteConf_id() {
-        return (8 / 8);
-    }
-
-    /**
-     * Return the size, in bits, of each element of the array 'data.data.wConfData.moteConf.id'
-     */
-    public static int elementSizeBits_data_data_wConfData_moteConf_id() {
-        return 8;
-    }
-
-    /**
-     * Return the number of dimensions in the array 'data.data.wConfData.moteConf.id'
-     */
-    public static int numDimensions_data_data_wConfData_moteConf_id() {
-        return 1;
-    }
-
-    /**
-     * Return the number of elements in the array 'data.data.wConfData.moteConf.id'
-     */
-    public static int numElements_data_data_wConfData_moteConf_id() {
-        return 3;
-    }
-
-    /**
-     * Return the number of elements in the array 'data.data.wConfData.moteConf.id'
-     * for the given dimension.
-     */
-    public static int numElements_data_data_wConfData_moteConf_id(int dimension) {
-      int array_dims[] = { 3,  };
-        if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
-        if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");
-        return array_dims[dimension];
-    }
-
-    /**
-     * Fill in the array 'data.data.wConfData.moteConf.id' with a String
-     */
-    public void setString_data_data_wConfData_moteConf_id(String s) { 
-         int len = s.length();
-         int i;
-         for (i = 0; i < len; i++) {
-             setElement_data_data_wConfData_moteConf_id(i, (short)s.charAt(i));
-         }
-         setElement_data_data_wConfData_moteConf_id(i, (short)0); //null terminate
-    }
-
-    /**
-     * Read the array 'data.data.wConfData.moteConf.id' as a String
-     */
-    public String getString_data_data_wConfData_moteConf_id() { 
-         char carr[] = new char[Math.min(net.tinyos.message.Message.MAX_CONVERTED_STRING_LENGTH,3)];
-         int i;
-         for (i = 0; i < carr.length; i++) {
-             if ((char)getElement_data_data_wConfData_moteConf_id(i) == (char)0) break;
-             carr[i] = (char)getElement_data_data_wConfData_moteConf_id(i);
-         }
-         return new String(carr,0,i);
-    }
-
-    /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wConfData.moteConf.state
-    //   Field type: short[]
-    //   Offset (bits): 8
-    //   Size of each element (bits): 8
-    /////////////////////////////////////////////////////////
-
-    /**
-     * Return whether the field 'data.data.wConfData.moteConf.state' is signed (false).
-     */
-    public static boolean isSigned_data_data_wConfData_moteConf_state() {
+    public static boolean isArray_data_data_bpHeader_numBlocks() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wConfData.moteConf.state' is an array (true).
+     * Return the offset (in bytes) of the field 'data.data.bpHeader.numBlocks'
      */
-    public static boolean isArray_data_data_wConfData_moteConf_state() {
-        return true;
+    public static int offset_data_data_bpHeader_numBlocks() {
+        return (88 / 8);
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wConfData.moteConf.state'
+     * Return the offset (in bits) of the field 'data.data.bpHeader.numBlocks'
      */
-    public static int offset_data_data_wConfData_moteConf_state(int index1) {
-        int offset = 8;
-        if (index1 < 0 || index1 >= 3) throw new ArrayIndexOutOfBoundsException();
-        offset += 80 + index1 * 48;
-        return (offset / 8);
+    public static int offsetBits_data_data_bpHeader_numBlocks() {
+        return 88;
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wConfData.moteConf.state'
+     * Return the value (as a short) of the field 'data.data.bpHeader.numBlocks'
      */
-    public static int offsetBits_data_data_wConfData_moteConf_state(int index1) {
-        int offset = 8;
-        if (index1 < 0 || index1 >= 3) throw new ArrayIndexOutOfBoundsException();
-        offset += 80 + index1 * 48;
-        return offset;
+    public short get_data_data_bpHeader_numBlocks() {
+        return (short)getUIntElement(offsetBits_data_data_bpHeader_numBlocks(), 8);
     }
 
     /**
-     * Return the entire array 'data.data.wConfData.moteConf.state' as a short[]
+     * Set the value of the field 'data.data.bpHeader.numBlocks'
      */
-    public short[] get_data_data_wConfData_moteConf_state() {
-        short[] tmp = new short[3];
-        for (int index0 = 0; index0 < numElements_data_data_wConfData_moteConf_state(0); index0++) {
-            tmp[index0] = getElement_data_data_wConfData_moteConf_state(index0);
-        }
-        return tmp;
+    public void set_data_data_bpHeader_numBlocks(short value) {
+        setUIntElement(offsetBits_data_data_bpHeader_numBlocks(), 8, value);
     }
 
     /**
-     * Set the contents of the array 'data.data.wConfData.moteConf.state' from the given short[]
+     * Return the size, in bytes, of the field 'data.data.bpHeader.numBlocks'
      */
-    public void set_data_data_wConfData_moteConf_state(short[] value) {
-        for (int index0 = 0; index0 < value.length; index0++) {
-            setElement_data_data_wConfData_moteConf_state(index0, value[index0]);
-        }
-    }
-
-    /**
-     * Return an element (as a short) of the array 'data.data.wConfData.moteConf.state'
-     */
-    public short getElement_data_data_wConfData_moteConf_state(int index1) {
-        return (short)getUIntElement(offsetBits_data_data_wConfData_moteConf_state(index1), 8);
-    }
-
-    /**
-     * Set an element of the array 'data.data.wConfData.moteConf.state'
-     */
-    public void setElement_data_data_wConfData_moteConf_state(int index1, short value) {
-        setUIntElement(offsetBits_data_data_wConfData_moteConf_state(index1), 8, value);
-    }
-
-    /**
-     * Return the total size, in bytes, of the array 'data.data.wConfData.moteConf.state'
-     */
-    public static int totalSize_data_data_wConfData_moteConf_state() {
-        return (144 / 8);
-    }
-
-    /**
-     * Return the total size, in bits, of the array 'data.data.wConfData.moteConf.state'
-     */
-    public static int totalSizeBits_data_data_wConfData_moteConf_state() {
-        return 144;
-    }
-
-    /**
-     * Return the size, in bytes, of each element of the array 'data.data.wConfData.moteConf.state'
-     */
-    public static int elementSize_data_data_wConfData_moteConf_state() {
+    public static int size_data_data_bpHeader_numBlocks() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of each element of the array 'data.data.wConfData.moteConf.state'
+     * Return the size, in bits, of the field 'data.data.bpHeader.numBlocks'
      */
-    public static int elementSizeBits_data_data_wConfData_moteConf_state() {
+    public static int sizeBits_data_data_bpHeader_numBlocks() {
         return 8;
     }
 
-    /**
-     * Return the number of dimensions in the array 'data.data.wConfData.moteConf.state'
-     */
-    public static int numDimensions_data_data_wConfData_moteConf_state() {
-        return 1;
-    }
-
-    /**
-     * Return the number of elements in the array 'data.data.wConfData.moteConf.state'
-     */
-    public static int numElements_data_data_wConfData_moteConf_state() {
-        return 3;
-    }
-
-    /**
-     * Return the number of elements in the array 'data.data.wConfData.moteConf.state'
-     * for the given dimension.
-     */
-    public static int numElements_data_data_wConfData_moteConf_state(int dimension) {
-      int array_dims[] = { 3,  };
-        if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
-        if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");
-        return array_dims[dimension];
-    }
-
-    /**
-     * Fill in the array 'data.data.wConfData.moteConf.state' with a String
-     */
-    public void setString_data_data_wConfData_moteConf_state(String s) { 
-         int len = s.length();
-         int i;
-         for (i = 0; i < len; i++) {
-             setElement_data_data_wConfData_moteConf_state(i, (short)s.charAt(i));
-         }
-         setElement_data_data_wConfData_moteConf_state(i, (short)0); //null terminate
-    }
-
-    /**
-     * Read the array 'data.data.wConfData.moteConf.state' as a String
-     */
-    public String getString_data_data_wConfData_moteConf_state() { 
-         char carr[] = new char[Math.min(net.tinyos.message.Message.MAX_CONVERTED_STRING_LENGTH,3)];
-         int i;
-         for (i = 0; i < carr.length; i++) {
-             if ((char)getElement_data_data_wConfData_moteConf_state(i) == (char)0) break;
-             carr[i] = (char)getElement_data_data_wConfData_moteConf_state(i);
-         }
-         return new String(carr,0,i);
-    }
-
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wConfData.moteConf.coeff
-    //   Field type: float[]
-    //   Offset (bits): 16
-    //   Size of each element (bits): 32
+    // Accessor methods for field: data.data.bpHeader.numPtrs
+    //   Field type: short
+    //   Offset (bits): 96
+    //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wConfData.moteConf.coeff' is signed (false).
+     * Return whether the field 'data.data.bpHeader.numPtrs' is signed (false).
      */
-    public static boolean isSigned_data_data_wConfData_moteConf_coeff() {
+    public static boolean isSigned_data_data_bpHeader_numPtrs() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wConfData.moteConf.coeff' is an array (true).
+     * Return whether the field 'data.data.bpHeader.numPtrs' is an array (false).
      */
-    public static boolean isArray_data_data_wConfData_moteConf_coeff() {
-        return true;
+    public static boolean isArray_data_data_bpHeader_numPtrs() {
+        return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wConfData.moteConf.coeff'
+     * Return the offset (in bytes) of the field 'data.data.bpHeader.numPtrs'
      */
-    public static int offset_data_data_wConfData_moteConf_coeff(int index1) {
-        int offset = 16;
-        if (index1 < 0 || index1 >= 3) throw new ArrayIndexOutOfBoundsException();
-        offset += 80 + index1 * 48;
-        return (offset / 8);
+    public static int offset_data_data_bpHeader_numPtrs() {
+        return (96 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wConfData.moteConf.coeff'
+     * Return the offset (in bits) of the field 'data.data.bpHeader.numPtrs'
      */
-    public static int offsetBits_data_data_wConfData_moteConf_coeff(int index1) {
-        int offset = 16;
-        if (index1 < 0 || index1 >= 3) throw new ArrayIndexOutOfBoundsException();
-        offset += 80 + index1 * 48;
-        return offset;
+    public static int offsetBits_data_data_bpHeader_numPtrs() {
+        return 96;
     }
 
     /**
-     * Return the entire array 'data.data.wConfData.moteConf.coeff' as a float[]
+     * Return the value (as a short) of the field 'data.data.bpHeader.numPtrs'
      */
-    public float[] get_data_data_wConfData_moteConf_coeff() {
-        float[] tmp = new float[3];
-        for (int index0 = 0; index0 < numElements_data_data_wConfData_moteConf_coeff(0); index0++) {
-            tmp[index0] = getElement_data_data_wConfData_moteConf_coeff(index0);
-        }
-        return tmp;
+    public short get_data_data_bpHeader_numPtrs() {
+        return (short)getUIntElement(offsetBits_data_data_bpHeader_numPtrs(), 8);
     }
 
     /**
-     * Set the contents of the array 'data.data.wConfData.moteConf.coeff' from the given float[]
+     * Set the value of the field 'data.data.bpHeader.numPtrs'
      */
-    public void set_data_data_wConfData_moteConf_coeff(float[] value) {
-        for (int index0 = 0; index0 < value.length; index0++) {
-            setElement_data_data_wConfData_moteConf_coeff(index0, value[index0]);
-        }
+    public void set_data_data_bpHeader_numPtrs(short value) {
+        setUIntElement(offsetBits_data_data_bpHeader_numPtrs(), 8, value);
     }
 
     /**
-     * Return an element (as a float) of the array 'data.data.wConfData.moteConf.coeff'
+     * Return the size, in bytes, of the field 'data.data.bpHeader.numPtrs'
      */
-    public float getElement_data_data_wConfData_moteConf_coeff(int index1) {
-        return (float)getFloatElement(offsetBits_data_data_wConfData_moteConf_coeff(index1), 32);
+    public static int size_data_data_bpHeader_numPtrs() {
+        return (8 / 8);
     }
 
     /**
-     * Set an element of the array 'data.data.wConfData.moteConf.coeff'
+     * Return the size, in bits, of the field 'data.data.bpHeader.numPtrs'
      */
-    public void setElement_data_data_wConfData_moteConf_coeff(int index1, float value) {
-        setFloatElement(offsetBits_data_data_wConfData_moteConf_coeff(index1), 32, value);
-    }
-
-    /**
-     * Return the total size, in bytes, of the array 'data.data.wConfData.moteConf.coeff'
-     */
-    public static int totalSize_data_data_wConfData_moteConf_coeff() {
-        return (144 / 8);
-    }
-
-    /**
-     * Return the total size, in bits, of the array 'data.data.wConfData.moteConf.coeff'
-     */
-    public static int totalSizeBits_data_data_wConfData_moteConf_coeff() {
-        return 144;
-    }
-
-    /**
-     * Return the size, in bytes, of each element of the array 'data.data.wConfData.moteConf.coeff'
-     */
-    public static int elementSize_data_data_wConfData_moteConf_coeff() {
-        return (32 / 8);
-    }
-
-    /**
-     * Return the size, in bits, of each element of the array 'data.data.wConfData.moteConf.coeff'
-     */
-    public static int elementSizeBits_data_data_wConfData_moteConf_coeff() {
-        return 32;
-    }
-
-    /**
-     * Return the number of dimensions in the array 'data.data.wConfData.moteConf.coeff'
-     */
-    public static int numDimensions_data_data_wConfData_moteConf_coeff() {
-        return 1;
-    }
-
-    /**
-     * Return the number of elements in the array 'data.data.wConfData.moteConf.coeff'
-     */
-    public static int numElements_data_data_wConfData_moteConf_coeff() {
-        return 3;
-    }
-
-    /**
-     * Return the number of elements in the array 'data.data.wConfData.moteConf.coeff'
-     * for the given dimension.
-     */
-    public static int numElements_data_data_wConfData_moteConf_coeff(int dimension) {
-      int array_dims[] = { 3,  };
-        if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
-        if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");
-        return array_dims[dimension];
+    public static int sizeBits_data_data_bpHeader_numPtrs() {
+        return 8;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wConfHeader.numLevels
+    // Accessor methods for field: data.data.bpData.curPack
     //   Field type: short
     //   Offset (bits): 56
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wConfHeader.numLevels' is signed (false).
+     * Return whether the field 'data.data.bpData.curPack' is signed (false).
      */
-    public static boolean isSigned_data_data_wConfHeader_numLevels() {
+    public static boolean isSigned_data_data_bpData_curPack() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wConfHeader.numLevels' is an array (false).
+     * Return whether the field 'data.data.bpData.curPack' is an array (false).
      */
-    public static boolean isArray_data_data_wConfHeader_numLevels() {
+    public static boolean isArray_data_data_bpData_curPack() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wConfHeader.numLevels'
+     * Return the offset (in bytes) of the field 'data.data.bpData.curPack'
      */
-    public static int offset_data_data_wConfHeader_numLevels() {
+    public static int offset_data_data_bpData_curPack() {
         return (56 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wConfHeader.numLevels'
+     * Return the offset (in bits) of the field 'data.data.bpData.curPack'
      */
-    public static int offsetBits_data_data_wConfHeader_numLevels() {
+    public static int offsetBits_data_data_bpData_curPack() {
         return 56;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.wConfHeader.numLevels'
+     * Return the value (as a short) of the field 'data.data.bpData.curPack'
      */
-    public short get_data_data_wConfHeader_numLevels() {
-        return (short)getUIntElement(offsetBits_data_data_wConfHeader_numLevels(), 8);
+    public short get_data_data_bpData_curPack() {
+        return (short)getUIntElement(offsetBits_data_data_bpData_curPack(), 8);
     }
 
     /**
-     * Set the value of the field 'data.data.wConfHeader.numLevels'
+     * Set the value of the field 'data.data.bpData.curPack'
      */
-    public void set_data_data_wConfHeader_numLevels(short value) {
-        setUIntElement(offsetBits_data_data_wConfHeader_numLevels(), 8, value);
+    public void set_data_data_bpData_curPack(short value) {
+        setUIntElement(offsetBits_data_data_bpData_curPack(), 8, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.wConfHeader.numLevels'
+     * Return the size, in bytes, of the field 'data.data.bpData.curPack'
      */
-    public static int size_data_data_wConfHeader_numLevels() {
+    public static int size_data_data_bpData_curPack() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.wConfHeader.numLevels'
+     * Return the size, in bits, of the field 'data.data.bpData.curPack'
      */
-    public static int sizeBits_data_data_wConfHeader_numLevels() {
+    public static int sizeBits_data_data_bpData_curPack() {
         return 8;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wConfHeader.nbCount
-    //   Field type: short[]
+    // Accessor methods for field: data.data.bpData.data
+    //   Field type: byte[]
     //   Offset (bits): 64
     //   Size of each element (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wConfHeader.nbCount' is signed (false).
+     * Return whether the field 'data.data.bpData.data' is signed (false).
      */
-    public static boolean isSigned_data_data_wConfHeader_nbCount() {
+    public static boolean isSigned_data_data_bpData_data() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wConfHeader.nbCount' is an array (true).
+     * Return whether the field 'data.data.bpData.data' is an array (true).
      */
-    public static boolean isArray_data_data_wConfHeader_nbCount() {
+    public static boolean isArray_data_data_bpData_data() {
         return true;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wConfHeader.nbCount'
+     * Return the offset (in bytes) of the field 'data.data.bpData.data'
      */
-    public static int offset_data_data_wConfHeader_nbCount(int index1) {
+    public static int offset_data_data_bpData_data(int index1) {
         int offset = 64;
-        if (index1 < 0 || index1 >= 10) throw new ArrayIndexOutOfBoundsException();
+        if (index1 < 0 || index1 >= 22) throw new ArrayIndexOutOfBoundsException();
         offset += 0 + index1 * 8;
         return (offset / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wConfHeader.nbCount'
+     * Return the offset (in bits) of the field 'data.data.bpData.data'
      */
-    public static int offsetBits_data_data_wConfHeader_nbCount(int index1) {
+    public static int offsetBits_data_data_bpData_data(int index1) {
         int offset = 64;
-        if (index1 < 0 || index1 >= 10) throw new ArrayIndexOutOfBoundsException();
+        if (index1 < 0 || index1 >= 22) throw new ArrayIndexOutOfBoundsException();
         offset += 0 + index1 * 8;
         return offset;
     }
 
     /**
-     * Return the entire array 'data.data.wConfHeader.nbCount' as a short[]
+     * Return the entire array 'data.data.bpData.data' as a byte[]
      */
-    public short[] get_data_data_wConfHeader_nbCount() {
-        short[] tmp = new short[10];
-        for (int index0 = 0; index0 < numElements_data_data_wConfHeader_nbCount(0); index0++) {
-            tmp[index0] = getElement_data_data_wConfHeader_nbCount(index0);
+    public byte[] get_data_data_bpData_data() {
+        byte[] tmp = new byte[22];
+        for (int index0 = 0; index0 < numElements_data_data_bpData_data(0); index0++) {
+            tmp[index0] = getElement_data_data_bpData_data(index0);
         }
         return tmp;
     }
 
     /**
-     * Set the contents of the array 'data.data.wConfHeader.nbCount' from the given short[]
+     * Set the contents of the array 'data.data.bpData.data' from the given byte[]
      */
-    public void set_data_data_wConfHeader_nbCount(short[] value) {
+    public void set_data_data_bpData_data(byte[] value) {
         for (int index0 = 0; index0 < value.length; index0++) {
-            setElement_data_data_wConfHeader_nbCount(index0, value[index0]);
+            setElement_data_data_bpData_data(index0, value[index0]);
         }
     }
 
     /**
-     * Return an element (as a short) of the array 'data.data.wConfHeader.nbCount'
+     * Return an element (as a byte) of the array 'data.data.bpData.data'
      */
-    public short getElement_data_data_wConfHeader_nbCount(int index1) {
-        return (short)getUIntElement(offsetBits_data_data_wConfHeader_nbCount(index1), 8);
+    public byte getElement_data_data_bpData_data(int index1) {
+        return (byte)getSIntElement(offsetBits_data_data_bpData_data(index1), 8);
     }
 
     /**
-     * Set an element of the array 'data.data.wConfHeader.nbCount'
+     * Set an element of the array 'data.data.bpData.data'
      */
-    public void setElement_data_data_wConfHeader_nbCount(int index1, short value) {
-        setUIntElement(offsetBits_data_data_wConfHeader_nbCount(index1), 8, value);
+    public void setElement_data_data_bpData_data(int index1, byte value) {
+        setSIntElement(offsetBits_data_data_bpData_data(index1), 8, value);
     }
 
     /**
-     * Return the total size, in bytes, of the array 'data.data.wConfHeader.nbCount'
+     * Return the total size, in bytes, of the array 'data.data.bpData.data'
      */
-    public static int totalSize_data_data_wConfHeader_nbCount() {
-        return (80 / 8);
+    public static int totalSize_data_data_bpData_data() {
+        return (176 / 8);
     }
 
     /**
-     * Return the total size, in bits, of the array 'data.data.wConfHeader.nbCount'
+     * Return the total size, in bits, of the array 'data.data.bpData.data'
      */
-    public static int totalSizeBits_data_data_wConfHeader_nbCount() {
-        return 80;
+    public static int totalSizeBits_data_data_bpData_data() {
+        return 176;
     }
 
     /**
-     * Return the size, in bytes, of each element of the array 'data.data.wConfHeader.nbCount'
+     * Return the size, in bytes, of each element of the array 'data.data.bpData.data'
      */
-    public static int elementSize_data_data_wConfHeader_nbCount() {
+    public static int elementSize_data_data_bpData_data() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of each element of the array 'data.data.wConfHeader.nbCount'
+     * Return the size, in bits, of each element of the array 'data.data.bpData.data'
      */
-    public static int elementSizeBits_data_data_wConfHeader_nbCount() {
+    public static int elementSizeBits_data_data_bpData_data() {
         return 8;
     }
 
     /**
-     * Return the number of dimensions in the array 'data.data.wConfHeader.nbCount'
+     * Return the number of dimensions in the array 'data.data.bpData.data'
      */
-    public static int numDimensions_data_data_wConfHeader_nbCount() {
+    public static int numDimensions_data_data_bpData_data() {
         return 1;
     }
 
     /**
-     * Return the number of elements in the array 'data.data.wConfHeader.nbCount'
+     * Return the number of elements in the array 'data.data.bpData.data'
      */
-    public static int numElements_data_data_wConfHeader_nbCount() {
-        return 10;
+    public static int numElements_data_data_bpData_data() {
+        return 22;
     }
 
     /**
-     * Return the number of elements in the array 'data.data.wConfHeader.nbCount'
+     * Return the number of elements in the array 'data.data.bpData.data'
      * for the given dimension.
      */
-    public static int numElements_data_data_wConfHeader_nbCount(int dimension) {
-      int array_dims[] = { 10,  };
+    public static int numElements_data_data_bpData_data(int dimension) {
+      int array_dims[] = { 22,  };
         if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
         if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");
         return array_dims[dimension];
     }
 
     /**
-     * Fill in the array 'data.data.wConfHeader.nbCount' with a String
+     * Fill in the array 'data.data.bpData.data' with a String
      */
-    public void setString_data_data_wConfHeader_nbCount(String s) { 
+    public void setString_data_data_bpData_data(String s) { 
          int len = s.length();
          int i;
          for (i = 0; i < len; i++) {
-             setElement_data_data_wConfHeader_nbCount(i, (short)s.charAt(i));
+             setElement_data_data_bpData_data(i, (byte)s.charAt(i));
          }
-         setElement_data_data_wConfHeader_nbCount(i, (short)0); //null terminate
+         setElement_data_data_bpData_data(i, (byte)0); //null terminate
     }
 
     /**
-     * Read the array 'data.data.wConfHeader.nbCount' as a String
+     * Read the array 'data.data.bpData.data' as a String
      */
-    public String getString_data_data_wConfHeader_nbCount() { 
-         char carr[] = new char[Math.min(net.tinyos.message.Message.MAX_CONVERTED_STRING_LENGTH,10)];
+    public String getString_data_data_bpData_data() { 
+         char carr[] = new char[Math.min(net.tinyos.message.Message.MAX_CONVERTED_STRING_LENGTH,22)];
          int i;
          for (i = 0; i < carr.length; i++) {
-             if ((char)getElement_data_data_wConfHeader_nbCount(i) == (char)0) break;
-             carr[i] = (char)getElement_data_data_wConfHeader_nbCount(i);
+             if ((char)getElement_data_data_bpData_data(i) == (char)0) break;
+             carr[i] = (char)getElement_data_data_bpData_data(i);
          }
          return new String(carr,0,i);
     }
