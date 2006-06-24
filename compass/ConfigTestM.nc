@@ -2,9 +2,11 @@
  * Requests wavelet config data from BigPackM on startup.
  * @author Ryan Stinnett
  */
+ 
+includes WaveletData;
 
 module ConfigTestM {
-  uses interface WaveletConfig;
+  uses interface BigPack;
   uses interface Timer;
   provides interface StdControl;
 }
@@ -21,7 +23,7 @@ implementation {
   }
   
   event result_t Timer.fired() {
-    call WaveletConfig.getConfig();
+    call BigPack.request(BP_WAVELETCONF);
     return SUCCESS;
   }
 
@@ -29,7 +31,24 @@ implementation {
     return SUCCESS;
   }
   
-  event result_t WaveletConfig.configDone(WaveletLevel *configData, uint8_t numLevels, result_t result) {
-    return SUCCESS;
+  /**
+   * Once the request is complete, the requester is given a pointer to the main
+   * data block.
+   */
+  event void BigPack.requestDone(int8_t *mainBlock, result_t result) {
+    uint8_t i, l;
+    WaveletConf *bob = (WaveletConf *) mainBlock;
+    ExtWaveletLevel **lvl = bob->level;
+    dbg(DBG_USR2, "BigPack: Wavelet Config Test\n");
+    for (l = 0; l < bob->numLevels; l++) {
+      dbg(DBG_USR2, "BigPack: Level #%i\n", l + 1);
+      for (i = 0; i < lvl[l]->nbCount; i++) {
+        dbg(DBG_USR2, "BigPack:   Neighbor #%i\n", i + 1);
+        dbg(DBG_USR2, "BigPack:     ID:    %i\n", lvl[l]->nb[i].id);
+        dbg(DBG_USR2, "BigPack:     State: %i\n", lvl[l]->nb[i].state);
+        dbg(DBG_USR2, "BigPack:     Coeff: %f\n", lvl[l]->nb[i].coeff);
+      }
+    }
+    call BigPack.free(mainBlock);
   }
 }

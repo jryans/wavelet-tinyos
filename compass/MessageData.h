@@ -17,8 +17,6 @@ struct MessageData {
 	union {
 		MoteCommand moteCmd;
 		WaveletData wData;
-    WaveletConfData wConfData;
-    WaveletConfHeader wConfHeader;
     BigPackHeader bpHeader;
     BigPackData bpData;
     WaveletState wState;
@@ -31,8 +29,6 @@ typedef struct MessageData msgData;
 enum { // Identifies the type of data stored
 	MOTECOMMAND = 0,
 	WAVELETDATA = 1,
-	WAVELETCONFDATA = 2,
-	WAVELETCONFHEADER = 3,
 	BIGPACKHEADER = 2,
 	BIGPACKDATA = 3,
 	WAVELETSTATE = 4,

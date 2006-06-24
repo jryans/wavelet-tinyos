@@ -15,5 +15,10 @@ interface BigPack {
    * Once the request is complete, the requester is given a pointer to the main
    * data block.
    */
-  event void requestDone(int8_t *mainBlock);
+  event void requestDone(int8_t *mainBlock, result_t result);
+  
+  /**
+   * When an application is done with the data, it must call free.
+   */
+  command void free(int8_t *mainBlock);
 }

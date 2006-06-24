@@ -5,7 +5,7 @@
  
 includes MessageData;
  
-module NewBigPackM {
+module BigPackM {
   uses {
     interface Message;
     interface Timer as MsgRepeat;
@@ -14,14 +14,13 @@ module NewBigPackM {
 #endif
   }
   provides {
-    interface WaveletConfig;
+    interface BigPack;
+    interface StdControl;
   }
 }
 implementation {
 #if 0 // TinyOS Plugin Workaround
   typedef char msgData;
-  typedef char ExtWaveletLevel;
-  typedef char NewWaveletConf;
   typedef char BigPackBlock;
   typedef char BigPackPtr;
 #endif
@@ -34,26 +33,27 @@ implementation {
   int8_t *bigData;
   bool bdAlloc = FALSE;
   
-  #define MAX_BLOCKS 10 // Remove this!
-  int8_t *blockAddr[10];
-  int8_t *mainBlock;
-  
   BigPackBlock *block;
-  uint8_t numBlocks;
+  uint8_t numBlocks[BP_MAX_REQUESTS];
   bool bpbAlloc = FALSE;
   
   BigPackPtr *ptr;
   uint8_t numPtrs;
   bool bppAlloc = FALSE;
   
+  uint8_t curReqNum;
   bool activeRequest = FALSE; // True if a request is in progress
   msgData repeatMsg; // Message to repeat
+  
+  int8_t **blockAddr[BP_MAX_REQUESTS];
+  int8_t *mainBlock[BP_MAX_REQUESTS];
   
   result_t allocTemp();
   void freeTemp();
   void requestData(uint8_t type);
   void sendAck(msgData msg);
   void repeatSend(msgData msg, uint16_t bms);
+  void rebuildBlocks();
   
   /*** Timers ***/
   
@@ -74,33 +74,74 @@ implementation {
     return SUCCESS;
   }  
   
-  /*** WaveletConfig ***/
+  /*** StdControl ***/
   
-  /**
-   * Requests wavelet configuration data, such as our
-   * neighbors and their coefficients.
-   */
-  command result_t WaveletConfig.getConfig() {
-//    msgData msg;
-//    msg.src = TOS_LOCAL_ADDRESS;
-//    msg.dest = 0;
-//    msg.type = WAVELETCONFHEADER;
-//    msg.data.wConfHeader.numLevels = 0;
-//    dbg(DBG_USR2, "BigPack: Requesting wavelet config...\n");
-//    repeatSend(msg, 5000);
-    requestData(WAVELETCONF);
+  command result_t StdControl.init() 
+  {
+    uint8_t i;
+    for (i = 0; i < BP_MAX_REQUESTS; i++)
+      mainBlock[i] = NULL;
     return SUCCESS;
   }
   
-  void requestData(uint8_t type) {
-    if (!activeRequest) {
+  command result_t StdControl.start() 
+  {
+    return SUCCESS;
+  }
+  
+  command result_t StdControl.stop() 
+  {
+    return SUCCESS;
+  }
+  
+  /*** BigPack ***/
+  
+  /**
+   * Requests big pack data of a certain type.  If another request is already being
+   * processed, this will return FAIL and do nothing.  Otherwise, it returns SUCCESS
+   * and begins the request.
+   */
+  command result_t BigPack.request(uint8_t type) {
+    uint8_t i;
+    if (activeRequest)
+      return FAIL;
+    // Look for an available request slot
+    for (i = 0; i < BP_MAX_REQUESTS; i++) {
+      if (mainBlock[i] == NULL)
+        break;
+    }
+    if (i < BP_MAX_REQUESTS) {
       msgData msg;
+      curReqNum = i;
+      mainBlock[i] = (int8_t *) 1122; // Just so it's not NULL
       msg.src = TOS_LOCAL_ADDRESS;
       msg.dest = 0;
       msg.type = BIGPACKHEADER;
       msg.data.bpHeader.requestType = type;
       activeRequest = TRUE;
       repeatSend(msg, 5000);
+    } else {
+      return FAIL;
+    }
+    return SUCCESS;
+  }
+  
+  /**
+   * When an application is done with the data, it must call free.
+   */
+  command void BigPack.free(int8_t *mb) {
+    uint8_t i, b;
+    // Find the request to free
+    for (i = 0; i < BP_MAX_REQUESTS; i++) {
+      if (mainBlock[i] == mb)
+        break; 
+    }
+    // If found, then free the memory
+    if (i < BP_MAX_REQUESTS) {
+      for (b = 0; b < numBlocks[i]; b++)
+        free(blockAddr[i][b]);
+      free(blockAddr[i]);
+      mainBlock[i] = NULL;
     }
   }
   
@@ -121,7 +162,7 @@ implementation {
    * struct.
    */
   result_t allocTemp() {
-    uint16_t bpbSize = numBlocks * sizeof(BigPackBlock);
+    uint16_t bpbSize = numBlocks[curReqNum] * sizeof(BigPackBlock);
     uint16_t bppSize = numPtrs * sizeof(BigPackPtr);
     if ((bigData = malloc(numBytes - bpbSize - bppSize)) == NULL) {
       dbg(DBG_USR2, "BigPack: Couldn't allocate bigData!\n");
@@ -166,9 +207,9 @@ implementation {
    */
   event result_t Message.sendDone(msgData msg, result_t result) {
     switch (msg.type) {
-      case WAVELETCONFHEADER: {
+      case BIGPACKHEADER: {
         if (result == FAIL) {
-          dbg(DBG_USR2, "BigPack: Wavelet config request failed!\n");
+          dbg(DBG_USR2, "BigPack: BP header request failed!\n");
         }
         break; }
     }
@@ -178,27 +219,34 @@ implementation {
   void rebuildBlocks() {
     uint16_t start;
     uint8_t b, i;
-    int8_t **tmp;
+    int8_t **tmp, **bStore;
     dbg(DBG_USR2, "BigPack: Blocks and Pointers\n");
+    // Allocate block address space
+    if ((blockAddr[curReqNum] = malloc(numBlocks[curReqNum] * sizeof(int8_t *))) == NULL) {
+        dbg(DBG_USR2, "BigPack: Couldn't allocate block address array for request %i!\n", 
+            curReqNum + 1);
+        return;
+    }
+    bStore = blockAddr[curReqNum];
     // Allocate and fill each block
-    for (b = 0; b < numBlocks; b++) {
+    for (b = 0; b < numBlocks[curReqNum]; b++) {
       start = block[b].start;
       dbg(DBG_USR2, "BigPack: Block #%i\n", b + 1);
       dbg(DBG_USR2, "BigPack:   Start:  %i\n", start);
       dbg(DBG_USR2, "BigPack:   Length: %i\n", block[b].length);
-      if ((blockAddr[b] = malloc(block[b].length)) == NULL) {
+      if ((bStore[b] = malloc(block[b].length)) == NULL) {
         dbg(DBG_USR2, "BigPack: Couldn't allocate block %i!\n", b);
         return;
       }
-      dbg(DBG_USR2, "BigPack:   Addr:  %p\n", (void *)blockAddr[b]);
+      dbg(DBG_USR2, "BigPack:   Addr:  %p\n", (void *)bStore[b]);
       dbg(DBG_USR2, "BigPack:   Bytes\n");
       for (i = 0; i < block[b].length; i++) {
-        blockAddr[b][i] = bigData[start + i];
-        dbg(DBG_USR2, "BigPack:     Byte %i: %i\n", i + 1, blockAddr[b][i]);
+        bStore[b][i] = bigData[start + i];
+        dbg(DBG_USR2, "BigPack:     Byte %i: %i\n", i + 1, bStore[b][i]);
       }
     }
     // Main block is the last block
-    mainBlock = blockAddr[b - 1];
+    mainBlock[curReqNum] = bStore[b - 1];
     // Recreate each pointer needed
     for (b = 0; b < numPtrs; b++) {
       dbg(DBG_USR2, "BigPack: Pointer #%i\n", b + 1);
@@ -206,34 +254,18 @@ implementation {
       dbg(DBG_USR2, "BigPack:   Dest Block:    %i\n", ptr[b].destBlock + 1);
       dbg(DBG_USR2, "BigPack:   Dest Offset:   %i\n", ptr[b].destOffset);
       dbg(DBG_USR2, "BigPack:   Dest Offset:   %i\n", ptr[b].destOffset);
-      tmp = &blockAddr[ptr[b].destBlock][ptr[b].destOffset];
+      tmp = &bStore[ptr[b].destBlock][ptr[b].destOffset];
       if (ptr[b].blockArray) {
         dbg(DBG_USR2, "BigPack:   Block Array:   Yes\n");
-        *tmp = &blockAddr[ptr[b].addrOfBlock];
+        *tmp = &bStore[ptr[b].addrOfBlock];
       } else {
         dbg(DBG_USR2, "BigPack:   Block Array:   No\n");
-        *tmp = blockAddr[ptr[b].addrOfBlock];
+        *tmp = bStore[ptr[b].addrOfBlock];
       }
       dbg(DBG_USR2, "BigPack:   Ptr Value:     %p\n", (void *)*tmp);
     }
     // Free temp data
     freeTemp();
-  }
-  
-  void displayData() {
-    uint8_t i, l;
-    NewWaveletConf *bob = (NewWaveletConf *) mainBlock;
-    ExtWaveletLevel **lvl = (ExtWaveletLevel **) bob->level;
-    dbg(DBG_USR2, "BigPack: Wavelet Config Test\n");
-    for (l = 0; l < bob->numLevels; l++) {
-      dbg(DBG_USR2, "BigPack: Level #%i\n", l + 1);
-      for (i = 0; i < lvl[l]->nbCount; i++) {
-        dbg(DBG_USR2, "BigPack:   Neighbor #%i\n", i + 1);
-        dbg(DBG_USR2, "BigPack:     ID:    %i\n", lvl[l]->nb[i].id);
-        dbg(DBG_USR2, "BigPack:     State: %i\n", lvl[l]->nb[i].state);
-        dbg(DBG_USR2, "BigPack:     Coeff: %f\n", lvl[l]->nb[i].coeff);
-      }
-    }
   }
     
   /**
@@ -250,7 +282,7 @@ implementation {
         // Store header data
         numPacks = msg.data.bpHeader.packTotal;
         numBytes = msg.data.bpHeader.byteTotal;
-        numBlocks = msg.data.bpHeader.numBlocks;
+        numBlocks[curReqNum] = msg.data.bpHeader.numBlocks;
         numPtrs = msg.data.bpHeader.numPtrs;
         dbg(DBG_USR2, "BigPack: Rcvd BP header (0/%i)\n", numPacks);
         // Allocate temporary arrays
@@ -277,7 +309,7 @@ implementation {
         // Store pack data
         for (i = 0; i < stopAt; i++) {
           blk_offset = base_offset + i;
-          ptr_offset = blk_offset - numBlocks * sizeof(BigPackBlock);
+          ptr_offset = blk_offset - numBlocks[curReqNum] * sizeof(BigPackBlock);
           data_offset = ptr_offset - numPtrs * sizeof(BigPackPtr);
           if (data_offset >= 0) { // Byte is data
             bigData[data_offset] = msg.data.bpData.data[i];
@@ -290,8 +322,7 @@ implementation {
         if (curPackNum == numPacks) { 
           rebuildBlocks();
           dbg(DBG_USR2, "BigPack: BP data complete\n");
-          displayData(); // Done!
-          //signal WaveletConfig.configDone(pLevel, numLevels, SUCCESS);
+          signal BigPack.requestDone(mainBlock[curReqNum], SUCCESS);
           activeRequest = FALSE;
         }
         // Send an ACK

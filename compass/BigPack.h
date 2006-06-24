@@ -20,11 +20,6 @@ typedef struct bp {
   bool blockArray; // TRUE if this points to an array of blocks, rather than just a single block
 } __attribute__ ((packed)) BigPackPtr;
 
-/* enum {
-  MAX_BLOCKS = 2,
-	MAX_PTRS = 1
-}; */
-
 typedef struct {
   uint8_t requestType; // Type of big pack request
   uint8_t packTotal; // Total number of packs
@@ -44,7 +39,11 @@ typedef struct {
 } __attribute__ ((packed)) BigPackData;
 
 enum {
-  WAVELETCONF = 0
+  BP_WAVELETCONF = 0
+};
+
+enum {
+  BP_MAX_REQUESTS = 3
 };
 
 #endif // _BIGPACK_H

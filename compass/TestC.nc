@@ -9,22 +9,21 @@ implementation {
              DelugeC, 
              NetworkC,
              TimerC, 
-//             BigPackM,
+             BigPackM,
              ConfigTestM,
 //             MoteCommandC,
 //             WaveletM, 
-             LedsC,
+             LedsC;
 //             StateC, 
 //             SampleM, 
 //             SensorControlC;
-             NewBigPackM;
 #ifdef BEEP
   components BeepC;
 #endif
 
   /*** ConfigTest: requests wavelet config on start ***/
   Main.StdControl -> ConfigTestM;
-  ConfigTestM.WaveletConfig -> NewBigPackM;
+  ConfigTestM.BigPack -> BigPackM;
   ConfigTestM.Timer -> TimerC.Timer[unique("Timer")];
              
   /*** Sample: tests sensor and messaging components ***/
@@ -40,17 +39,17 @@ implementation {
   //MoteCommandC.Message -> NetworkC;
   //WaveletM.Message -> NetworkC;
   //WaveletM.Router -> NetworkC;
-  NewBigPackM.Message -> NetworkC;
+  BigPackM.Message -> NetworkC;
   
   /*** State: state machine library ***/
   //Main.StdControl -> StateC;
   //WaveletM.State -> StateC.State[unique("State")];
   
   /*** BigPack: receives multi-packet data ***/
-  //Main.StdControl -> NewBigPackM;
+  Main.StdControl -> BigPackM;
   //WaveletM.WaveletConfig -> BigPackM;
 #ifdef BEEP
-  NewBigPackM.Beep -> BeepC;
+  BigPackM.Beep -> BeepC;
 #endif
   
   /*** Wavelet: main wavelet application ***/
@@ -60,7 +59,7 @@ implementation {
   
   /*** Timer: enforces time-based control ***/
   Main.StdControl -> TimerC;
-  NewBigPackM.MsgRepeat -> TimerC.Timer[unique("Timer")];
+  BigPackM.MsgRepeat -> TimerC.Timer[unique("Timer")];
   //WaveletM.DataSet -> TimerC.Timer[unique("Timer")];
   //WaveletM.StateTimer -> TimerC.Timer[unique("Timer")];
 }

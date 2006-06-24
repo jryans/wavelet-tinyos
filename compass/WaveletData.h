@@ -10,14 +10,6 @@
 
 #include "Sensors.h"
 
-/*** Constants ***/
-
-enum {
-  WT_MAX_LEVELS = 10, // Should be able to go up to 22 without changing
-                      // config transfer algorithm.
-  WT_MOTE_PER_CONFDATA = 3
-};
-
 /*** Internal Wavelet Data ***/
 
 typedef struct { // Describes each neighbor mote
@@ -41,26 +33,7 @@ typedef struct {
 	float value[WT_SENSORS];		// Holds one value for each sensor (only two sensors for now)
 } __attribute__ ((packed)) WaveletData;
 
-typedef struct {
-  uint8_t numLevels; // Total number of WT levels that will be coming
-  uint8_t nbCount[WT_MAX_LEVELS]; // Number of neighbors for each level
-} __attribute__ ((packed)) WaveletConfHeader;
-
-typedef struct { // Slight reorganization of data for initial transfer and setup
-  // FIX: id should be 16 bits, not enough room
-  uint8_t id; // ID number of the mote 
-  uint8_t state; // State this mote will have in this level
-	float coeff; // WT coeff for the mote (neg: predict, pos: update)
-} __attribute__ ((packed)) WaveletConfMote;
-
-typedef struct {
-  uint8_t level; // Current level being transmitted
-  uint8_t packNum; // Sequential packet number in that level
-  uint8_t moteCount; // Number of motes in this pack
-  WaveletConfMote moteConf[WT_MOTE_PER_CONFDATA]; // Array of MoteInfos
-} __attribute__ ((packed)) WaveletConfData;
-
-/*** New Big Pack ***/
+/*** Big Pack Data ***/
 
 typedef struct wn { // Describes each neighbor mote
   uint16_t id; // ID number of the mote 
@@ -76,7 +49,7 @@ typedef struct wl {
 typedef struct wc {
   uint8_t numLevels; 
   ExtWaveletLevel **level; // Array of ExtWaveletLevels
-} __attribute__ ((packed)) NewWaveletConf;
+} __attribute__ ((packed)) WaveletConf;
 
 /*** State Control ***/
 
