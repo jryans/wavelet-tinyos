@@ -118,6 +118,7 @@ implementation {
       msg.dest = 0;
       msg.type = BIGPACKHEADER;
       msg.data.bpHeader.requestType = type;
+      msg.data.bpHeader.packTotal = 0;
       activeRequest = TRUE;
       repeatSend(msg, 5000);
     } else {

@@ -36,6 +36,9 @@ implementation {
 #if 0 // TinyOS Plugin Workaround
   typedef char msgData;
   typedef char WaveletLevel;
+  typedef char ExtWaveletConf;
+  typedef char ExtWaveletLevel;
+  typedef char ExtWaveletNeighbor;
 #endif
   
   /*** Variables and Constants ***/ 
@@ -44,6 +47,7 @@ implementation {
   
   uint8_t numLevels; // Total number of wavelet levels
   WaveletLevel *level; // Array of WaveletLevels
+  bool wlAlloc;
   
 #ifdef RAW
   float rawVals[WT_SENSORS];
@@ -169,6 +173,14 @@ implementation {
         break; }
       case S_OFFLINE: {
         dbg(DBG_USR2, "Wavelet: Offline\n");
+        // If there is config data, free it
+        if (wlAlloc) {
+          uint8_t l;
+          for (l = 0; l < numLevels; l++)
+            free(level[l].nb);
+          free(level);
+          wlAlloc = FALSE;
+        }
         call Leds.redOff();
         call Leds.yellowOff();
         call State.toIdle();
@@ -378,20 +390,18 @@ implementation {
 
   /*** Commands and Events ***/
   
-  command result_t StdControl.init() 
-  {
+  command result_t StdControl.init() {
+    wlAlloc = FALSE;
     return SUCCESS;
   }
   
-  command result_t StdControl.start() 
-  {
+  command result_t StdControl.start() {
     call State.forceState(S_OFFLINE);
     post runState();
     return SUCCESS;
   }
   
-  command result_t StdControl.stop() 
-  {
+  command result_t StdControl.stop() {
     return SUCCESS;
   }
   
@@ -410,27 +420,38 @@ implementation {
    * Once the request is complete, the requester is given a pointer to the main
    * data block.
    */
-  event void requestDone(int8_t *mainBlock, result_t result) {
+  event void BigPack.requestDone(int8_t *mainBlock, result_t result) {
     if (result == SUCCESS) {
-      level = configData;
-      numLevels = lvlCount;
+      uint8_t i, l;
+      ExtWaveletConf *conf = (ExtWaveletConf *) mainBlock;
+      ExtWaveletLevel **lvl = conf->level;
+      dbg(DBG_USR2, "Wavelet: Big Pack Config Test\n");
+      numLevels = conf->numLevels;
+      if ((level = malloc(numLevels * sizeof(WaveletLevel))) == NULL) {
+        dbg(DBG_USR2, "Wavelet: Couldn't allocate level!\n");
+        return;
+      } 
+      for (l = 0; l < numLevels; l++) {
+        dbg(DBG_USR2, "Wavelet: Level #%i\n", l + 1);
+        level[l].nbCount = lvl[l]->nbCount;
+        if ((level[l].nb = malloc(level[l].nbCount * sizeof(WaveletNeighbor))) == NULL) {
+          dbg(DBG_USR2, "Wavelet: Couldn't allocate nb for level #%i!\n", l + 1);
+          return;
+        } 
+        for (i = 0; i < lvl[l]->nbCount; i++) {
+          dbg(DBG_USR2, "Wavelet:   Neighbor #%i\n", i + 1);
+          level[l].nb[i].id = lvl[l]->nb[i].id;
+          dbg(DBG_USR2, "Wavelet:     ID:    %i\n", level[l].nb[i].id);
+          level[l].nb[i].state = lvl[l]->nb[i].state;
+          dbg(DBG_USR2, "Wavelet:     State: %i\n", level[l].nb[i].state);
+          level[l].nb[i].coeff = lvl[l]->nb[i].coeff;
+          dbg(DBG_USR2, "Wavelet:     Coeff: %f\n", level[l].nb[i].coeff);
+        }
+      }
+      call BigPack.free(mainBlock);
+      wlAlloc = TRUE;
       call State.toIdle();
     }
-    void displayData() {
-    uint8_t i, l;
-    NewWaveletConf *bob = (NewWaveletConf *) mainBlock;
-    ExtWaveletLevel **lvl = (ExtWaveletLevel **) bob->level;
-    dbg(DBG_USR2, "BigPack: Wavelet Config Test\n");
-    for (l = 0; l < bob->numLevels; l++) {
-      dbg(DBG_USR2, "BigPack: Level #%i\n", l + 1);
-      for (i = 0; i < lvl[l]->nbCount; i++) {
-        dbg(DBG_USR2, "BigPack:   Neighbor #%i\n", i + 1);
-        dbg(DBG_USR2, "BigPack:     ID:    %i\n", lvl[l]->nb[i].id);
-        dbg(DBG_USR2, "BigPack:     State: %i\n", lvl[l]->nb[i].state);
-        dbg(DBG_USR2, "BigPack:     Coeff: %f\n", lvl[l]->nb[i].coeff);
-      }
-    }
-  }
   }
   
   /**

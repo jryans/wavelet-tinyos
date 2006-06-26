@@ -30,7 +30,7 @@ implementation {
   
   /*** BigPack: receives multi-packet data ***/
   Main.StdControl -> BigPackM;
-  WaveletM.WaveletConfig -> BigPackM;
+  WaveletM.BigPack -> BigPackM;
 #ifdef BEEP
   BigPackM.Beep -> BeepC;
 #endif
