@@ -132,15 +132,13 @@ public class WaveletMote {
 
 	public UnicastPack getHeader() {
 		UnicastPack pack = packer.getHeader();
-		// pack.set_data_dest(id);
-		pack.set_data_dest(1);
+		pack.set_data_dest(id);
 		return pack;
 	}
 
 	public UnicastPack getData(int packNum) {
 		UnicastPack pack = packer.getData(packNum);
-		// pack.set_data_dest(id);
-		pack.set_data_dest(1);
+		pack.set_data_dest(id);
 		return pack;
 	}
 

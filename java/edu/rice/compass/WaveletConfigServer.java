@@ -6,6 +6,7 @@
 package edu.rice.compass;
 
 import net.tinyos.message.*;
+import java.util.*;
 import java.io.*;
 import java.beans.*;
 import com.martiansoftware.jsap.*;
@@ -24,6 +25,9 @@ public class WaveletConfigServer implements MessageListener {
 	private static long setLength;
 	private static int numSets;
 	private static int curSet;
+	
+	/* Wavelet Config Timer */
+	private static Timer pulseTimer = new Timer();
 
 	public static void main(String[] args) throws Exception {
 		SimpleJSAP parser = new SimpleJSAP("WaveletConfigServer",
@@ -65,7 +69,7 @@ public class WaveletConfigServer implements MessageListener {
 			}
 			System.exit(0);
 		} else if (config.getBoolean("prog")) {
-			forceStartup();
+			//forceStartup();
 			setLength = config.getLong("setlength");
 			numSets = config.getInt("sets");
 			// Fixed path name for now
@@ -93,10 +97,12 @@ public class WaveletConfigServer implements MessageListener {
 			for (int i = 0; i < mote.length; i++)
 				mote[i] = new WaveletMote(i + 1, wc);
 			// Init data collection
-			curSet = 0;
+ 			curSet = 0;
 			mData = new MoteData(numSets, Wavelet.WT_SENSORS, mote.length);
 			clearDataCheck();
 			listen();
+			// Setup and start config pulse timer
+			pulseTimer.scheduleAtFixedRate(new ConfigPulse(mote.length), 200, 300);
 		} else if (config.getBoolean("stats")) {
 			int dest = config.getInt("dest");
 			UnicastPack req = new UnicastPack();
@@ -137,8 +143,7 @@ public class WaveletConfigServer implements MessageListener {
 		int id = pack.get_data_src();
 		if (pack.get_data_dest() != 0)
 			return; // This would be quite strange
-		//WaveletMote theMote = mote[id - 1];
-		WaveletMote theMote = mote[4];
+		WaveletMote theMote = mote[id - 1];
 		switch (pack.get_data_type()) {
 		case Wavelet.BIGPACKHEADER:
 			// If true, this is the initial request, else an ACK.
@@ -258,7 +263,7 @@ public class WaveletConfigServer implements MessageListener {
 		}
 	}
 
-	synchronized static void nextSet() {
+	private synchronized static void nextSet() {
 		int[] check = dataCheck();
 		if (check[Wavelet.RAW_OFFSET] == 0 && check[Wavelet.WT_OFFSET] == 0) {
 			System.out.println("Data set " + (curSet + 1) + " complete!");
@@ -301,6 +306,18 @@ public class WaveletConfigServer implements MessageListener {
 			e.printStackTrace();
 		}
 	}
+	
+	static void directedStartup(int moteNum) {
+		UnicastPack pack = new UnicastPack();
+		pack.set_data_dest(moteNum);
+		pack.set_data_type(Wavelet.WAVELETSTATE);
+		pack.set_data_data_wState_state(Wavelet.S_STARTUP);
+		try {
+			moteSend.sendPack(pack);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private static void forceStop() {
 		BroadcastPack pack = new BroadcastPack();
@@ -322,6 +339,26 @@ public class WaveletConfigServer implements MessageListener {
 			moteSend.sendPack(pack);
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+}
+
+class ConfigPulse extends TimerTask {
+	
+	private int numMotes;
+	private int curMote;
+	
+	public ConfigPulse(int numMotes) {
+		this.numMotes = numMotes;
+		curMote = 0;
+	}
+
+	public void run() {
+		if (curMote++ < numMotes) {
+			WaveletConfigServer.directedStartup(curMote);
+		} else {
+			cancel();
 		}
 	}
 
