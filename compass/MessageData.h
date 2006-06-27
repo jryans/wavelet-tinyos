@@ -7,7 +7,7 @@
 
 #include "MoteCommand.h"
 #include "WaveletData.h"
-#include "Stats.h"
+//#include "Stats.h"
 #include "BigPack.h"
 
 struct MessageData {
@@ -20,7 +20,7 @@ struct MessageData {
     BigPackHeader bpHeader;
     BigPackData bpData;
     WaveletState wState;
-    MoteStats stats;
+//    MoteStats stats;
 	} data;
 } __attribute__ ((packed));
 
@@ -31,8 +31,8 @@ enum { // Identifies the type of data stored
 	WAVELETDATA = 1,
 	BIGPACKHEADER = 2,
 	BIGPACKDATA = 3,
-	WAVELETSTATE = 4,
-	MOTESTATS = 5
+	WAVELETSTATE = 4
+//	MOTESTATS = 5
 };
 
 #endif // _MESSAGEDATA_H

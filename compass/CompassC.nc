@@ -3,6 +3,8 @@
  * hardware systems.
  * @author Ryan Stinnett
  */
+ 
+includes BigPack;
 
 configuration CompassC {}
 implementation {
@@ -30,7 +32,9 @@ implementation {
   
   /*** BigPack: receives multi-packet data ***/
   Main.StdControl -> BigPackM;
-  WaveletM.BigPack -> BigPackM;
+  WaveletM.BigPackClient -> BigPackM.BigPackClient[BP_WAVELETCONF];
+  StatsC.WaveletPack -> BigPackM.BigPackClient[BP_WAVELETCONF];
+  StatsC.StatsPack -> BigPackM.BigPackServer[BP_STATS];
 #ifdef BEEP
   BigPackM.Beep -> BeepC;
 #endif

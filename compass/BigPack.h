@@ -28,6 +28,11 @@ typedef struct {
   uint8_t numPtrs; // Number of pointers that need to be rebuilt
 } __attribute__ ((packed)) BigPackHeader;
 
+typedef struct {
+  BigPackBlock *block; // Array of BigPackBlock
+  int8_t **blockAddr; // Array of block data pointers
+  BigPackPtr *ptr; // Array of BigPackPtr
+} __attribute__ ((packed)) BigPackEnvelope;
 
 enum {
   BP_DATA_LEN = UPACK_MSG_DATA_LEN - 1
@@ -39,7 +44,13 @@ typedef struct {
 } __attribute__ ((packed)) BigPackData;
 
 enum {
-  BP_WAVELETCONF = 0
+  BP_WAVELETCONF = 0,
+  BP_STATS = 1
+};
+
+enum {
+  BP_SENDING = 0,
+  BP_RECEIVING = 1
 };
 
 enum {

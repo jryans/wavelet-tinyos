@@ -28,7 +28,7 @@ module WaveletM {
     interface Timer as StateTimer;
     
     /*** Wavelet Config ***/
-    interface BigPack;
+    interface BigPackClient;
   }
   provides interface StdControl;
 }
@@ -88,6 +88,7 @@ implementation {
   void newDataSet();
   void clearNeighborState();
   void checkData();
+  void waveletFree();
   
   /*** State Management ***/
   
@@ -101,7 +102,7 @@ implementation {
       case S_STARTUP: { // Retrieve wavelet config data
         dataSet = 0;
         call Leds.redOn();
-        call BigPack.request(BP_WAVELETCONF);
+        call BigPackClient.request();
         break; }
       case S_START_DATASET: {
         delayState();
@@ -173,18 +174,22 @@ implementation {
         break; }
       case S_OFFLINE: {
         dbg(DBG_USR2, "Wavelet: Offline\n");
-        // If there is config data, free it
-        if (wlAlloc) {
-          uint8_t l;
-          for (l = 0; l < numLevels; l++)
-            free(level[l].nb);
-          free(level);
-          wlAlloc = FALSE;
-        }
+        waveletFree();
         call Leds.redOff();
         call Leds.yellowOff();
         call State.toIdle();
         break; }
+    }
+  }
+  
+  void waveletFree() {
+    // If there is config data, free it
+    if (wlAlloc) {
+      uint8_t l;
+      for (l = 0; l < numLevels; l++)
+        free(level[l].nb);
+      free(level);
+      wlAlloc = FALSE;
     }
   }
   
@@ -382,7 +387,7 @@ implementation {
         report.type = WT_CACHE;
         report.number = 1;
         report.data.cache.level = curLevel + 1;
-        report.data.cache.mote = level[curLevel].nb[mote].id;
+        report.data.cache.id = level[curLevel].nb[mote].id;
         call Stats.file(report);
       } 
     }
@@ -396,6 +401,7 @@ implementation {
   }
   
   command result_t StdControl.start() {
+    call BigPackClient.registerListener();
     call State.forceState(S_OFFLINE);
     post runState();
     return SUCCESS;
@@ -420,11 +426,12 @@ implementation {
    * Once the request is complete, the requester is given a pointer to the main
    * data block.
    */
-  event void BigPack.requestDone(int8_t *mainBlock, result_t result) {
+  event void BigPackClient.requestDone(int8_t *mainBlock, result_t result) {
     if (result == SUCCESS) {
       uint8_t i, l;
       ExtWaveletConf *conf = (ExtWaveletConf *) mainBlock;
       ExtWaveletLevel **lvl = conf->level;
+      waveletFree();
       dbg(DBG_USR2, "Wavelet: Big Pack Config Test\n");
       numLevels = conf->numLevels;
       if ((level = malloc(numLevels * sizeof(WaveletLevel))) == NULL) {
@@ -448,17 +455,17 @@ implementation {
           dbg(DBG_USR2, "Wavelet:     Coeff: %f\n", level[l].nb[i].coeff);
         }
       }
-      call BigPack.free(mainBlock);
       wlAlloc = TRUE;
       call State.toIdle();
     }
+    call BigPackClient.free();
   }
   
   /**
    * sendDone is signaled when the send has completed
    * TODO: Could be improved, doesn't respond for all messages.
    */
-  event result_t Message.sendDone(msgData msg, result_t result) {
+  event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
     if (msg.type == WAVELETDATA) {
       switch (call State.getState()) {
         case S_UPDATING: {

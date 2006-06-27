@@ -15,7 +15,4 @@ CFLAGS += -DBEEP
 # Transmits raw values back to base for comparison
 CFLAGS += -DRAW
 
-# Enables CC2420 features, like ACKs
-CFLAGS += -DCC2420
-
 include $(TOSROOT)/apps/Makerules

@@ -7,13 +7,21 @@
 includes MessageData;
  
 configuration StatsC {
-  uses interface Message;
+  uses {
+    interface Message;
+    interface BigPackClient as WaveletPack;
+    interface BigPackServer as StatsPack;
+  }
   provides interface Stats;
 }
 implementation {
-  components StatsM, TransceiverC;
+  components Main, StatsM, TransceiverC;
   
   StatsM.Snoop -> TransceiverC.Transceiver[AM_UNICASTPACK];
+  Main.StdControl -> StatsM;
+  
+  WaveletPack = StatsM;
+  StatsPack = StatsM;
   Message = StatsM;
   Stats = StatsM;
 }

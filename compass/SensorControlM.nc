@@ -83,9 +83,11 @@ implementation {
   task void dataDone() {
     call TempControl.stop();
     call LightControl.stop();
-    dbg(DBG_USR1, "Values read from sensors: Light = %i, Temp = %i, Volt = %i\n",
-        curData[LIGHT], curData[TEMP], curData[VOLT]);
-    atomic { signal SensorData.readDone(curData); }
+    atomic {
+      dbg(DBG_USR1, "Values read from sensors: Light = %i, Temp = %i, Volt = %i\n",
+          curData[LIGHT], curData[TEMP], curData[VOLT]);
+      signal SensorData.readDone(curData); 
+    }
   }
 
   async event result_t TempADC.dataReady(uint16_t data)

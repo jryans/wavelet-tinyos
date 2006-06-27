@@ -16,7 +16,7 @@ interface Message
 	/**
 	 * sendDone is signaled when the send has completed
 	 */
-	event result_t sendDone(msgData msg, result_t result);
+	event result_t sendDone(msgData msg, result_t result, uint8_t retries);
     
     /**
 	 * Receive is signaled when a new message arrives

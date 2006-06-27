@@ -14,7 +14,7 @@ module UnicastM {
     interface StdControl;
   }
   uses {
-#ifdef CC2420
+#ifdef PLATFORM_MICAZ
     interface StdControl as TransControl;
     interface CC2420Control;
     interface MacControl;
@@ -114,24 +114,25 @@ implementation {
   /*** Commands and Events ***/
 
   command result_t StdControl.init() {
-#ifdef CC2420
+#ifdef PLATFORM_MICAZ
     call TransControl.init();
 #endif
     return SUCCESS;
   }
 
   command result_t StdControl.start() {
-#ifdef CC2420
+#ifdef PLATFORM_MICAZ
     call TransControl.start();
     // TODO: Test effects of following setting from diff distances
     //call CC2420Control.SetRFPower(31);
     call MacControl.enableAck();
+    call Beep.play(2, 250); // MICAZ define test
 #endif
     return SUCCESS;
   }
 
   command result_t StdControl.stop() {
-#ifdef CC2420
+#ifdef PLATFORM_MICAZ
     call TransControl.stop();
 #endif
     return SUCCESS;
@@ -169,7 +170,7 @@ implementation {
       dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwd to %i succeeded\n", 
           TOS_LOCAL_ADDRESS, pPack->data.src, pPack->data.dest, m->addr);
       if (pPack->data.src == TOS_LOCAL_ADDRESS)
-        signal Message.sendDone(pPack->data, SUCCESS);
+        signal Message.sendDone(pPack->data, SUCCESS, RADIO_RETRIES - pPack->retriesLeft - 1);
     } else {
       // Either we got FAIL or there was no ACK
       tmpRetries = pPack->retriesLeft;
@@ -182,7 +183,7 @@ implementation {
         dbg(DBG_USR2, "Ucast: Mote: %i, Src: %i, Dest: %i, fwd to %i failed!\n", 
           TOS_LOCAL_ADDRESS, pPack->data.src, pPack->data.dest, m->addr);
         if (pPack->data.src == TOS_LOCAL_ADDRESS)
-          signal Message.sendDone(pPack->data, FAIL);
+          signal Message.sendDone(pPack->data, FAIL, RADIO_RETRIES);
       }
     }
     return SUCCESS;
@@ -224,6 +225,3 @@ implementation {
     return m;	
   }
 }
-
-
-

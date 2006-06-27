@@ -18,7 +18,7 @@ implementation {
 #ifdef BEEP
   components BeepC;
 #endif
-#ifdef CC2420
+#ifdef PLATFORM_MICAZ
   components CC2420RadioC;
 #endif
   
@@ -50,7 +50,7 @@ implementation {
   RouterStaticM.IO -> TransceiverC.Transceiver[AM_ROUTER];
   Router = RouterStaticM;
   
-#ifdef CC2420
+#ifdef PLATFORM_MICAZ
   /*** CC2420 ***/
   UnicastM.TransControl -> CC2420RadioC.StdControl;
   UnicastM.MacControl -> CC2420RadioC;
