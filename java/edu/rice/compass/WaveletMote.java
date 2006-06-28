@@ -116,7 +116,8 @@ public class WaveletMote {
 				double[] predCoeff = (double[]) wc.mPredCoeff[id - 1];
 				neighbors[levelIdx] = new WaveletNeighbor[predNb.length + 1];
 				// First entry about ourselves
-				neighbors[levelIdx][0] = new WaveletNeighbor(id, Wavelet.S_PREDICTING, 0);
+				neighbors[levelIdx][0] = new WaveletNeighbor(id, Wavelet.S_PREDICTING,
+						0);
 				for (int nb = 0; nb < predNb.length; nb++)
 					neighbors[levelIdx][nb + 1] = new WaveletNeighbor((int) predNb[nb],
 							Wavelet.S_PREDICTING, (float) predCoeff[nb]);
@@ -144,23 +145,32 @@ public class WaveletMote {
 		pack.set_data_dest(id);
 		return pack;
 	}
-	
+
 	public void extractData() {
 		MoteStats stats = (MoteStats) unpacker.unpack();
-		int rcvd = stats.get_rcvd();
-		int sent = stats.get_sent();
-		int acked = stats.get_acked();
-		System.out.println("Stats for mote " + id + ":");
-		System.out.println("  Received:  " + rcvd);
-		System.out.println("  Avg. RSSI: "
-				+ (stats.get_rssi() / rcvd - 45));
-		System.out.println("  Sent:      " + sent);
-		System.out.println("  ACKed:     " + acked + " (" + (acked * 100 / sent)
-				+ "%)");
-		System.out.println("  Wavelet Stats:");
+		System.out.println("Stats for Mote " + id + ":");
+		System.out.println("  *Unicast* Packets:");
+		System.out.println("    Received: " + stats.get_pRcvd());
+		System.out.println("      Avg. RSSI: "
+				+ ((stats.get_rssiSum() / stats.get_pRcvd()) - 45));
+		System.out.println("      Min. RSSI: " + stats.get_rssiMin());
+		System.out.println("      Max. RSSI: " + stats.get_rssiMax());
+		System.out.println("      Avg. LQI:  "
+				+ (stats.get_lqiSum() / stats.get_pRcvd()));
+		System.out.println("      Min. LQI:  " + stats.get_lqiMin());
+		System.out.println("      Max. LQI:  " + stats.get_lqiMax());
+		System.out.println("    Sent: " + stats.get_pSent());
+		System.out.println("      ACKed: " + stats.get_pAcked() + " ("
+				+ (stats.get_pAcked() * 100 / stats.get_pSent()) + "%)");
+		System.out.println("  Messages:");
+		System.out.println("    Received: " + stats.get_mRcvd());
+		System.out.println("    Sent:     " + stats.get_mSent());
+		System.out.println("      Avg. Retries: " 
+				+ ((float)stats.get_mRetriesSum() / stats.get_mSent()));
+		System.out.println("  Wavelet:");
 		StatsWTL level[] = stats.get_wavelet_level();
 		for (int l = 0; l < level.length; l++) {
-			System.out.println("    Wavelet Level " + (l + 1) + ":");
+			System.out.println("    Level " + (l + 1) + ":");
 			StatsWTNB nb[] = level[l].get_nb();
 			for (int n = 0; n < nb.length; n++) {
 				System.out.println("      Neighbor " + (n + 1) + ":");

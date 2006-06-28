@@ -7,7 +7,6 @@
 package edu.rice.compass.bigpack;
 
 import java.util.List;
-import java.util.Vector;
 
 public class StatsWTL extends BigPack {
 

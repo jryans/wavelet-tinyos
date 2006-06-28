@@ -11,7 +11,7 @@ import java.util.List;
 public class MoteStats extends BigPack {
 
 	/** The default size of this message type in bytes. */
-	public static final int DEFAULT_MESSAGE_SIZE = 13;
+	public static final int DEFAULT_MESSAGE_SIZE = 27;
 
 	/**
 	 * Create a new MoteStats using the given byte array as backing store.
@@ -23,11 +23,13 @@ public class MoteStats extends BigPack {
 	protected void initChildren() {
 		wavelet_level = new StatsWTL[get_wavelet_numLevels()];
 	}
-	
-	protected void storeChildren(byte[] rawData, int offset, int[] childBlockNum, List[] childPtr) {
+
+	protected void storeChildren(byte[] rawData, int offset, int[] childBlockNum,
+			List[] childPtr) {
 		if (offset == offset_wavelet_level()) {
 			for (int c = 0; c < get_wavelet_numLevels(); c++)
-				wavelet_level[c] = new StatsWTL(rawData, childBlockNum[c], blocks, childPtr[c]);
+				wavelet_level[c] = new StatsWTL(rawData, childBlockNum[c], blocks,
+						childPtr[c]);
 		}
 	}
 
@@ -45,261 +47,765 @@ public class MoteStats extends BigPack {
 	// Message-type-specific access methods appear below.
 
 	// ///////////////////////////////////////////////////////
-	// Accessor methods for field: rcvd
+	// Accessor methods for field: pRcvd
 	// Field type: int
 	// Offset (bits): 0
 	// Size (bits): 16
 	// ///////////////////////////////////////////////////////
 
 	/**
-	 * Return whether the field 'rcvd' is signed (false).
+	 * Return whether the field 'pRcvd' is signed (false).
 	 */
-	public static boolean isSigned_rcvd() {
+	public static boolean isSigned_pRcvd() {
 		return false;
 	}
 
 	/**
-	 * Return whether the field 'rcvd' is an array (false).
+	 * Return whether the field 'pRcvd' is an array (false).
 	 */
-	public static boolean isArray_rcvd() {
+	public static boolean isArray_pRcvd() {
 		return false;
 	}
 
 	/**
-	 * Return the offset (in bytes) of the field 'rcvd'
+	 * Return the offset (in bytes) of the field 'pRcvd'
 	 */
-	public static int offset_rcvd() {
+	public static int offset_pRcvd() {
 		return (0 / 8);
 	}
 
 	/**
-	 * Return the offset (in bits) of the field 'rcvd'
+	 * Return the offset (in bits) of the field 'pRcvd'
 	 */
-	public static int offsetBits_rcvd() {
+	public static int offsetBits_pRcvd() {
 		return 0;
 	}
 
 	/**
-	 * Return the value (as a int) of the field 'rcvd'
+	 * Return the value (as a int) of the field 'pRcvd'
 	 */
-	public int get_rcvd() {
-		return (int) getUIntElement(offsetBits_rcvd(), 16);
+	public int get_pRcvd() {
+		return (int) getUIntElement(offsetBits_pRcvd(), 16);
 	}
 
 	/**
-	 * Set the value of the field 'rcvd'
+	 * Set the value of the field 'pRcvd'
 	 */
-	public void set_rcvd(int value) {
-		setUIntElement(offsetBits_rcvd(), 16, value);
+	public void set_pRcvd(int value) {
+		setUIntElement(offsetBits_pRcvd(), 16, value);
 	}
 
 	/**
-	 * Return the size, in bytes, of the field 'rcvd'
+	 * Return the size, in bytes, of the field 'pRcvd'
 	 */
-	public static int size_rcvd() {
+	public static int size_pRcvd() {
 		return (16 / 8);
 	}
 
 	/**
-	 * Return the size, in bits, of the field 'rcvd'
+	 * Return the size, in bits, of the field 'pRcvd'
 	 */
-	public static int sizeBits_rcvd() {
+	public static int sizeBits_pRcvd() {
 		return 16;
 	}
 
 	// ///////////////////////////////////////////////////////
-	// Accessor methods for field: rssi
-	// Field type: float
+	// Accessor methods for field: rssiMin
+	// Field type: byte
 	// Offset (bits): 16
+	// Size (bits): 8
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'rssiMin' is signed (false).
+	 */
+	public static boolean isSigned_rssiMin() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'rssiMin' is an array (false).
+	 */
+	public static boolean isArray_rssiMin() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'rssiMin'
+	 */
+	public static int offset_rssiMin() {
+		return (16 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'rssiMin'
+	 */
+	public static int offsetBits_rssiMin() {
+		return 16;
+	}
+
+	/**
+	 * Return the value (as a byte) of the field 'rssiMin'
+	 */
+	public byte get_rssiMin() {
+		return (byte) getSIntElement(offsetBits_rssiMin(), 8);
+	}
+
+	/**
+	 * Set the value of the field 'rssiMin'
+	 */
+	public void set_rssiMin(byte value) {
+		setSIntElement(offsetBits_rssiMin(), 8, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'rssiMin'
+	 */
+	public static int size_rssiMin() {
+		return (8 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'rssiMin'
+	 */
+	public static int sizeBits_rssiMin() {
+		return 8;
+	}
+
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: rssiMax
+	// Field type: byte
+	// Offset (bits): 24
+	// Size (bits): 8
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'rssiMax' is signed (false).
+	 */
+	public static boolean isSigned_rssiMax() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'rssiMax' is an array (false).
+	 */
+	public static boolean isArray_rssiMax() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'rssiMax'
+	 */
+	public static int offset_rssiMax() {
+		return (24 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'rssiMax'
+	 */
+	public static int offsetBits_rssiMax() {
+		return 24;
+	}
+
+	/**
+	 * Return the value (as a byte) of the field 'rssiMax'
+	 */
+	public byte get_rssiMax() {
+		return (byte) getSIntElement(offsetBits_rssiMax(), 8);
+	}
+
+	/**
+	 * Set the value of the field 'rssiMax'
+	 */
+	public void set_rssiMax(byte value) {
+		setSIntElement(offsetBits_rssiMax(), 8, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'rssiMax'
+	 */
+	public static int size_rssiMax() {
+		return (8 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'rssiMax'
+	 */
+	public static int sizeBits_rssiMax() {
+		return 8;
+	}
+
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: rssiSum
+	// Field type: float
+	// Offset (bits): 32
 	// Size (bits): 32
 	// ///////////////////////////////////////////////////////
 
 	/**
-	 * Return whether the field 'rssi' is signed (false).
+	 * Return whether the field 'rssiSum' is signed (false).
 	 */
-	public static boolean isSigned_rssi() {
+	public static boolean isSigned_rssiSum() {
 		return false;
 	}
 
 	/**
-	 * Return whether the field 'rssi' is an array (false).
+	 * Return whether the field 'rssiSum' is an array (false).
 	 */
-	public static boolean isArray_rssi() {
+	public static boolean isArray_rssiSum() {
 		return false;
 	}
 
 	/**
-	 * Return the offset (in bytes) of the field 'rssi'
+	 * Return the offset (in bytes) of the field 'rssiSum'
 	 */
-	public static int offset_rssi() {
-		return (16 / 8);
-	}
-
-	/**
-	 * Return the offset (in bits) of the field 'rssi'
-	 */
-	public static int offsetBits_rssi() {
-		return 16;
-	}
-
-	/**
-	 * Return the value (as a float) of the field 'rssi'
-	 */
-	public float get_rssi() {
-		return (float) getFloatElement(offsetBits_rssi(), 32);
-	}
-
-	/**
-	 * Set the value of the field 'rssi'
-	 */
-	public void set_rssi(float value) {
-		setFloatElement(offsetBits_rssi(), 32, value);
-	}
-
-	/**
-	 * Return the size, in bytes, of the field 'rssi'
-	 */
-	public static int size_rssi() {
+	public static int offset_rssiSum() {
 		return (32 / 8);
 	}
 
 	/**
-	 * Return the size, in bits, of the field 'rssi'
+	 * Return the offset (in bits) of the field 'rssiSum'
 	 */
-	public static int sizeBits_rssi() {
+	public static int offsetBits_rssiSum() {
+		return 32;
+	}
+
+	/**
+	 * Return the value (as a float) of the field 'rssiSum'
+	 */
+	public float get_rssiSum() {
+		return (float) getFloatElement(offsetBits_rssiSum(), 32);
+	}
+
+	/**
+	 * Set the value of the field 'rssiSum'
+	 */
+	public void set_rssiSum(float value) {
+		setFloatElement(offsetBits_rssiSum(), 32, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'rssiSum'
+	 */
+	public static int size_rssiSum() {
+		return (32 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'rssiSum'
+	 */
+	public static int sizeBits_rssiSum() {
 		return 32;
 	}
 
 	// ///////////////////////////////////////////////////////
-	// Accessor methods for field: sent
-	// Field type: int
-	// Offset (bits): 48
-	// Size (bits): 16
-	// ///////////////////////////////////////////////////////
-
-	/**
-	 * Return whether the field 'sent' is signed (false).
-	 */
-	public static boolean isSigned_sent() {
-		return false;
-	}
-
-	/**
-	 * Return whether the field 'sent' is an array (false).
-	 */
-	public static boolean isArray_sent() {
-		return false;
-	}
-
-	/**
-	 * Return the offset (in bytes) of the field 'sent'
-	 */
-	public static int offset_sent() {
-		return (48 / 8);
-	}
-
-	/**
-	 * Return the offset (in bits) of the field 'sent'
-	 */
-	public static int offsetBits_sent() {
-		return 48;
-	}
-
-	/**
-	 * Return the value (as a int) of the field 'sent'
-	 */
-	public int get_sent() {
-		return (int) getUIntElement(offsetBits_sent(), 16);
-	}
-
-	/**
-	 * Set the value of the field 'sent'
-	 */
-	public void set_sent(int value) {
-		setUIntElement(offsetBits_sent(), 16, value);
-	}
-
-	/**
-	 * Return the size, in bytes, of the field 'sent'
-	 */
-	public static int size_sent() {
-		return (16 / 8);
-	}
-
-	/**
-	 * Return the size, in bits, of the field 'sent'
-	 */
-	public static int sizeBits_sent() {
-		return 16;
-	}
-
-	// ///////////////////////////////////////////////////////
-	// Accessor methods for field: acked
-	// Field type: int
+	// Accessor methods for field: lqiMin
+	// Field type: short
 	// Offset (bits): 64
-	// Size (bits): 16
+	// Size (bits): 8
 	// ///////////////////////////////////////////////////////
 
 	/**
-	 * Return whether the field 'acked' is signed (false).
+	 * Return whether the field 'lqiMin' is signed (false).
 	 */
-	public static boolean isSigned_acked() {
+	public static boolean isSigned_lqiMin() {
 		return false;
 	}
 
 	/**
-	 * Return whether the field 'acked' is an array (false).
+	 * Return whether the field 'lqiMin' is an array (false).
 	 */
-	public static boolean isArray_acked() {
+	public static boolean isArray_lqiMin() {
 		return false;
 	}
 
 	/**
-	 * Return the offset (in bytes) of the field 'acked'
+	 * Return the offset (in bytes) of the field 'lqiMin'
 	 */
-	public static int offset_acked() {
+	public static int offset_lqiMin() {
 		return (64 / 8);
 	}
 
 	/**
-	 * Return the offset (in bits) of the field 'acked'
+	 * Return the offset (in bits) of the field 'lqiMin'
 	 */
-	public static int offsetBits_acked() {
+	public static int offsetBits_lqiMin() {
 		return 64;
 	}
 
 	/**
-	 * Return the value (as a int) of the field 'acked'
+	 * Return the value (as a short) of the field 'lqiMin'
 	 */
-	public int get_acked() {
-		return (int) getUIntElement(offsetBits_acked(), 16);
+	public short get_lqiMin() {
+		return (short) getUIntElement(offsetBits_lqiMin(), 8);
 	}
 
 	/**
-	 * Set the value of the field 'acked'
+	 * Set the value of the field 'lqiMin'
 	 */
-	public void set_acked(int value) {
-		setUIntElement(offsetBits_acked(), 16, value);
+	public void set_lqiMin(short value) {
+		setUIntElement(offsetBits_lqiMin(), 8, value);
 	}
 
 	/**
-	 * Return the size, in bytes, of the field 'acked'
+	 * Return the size, in bytes, of the field 'lqiMin'
 	 */
-	public static int size_acked() {
+	public static int size_lqiMin() {
+		return (8 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'lqiMin'
+	 */
+	public static int sizeBits_lqiMin() {
+		return 8;
+	}
+
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: lqiMax
+	// Field type: short
+	// Offset (bits): 72
+	// Size (bits): 8
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'lqiMax' is signed (false).
+	 */
+	public static boolean isSigned_lqiMax() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'lqiMax' is an array (false).
+	 */
+	public static boolean isArray_lqiMax() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'lqiMax'
+	 */
+	public static int offset_lqiMax() {
+		return (72 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'lqiMax'
+	 */
+	public static int offsetBits_lqiMax() {
+		return 72;
+	}
+
+	/**
+	 * Return the value (as a short) of the field 'lqiMax'
+	 */
+	public short get_lqiMax() {
+		return (short) getUIntElement(offsetBits_lqiMax(), 8);
+	}
+
+	/**
+	 * Set the value of the field 'lqiMax'
+	 */
+	public void set_lqiMax(short value) {
+		setUIntElement(offsetBits_lqiMax(), 8, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'lqiMax'
+	 */
+	public static int size_lqiMax() {
+		return (8 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'lqiMax'
+	 */
+	public static int sizeBits_lqiMax() {
+		return 8;
+	}
+
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: lqiSum
+	// Field type: float
+	// Offset (bits): 80
+	// Size (bits): 32
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'lqiSum' is signed (false).
+	 */
+	public static boolean isSigned_lqiSum() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'lqiSum' is an array (false).
+	 */
+	public static boolean isArray_lqiSum() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'lqiSum'
+	 */
+	public static int offset_lqiSum() {
+		return (80 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'lqiSum'
+	 */
+	public static int offsetBits_lqiSum() {
+		return 80;
+	}
+
+	/**
+	 * Return the value (as a float) of the field 'lqiSum'
+	 */
+	public float get_lqiSum() {
+		return (float) getFloatElement(offsetBits_lqiSum(), 32);
+	}
+
+	/**
+	 * Set the value of the field 'lqiSum'
+	 */
+	public void set_lqiSum(float value) {
+		setFloatElement(offsetBits_lqiSum(), 32, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'lqiSum'
+	 */
+	public static int size_lqiSum() {
+		return (32 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'lqiSum'
+	 */
+	public static int sizeBits_lqiSum() {
+		return 32;
+	}
+
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: pSent
+	// Field type: int
+	// Offset (bits): 112
+	// Size (bits): 16
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'pSent' is signed (false).
+	 */
+	public static boolean isSigned_pSent() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'pSent' is an array (false).
+	 */
+	public static boolean isArray_pSent() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'pSent'
+	 */
+	public static int offset_pSent() {
+		return (112 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'pSent'
+	 */
+	public static int offsetBits_pSent() {
+		return 112;
+	}
+
+	/**
+	 * Return the value (as a int) of the field 'pSent'
+	 */
+	public int get_pSent() {
+		return (int) getUIntElement(offsetBits_pSent(), 16);
+	}
+
+	/**
+	 * Set the value of the field 'pSent'
+	 */
+	public void set_pSent(int value) {
+		setUIntElement(offsetBits_pSent(), 16, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'pSent'
+	 */
+	public static int size_pSent() {
 		return (16 / 8);
 	}
 
 	/**
-	 * Return the size, in bits, of the field 'acked'
+	 * Return the size, in bits, of the field 'pSent'
 	 */
-	public static int sizeBits_acked() {
+	public static int sizeBits_pSent() {
+		return 16;
+	}
+
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: pAcked
+	// Field type: int
+	// Offset (bits): 128
+	// Size (bits): 16
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'pAcked' is signed (false).
+	 */
+	public static boolean isSigned_pAcked() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'pAcked' is an array (false).
+	 */
+	public static boolean isArray_pAcked() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'pAcked'
+	 */
+	public static int offset_pAcked() {
+		return (128 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'pAcked'
+	 */
+	public static int offsetBits_pAcked() {
+		return 128;
+	}
+
+	/**
+	 * Return the value (as a int) of the field 'pAcked'
+	 */
+	public int get_pAcked() {
+		return (int) getUIntElement(offsetBits_pAcked(), 16);
+	}
+
+	/**
+	 * Set the value of the field 'pAcked'
+	 */
+	public void set_pAcked(int value) {
+		setUIntElement(offsetBits_pAcked(), 16, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'pAcked'
+	 */
+	public static int size_pAcked() {
+		return (16 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'pAcked'
+	 */
+	public static int sizeBits_pAcked() {
+		return 16;
+	}
+
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: mRcvd
+	// Field type: int
+	// Offset (bits): 144
+	// Size (bits): 16
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'mRcvd' is signed (false).
+	 */
+	public static boolean isSigned_mRcvd() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'mRcvd' is an array (false).
+	 */
+	public static boolean isArray_mRcvd() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'mRcvd'
+	 */
+	public static int offset_mRcvd() {
+		return (144 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'mRcvd'
+	 */
+	public static int offsetBits_mRcvd() {
+		return 144;
+	}
+
+	/**
+	 * Return the value (as a int) of the field 'mRcvd'
+	 */
+	public int get_mRcvd() {
+		return (int) getUIntElement(offsetBits_mRcvd(), 16);
+	}
+
+	/**
+	 * Set the value of the field 'mRcvd'
+	 */
+	public void set_mRcvd(int value) {
+		setUIntElement(offsetBits_mRcvd(), 16, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'mRcvd'
+	 */
+	public static int size_mRcvd() {
+		return (16 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'mRcvd'
+	 */
+	public static int sizeBits_mRcvd() {
+		return 16;
+	}
+
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: mSent
+	// Field type: int
+	// Offset (bits): 160
+	// Size (bits): 16
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'mSent' is signed (false).
+	 */
+	public static boolean isSigned_mSent() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'mSent' is an array (false).
+	 */
+	public static boolean isArray_mSent() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'mSent'
+	 */
+	public static int offset_mSent() {
+		return (160 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'mSent'
+	 */
+	public static int offsetBits_mSent() {
+		return 160;
+	}
+
+	/**
+	 * Return the value (as a int) of the field 'mSent'
+	 */
+	public int get_mSent() {
+		return (int) getUIntElement(offsetBits_mSent(), 16);
+	}
+
+	/**
+	 * Set the value of the field 'mSent'
+	 */
+	public void set_mSent(int value) {
+		setUIntElement(offsetBits_mSent(), 16, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'mSent'
+	 */
+	public static int size_mSent() {
+		return (16 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'mSent'
+	 */
+	public static int sizeBits_mSent() {
+		return 16;
+	}
+
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: mRetriesSum
+	// Field type: int
+	// Offset (bits): 176
+	// Size (bits): 16
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'mRetriesSum' is signed (false).
+	 */
+	public static boolean isSigned_mRetriesSum() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'mRetriesSum' is an array (false).
+	 */
+	public static boolean isArray_mRetriesSum() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'mRetriesSum'
+	 */
+	public static int offset_mRetriesSum() {
+		return (176 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'mRetriesSum'
+	 */
+	public static int offsetBits_mRetriesSum() {
+		return 176;
+	}
+
+	/**
+	 * Return the value (as a int) of the field 'mRetriesSum'
+	 */
+	public int get_mRetriesSum() {
+		return (int) getUIntElement(offsetBits_mRetriesSum(), 16);
+	}
+
+	/**
+	 * Set the value of the field 'mRetriesSum'
+	 */
+	public void set_mRetriesSum(int value) {
+		setUIntElement(offsetBits_mRetriesSum(), 16, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'mRetriesSum'
+	 */
+	public static int size_mRetriesSum() {
+		return (16 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'mRetriesSum'
+	 */
+	public static int sizeBits_mRetriesSum() {
 		return 16;
 	}
 
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: wavelet.numLevels
 	// Field type: short
-	// Offset (bits): 80
+	// Offset (bits): 192
 	// Size (bits): 8
 	// ///////////////////////////////////////////////////////
 
@@ -321,14 +827,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'wavelet.numLevels'
 	 */
 	public static int offset_wavelet_numLevels() {
-		return (80 / 8);
+		return (192 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'wavelet.numLevels'
 	 */
 	public static int offsetBits_wavelet_numLevels() {
-		return 80;
+		return 192;
 	}
 
 	/**
@@ -362,17 +868,17 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: wavelet.level
 	// Field type: array
-	// Offset (bits): 88
+	// Offset (bits): 200
 	// Size (bits): 16
 	// ///////////////////////////////////////////////////////
-	
+
 	private StatsWTL[] wavelet_level;
 
 	/**
 	 * Return the offset (in bytes) of the pointer to array 'wavelet.level'
 	 */
 	public static int offset_wavelet_level() {
-		return (88 / 8);
+		return (200 / 8);
 	}
 
 	/**

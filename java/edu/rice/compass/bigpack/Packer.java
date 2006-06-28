@@ -6,7 +6,6 @@
 package edu.rice.compass.bigpack;
 
 import edu.rice.compass.UnicastPack;
-import edu.rice.compass.Wavelet;
 
 public class Packer {
 
