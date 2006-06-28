@@ -1,8 +1,6 @@
 # Top-level Makefile for tools/java
 
-PACKAGE = edu.rice.compass
+PACKAGE = edu.rice.compass.bigpack
 
-SUBDIRS = bigpack
-
-ROOT = ../../..
+ROOT = ../../../..
 include $(ROOT)/Makefile.include

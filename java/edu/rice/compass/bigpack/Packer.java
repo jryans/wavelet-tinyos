@@ -3,7 +3,10 @@
  * @author Ryan Stinnett
  */
 
-package edu.rice.compass;
+package edu.rice.compass.bigpack;
+
+import edu.rice.compass.UnicastPack;
+import edu.rice.compass.Wavelet;
 
 public class Packer {
 
@@ -18,16 +21,16 @@ public class Packer {
 		numBlocks = msg.numBlocks();
 		numPtrs = msg.numPointers();
 		if (msg.getClass().getName().endsWith("WaveletConf")) {
-			type = Wavelet.BP_WAVELETCONF;
+			type = BigPack.BP_WAVELETCONF;
 		}
-		numPacks = stream.length / Wavelet.BP_DATA_LEN;
-		if (stream.length % Wavelet.BP_DATA_LEN != 0)
+		numPacks = stream.length / BigPack.BP_DATA_LEN;
+		if (stream.length % BigPack.BP_DATA_LEN != 0)
 			numPacks++;
 	}
 
 	public UnicastPack getHeader() {
 		UnicastPack pack = new UnicastPack();
-		pack.set_data_type(Wavelet.BIGPACKHEADER);
+		pack.set_data_type(BigPack.BIGPACKHEADER);
 		pack.set_data_data_bpHeader_requestType(type);
 		pack.set_data_data_bpHeader_packTotal((short) numPacks);
 		pack.set_data_data_bpHeader_byteTotal(stream.length);
@@ -38,10 +41,10 @@ public class Packer {
 
 	public UnicastPack getData(int packNum) {
 		UnicastPack pack = new UnicastPack();
-		pack.set_data_type(Wavelet.BIGPACKDATA);
+		pack.set_data_type(BigPack.BIGPACKDATA);
 		pack.set_data_data_bpData_curPack((short) packNum);
-		int firstByte = packNum * Wavelet.BP_DATA_LEN;
-		int length = Wavelet.BP_DATA_LEN;
+		int firstByte = packNum * BigPack.BP_DATA_LEN;
+		int length = BigPack.BP_DATA_LEN;
 		if ((firstByte + length) > stream.length)
 			length = stream.length - firstByte;
 		pack.set_data_data_bpData_data(byteRange(firstByte, length));

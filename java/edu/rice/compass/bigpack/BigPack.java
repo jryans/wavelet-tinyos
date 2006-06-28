@@ -1,9 +1,29 @@
-package edu.rice.compass;
+package edu.rice.compass.bigpack;
 
 import net.tinyos.message.Message;
 import java.util.*;
 
 public abstract class BigPack extends Message {
+
+	/* Constants */
+
+	static final short TOSH_DATA_LENGTH = 29;
+	static final short UPACK_MSG_OFFSET = 1;
+	static final short UPACK_DATA_LEN = TOSH_DATA_LENGTH - UPACK_MSG_OFFSET;
+	static final short MSG_DATA_OFFSET = 5;
+	static final short UPACK_MSG_DATA_LEN = UPACK_DATA_LEN - MSG_DATA_OFFSET;
+	static final short BP_DATA_LEN = UPACK_MSG_DATA_LEN - 1;
+
+	public static final short BP_WAVELETCONF = 0;
+	public static final short BP_STATS = 1;
+
+	public static final short BP_SENDING = 0;
+	public static final short BP_RECEIVING = 1;
+
+	public static final short BIGPACKHEADER = 2;
+	public static final short BIGPACKDATA = 3;
+
+	/* Variables */
 
 	private static final short BPP_PTR = 0;
 	private static final short BPP_ARRAY = 1;
@@ -15,6 +35,108 @@ public abstract class BigPack extends Message {
 
 	protected BigPack(int dataLength) {
 		super(dataLength);
+	}
+
+	/**
+	 * Regenerates a root big pack and any associated children.
+	 * 
+	 * @param rawData
+	 */
+	protected BigPack(byte[] rawData, int dataLength, int numBlks, int numPtrs) {
+		super(dataLength);
+		int offset = 0;
+		// Pull blocks and pointers out of data stream
+		for (int i = 0; i < numBlks; i++) {
+			blocks.add(new BigPackBlock(byteRange(rawData, offset,
+					BigPackBlock.DEFAULT_MESSAGE_SIZE)));
+			offset += BigPackBlock.DEFAULT_MESSAGE_SIZE;
+		}
+		for (int i = 0; i < numPtrs; i++) {
+			pointers.add(new BigPackPtr(byteRange(rawData, offset,
+					BigPackPtr.DEFAULT_MESSAGE_SIZE)));
+			offset += BigPackPtr.DEFAULT_MESSAGE_SIZE;
+		}
+		rawData = byteRange(rawData, offset, rawData.length - offset);
+		breakUpData(rawData, blocks.size() - 1);
+	}
+
+	private void breakUpData(byte[] rawData, int thisBlk) {
+		try {
+			// The pack's block is at blockNum, which helps locate its data.
+			BigPackBlock blk = (BigPackBlock) blocks.get(thisBlk);
+			if (blk.get_length() != data_length)
+				throw new Exception("Static data block's length doesn't match.");
+			data = byteRange(rawData, blk.get_start(), data_length);
+			if (numChildTypes() > 0) {
+				// Initialize child storage
+				initChildren();
+				// Grab pointers that reference us as their destination block,
+				// create them, and attach them here as children.
+				List pToC = pointers.subList(pointers.size() - numChildTypes(),
+						pointers.size() - 1);
+				// Gives each child the full raw data set, all blocks, but only the 
+				// applicable pointers.
+				for (int i = 0; i < pToC.size(); i++) {
+					BigPackPtr ptr = (BigPackPtr) pToC.get(i);
+					if (ptr.get_destBlock() != thisBlk)
+						throw new Exception(
+								"Pointer's dest block should be this pack's static data block.");
+					int childCnt = numChildren(ptr.get_destOffset());
+					int childBlockNum[] = new int[childCnt];
+					Vector childPtr[] = new Vector[childCnt];
+					if (ptr.get_blockArray() == BPP_PTR) { // Single source block
+						Vector pForC = (Vector) pointers.subList(0, pointers.size()
+								- numChildTypes() - 1);
+						for (int c = 0; c < childCnt; c++) {
+							childBlockNum[c] = ptr.get_addrOfBlock();
+							childPtr[c] = pForC;
+						}
+					} else if (ptr.get_blockArray() == BPP_ARRAY) { // Multiple source
+																													// blocks
+						int pPerC = (pointers.size() - numChildTypes()) / childCnt;
+						for (int c = 0; c < childCnt; c++) {
+							childBlockNum[c] = ptr.get_addrOfBlock() + c;
+							childPtr[c] = (Vector) pointers.subList(c * pPerC, (c + 1)
+									* pPerC - 1);
+						}
+					}
+					storeChildren(rawData, ptr.get_destOffset(), childBlockNum, childPtr);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected BigPack(byte[] rawData, int dataLength, int blockNum,
+			Vector nBlocks, Vector nPtrs) {
+		super(dataLength);
+		blocks = nBlocks;
+		pointers = nPtrs;
+		breakUpData(rawData, blockNum);
+	}
+
+	protected BigPack(byte[] rawData, int dataLength, int blockNum,
+			Vector nBlocks, Vector nPtrs, int cOffset) {
+		super(dataLength);
+		blocks = nBlocks;
+		pointers = nPtrs;
+		breakUpData(rawData, blockNum);
+	}
+
+	protected void initChildren() {
+	}
+
+	protected void storeChildren(byte[] rawData, int offset, int childBlockNum[],
+			Vector childPtr[]) {
+	}
+
+	protected int numChildren(int offset) {
+		return 0;
+	}
+
+	protected int numChildTypes() {
+		return 0;
 	}
 
 	/**
@@ -77,6 +199,12 @@ public abstract class BigPack extends Message {
 			}
 			blkOffset += bp[i].blocks.size() - 1;
 		}
+	}
+
+	private byte[] byteRange(byte[] src, int offsetFrom, int length) {
+		byte[] tmp = new byte[length];
+		System.arraycopy(src, offsetFrom, tmp, 0, length);
+		return tmp;
 	}
 
 	private BigPack() {

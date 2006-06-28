@@ -39,16 +39,6 @@ public class Wavelet {
 	static final short RAW_OFFSET = 0;
 	static final short WT_OFFSET = 1;
 
-	static final short TOSH_DATA_LENGTH = 29;
-	static final short UPACK_MSG_OFFSET = 1;
-	static final short UPACK_DATA_LEN = TOSH_DATA_LENGTH - UPACK_MSG_OFFSET;
-	static final short MSG_DATA_OFFSET = 5;
-	static final short UPACK_MSG_DATA_LEN = UPACK_DATA_LEN - MSG_DATA_OFFSET;
-	static final short BP_DATA_LEN = UPACK_MSG_DATA_LEN - 1;
-	
-	/* Big Pack Request Types */
-	static final short BP_WAVELETCONF = 0;
-
 	/* Stats Report Types */
 	static final short WT_CACHE = 0;
 

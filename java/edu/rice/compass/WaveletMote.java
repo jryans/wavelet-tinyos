@@ -7,9 +7,16 @@ package edu.rice.compass;
 
 import java.util.*;
 
+import edu.rice.compass.bigpack.Packer;
+import edu.rice.compass.bigpack.Unpacker;
+import edu.rice.compass.bigpack.WaveletConf;
+import edu.rice.compass.bigpack.WaveletLevel;
+import edu.rice.compass.bigpack.WaveletNeighbor;
+
 public class WaveletMote {
 
 	private Packer packer = new Packer();
+	Unpacker unpacker;
 
 	private int id; // ID number of the mote represented
 	short state[]; // Mote's state at each scale level that it is used in

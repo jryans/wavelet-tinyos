@@ -10,6 +10,7 @@ import java.util.*;
 import java.io.*;
 import java.beans.*;
 import com.martiansoftware.jsap.*;
+import edu.rice.compass.bigpack.*;
 
 public class WaveletConfigServer implements MessageListener {
 
@@ -20,12 +21,14 @@ public class WaveletConfigServer implements MessageListener {
 
 	private boolean startSent = false;
 
+	private static int transState;
+
 	/* Sensor Data */
 	private static MoteData mData;
 	private static long setLength;
 	private static int numSets;
 	private static int curSet;
-	
+
 	/* Wavelet Config Timer */
 	private static Timer pulseTimer = new Timer();
 
@@ -69,7 +72,7 @@ public class WaveletConfigServer implements MessageListener {
 			}
 			System.exit(0);
 		} else if (config.getBoolean("prog")) {
-			//forceStartup();
+			// forceStartup();
 			setLength = config.getLong("setlength");
 			numSets = config.getInt("sets");
 			// Fixed path name for now
@@ -97,9 +100,10 @@ public class WaveletConfigServer implements MessageListener {
 			for (int i = 0; i < mote.length; i++)
 				mote[i] = new WaveletMote(i + 1, wc);
 			// Init data collection
- 			curSet = 0;
+			curSet = 0;
 			mData = new MoteData(numSets, Wavelet.WT_SENSORS, mote.length);
 			clearDataCheck();
+			transState = BigPack.BP_SENDING;
 			listen();
 			// Setup and start config pulse timer
 			pulseTimer.scheduleAtFixedRate(new ConfigPulse(mote.length), 200, 300);
@@ -107,7 +111,10 @@ public class WaveletConfigServer implements MessageListener {
 			int dest = config.getInt("dest");
 			UnicastPack req = new UnicastPack();
 			req.set_data_dest(dest);
-			req.set_data_type(Wavelet.MOTESTATS);
+			req.set_data_type(BigPack.BIGPACKHEADER);
+			req.set_data_data_bpHeader_requestType(BigPack.BP_STATS);
+			req.set_data_data_bpHeader_packTotal((short) 0);
+			transState = BigPack.BP_RECEIVING;
 			listen();
 			moteSend.sendPack(req);
 			System.out.println("Sent stats request to mote " + dest);
@@ -138,6 +145,18 @@ public class WaveletConfigServer implements MessageListener {
 		return dataCheck;
 	}
 
+	private void sendAck(UnicastPack u) {
+		int dest = u.get_data_src();
+		u.set_data_dest(dest);
+		u.set_data_src(0);
+		try {
+			moteSend.sendPack(u);
+			System.out.println("Sent ack to mote " + dest);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void messageReceived(int to, Message m) {
 		UnicastPack pack = (UnicastPack) m;
 		int id = pack.get_data_src();
@@ -157,33 +176,52 @@ public class WaveletConfigServer implements MessageListener {
 					e.printStackTrace();
 				}
 			} else {
-				System.out.println("Got BP header ack from mote " + id);
-				try {
-					UnicastPack newPack = theMote.getData(0);
-					moteSend.sendPack(newPack);
-					System.out.println("Sent BP data ("
-							+ (newPack.get_data_data_bpData_curPack() + 1) + "/"
-							+ theMote.getNumPacks() + ") to mote " + id);
-				} catch (IOException e) {
-					e.printStackTrace();
+				if (transState == BigPack.BP_SENDING) {
+					System.out.println("Got BP header ack from mote " + id);
+					try {
+						UnicastPack newPack = theMote.getData(0);
+						moteSend.sendPack(newPack);
+						System.out.println("Sent BP data ("
+								+ (newPack.get_data_data_bpData_curPack() + 1) + "/"
+								+ theMote.getNumPacks() + ") to mote " + id);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				} else {
+					theMote.unpacker = new Unpacker(pack);
+					System.out.println("Got BP header (0/"
+							+ theMote.unpacker.getNumPacks() + ") from mote " + id);
+					sendAck(pack);
 				}
 			}
 			break;
 		case Wavelet.BIGPACKDATA:
-			System.out.println("Got BP data ack from mote " + id);
-			short curPack = pack.get_data_data_bpData_curPack();
-			if (!theMote.isConfigDone(curPack)) {
-				// Send the next packet
-				try {
-					moteSend.sendPack(theMote.getData(++curPack));
-					System.out.println("Sent BP data (" + (curPack + 1) + "/"
-							+ theMote.getNumPacks() + ") to mote " + id);
-				} catch (IOException e) {
-					e.printStackTrace();
+			if (transState == BigPack.BP_SENDING) {
+				System.out.println("Got BP data ack from mote " + id);
+				short curPack = pack.get_data_data_bpData_curPack();
+				if (!theMote.isConfigDone(curPack)) {
+					// Send the next packet
+					try {
+						moteSend.sendPack(theMote.getData(++curPack));
+						System.out.println("Sent BP data (" + (curPack + 1) + "/"
+								+ theMote.getNumPacks() + ") to mote " + id);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				} else {
+					System.out.println("Config done for mote " + id);
+					attemptStart();
 				}
 			} else {
-				System.out.println("Config done for mote " + id);
-				attemptStart();
+				short curPack = pack.get_data_data_bpData_curPack();
+				if (theMote.unpacker.newData(pack)) {
+					System.out.println("Got BP data (" + (curPack + 1) + "/"
+							+ theMote.getNumPacks() + ") from mote " + id);
+					sendAck(pack);
+					if (!theMote.unpacker.morePacksExist(curPack)) {
+						theMote.extractData();
+					}
+				}
 			}
 			break;
 		case Wavelet.WAVELETDATA:
@@ -207,33 +245,33 @@ public class WaveletConfigServer implements MessageListener {
 			}
 			break;
 		case Wavelet.MOTESTATS:
-			int rcvd = pack.get_data_data_stats_rcvd();
+			/* int rcvd = pack.get_data_data_stats_rcvd();
 			int sent = pack.get_data_data_stats_sent();
 			int acked = pack.get_data_data_stats_acked();
 			System.out.println("Stats for mote " + pack.get_data_src() + ":");
-			System.out.println("Received:  " + rcvd);
-			System.out.println("Avg. RSSI: "
+			System.out.println("  Received:  " + rcvd);
+			System.out.println("  Avg. RSSI: "
 					+ (pack.get_data_data_stats_rssi() / rcvd - 45));
-			System.out.println("Sent:      " + sent);
-			System.out.println("ACKed:     " + acked + " (" + (acked * 100 / sent)
+			System.out.println("  Sent:      " + sent);
+			System.out.println("  ACKed:     " + acked + " (" + (acked * 100 / sent)
 					+ "%)");
 			for (int i = 0; i < pack.get_data_data_stats_numReps(); i++) {
-				System.out.println("Report " + (i + 1) + ":");
-				System.out.println("  Count: "
+				System.out.println("  Report " + (i + 1) + ":");
+				System.out.println("    Count: "
 						+ pack.getElement_data_data_stats_reports_number(i));
-				System.out.print("  Type:  ");
+				System.out.print("    Type:  ");
 				switch (pack.getElement_data_data_stats_reports_type(i)) {
 				case Wavelet.WT_CACHE:
-					System.out.println("Cache Hit");
-					System.out.println("  Level: "
+					System.out.println("  Cache Hit");
+					System.out.println("    Level: "
 							+ pack.getElement_data_data_stats_reports_data_cache_level(i));
-					System.out.println("  Mote:  "
+					System.out.println("    Mote:  "
 							+ pack.getElement_data_data_stats_reports_data_cache_mote(i));
 					break;
 				}
 			}
 			System.exit(0);
-			break;
+			break; */
 		}
 	}
 
@@ -306,7 +344,7 @@ public class WaveletConfigServer implements MessageListener {
 			e.printStackTrace();
 		}
 	}
-	
+
 	static void directedStartup(int moteNum) {
 		UnicastPack pack = new UnicastPack();
 		pack.set_data_dest(moteNum);
@@ -345,10 +383,10 @@ public class WaveletConfigServer implements MessageListener {
 }
 
 class ConfigPulse extends TimerTask {
-	
+
 	private int numMotes;
 	private int curMote;
-	
+
 	public ConfigPulse(int numMotes) {
 		this.numMotes = numMotes;
 		curMote = 0;

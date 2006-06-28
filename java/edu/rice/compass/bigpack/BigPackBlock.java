@@ -4,7 +4,7 @@
  * message type.
  */
 
-package edu.rice.compass;
+package edu.rice.compass.bigpack;
 
 public class BigPackBlock extends net.tinyos.message.Message {
 
