@@ -10,7 +10,7 @@ CFLAGS += -DMAX_WT_NBS=6
 CFLAGS += -DMAX_TOS_MSGS=12
 
 # Adds (annoying) beeps to indicate various errors
-CFLAGS += -DBEEP
+# CFLAGS += -DBEEP
 
 # Transmits raw values back to base for comparison
 CFLAGS += -DRAW

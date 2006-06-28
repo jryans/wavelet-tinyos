@@ -474,8 +474,11 @@ implementation {
       dbg(DBG_USR2, "BigPack:   Addr of Block: %i\n", ptr[b].addrOfBlock + 1);
       dbg(DBG_USR2, "BigPack:   Dest Block:    %i\n", ptr[b].destBlock + 1);
       dbg(DBG_USR2, "BigPack:   Dest Offset:   %i\n", ptr[b].destOffset);
-      (ptr[b].blockArray) ? dbg(DBG_USR2, "BigPack:   Block Array:   Yes\n")
-                          : dbg(DBG_USR2, "BigPack:   Block Array:   No\n");
+      if (ptr[b].blockArray) {
+        dbg(DBG_USR2, "BigPack:   Block Array:   Yes\n");
+      } else {
+        dbg(DBG_USR2, "BigPack:   Block Array:   No\n");
+      }
     }
     // Free envelope data
     freeEnv();

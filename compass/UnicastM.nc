@@ -126,7 +126,6 @@ implementation {
     // TODO: Test effects of following setting from diff distances
     //call CC2420Control.SetRFPower(31);
     call MacControl.enableAck();
-    call Beep.play(2, 250); // MICAZ define test
 #endif
     return SUCCESS;
   }
