@@ -5,41 +5,42 @@
 package edu.rice.compass;
 
 import java.io.*;
-import java.beans.*;
+import com.thoughtworks.xstream.XStream;
 
 public class WaveletConfigExport {
-	
+
+	private XStream xs = new XStream();
+
 	/**
-	 * Stores the parameters in a WaveletConfig and writes that out
-	 * to an XML file.
+	 * Stores the parameters in a WaveletConfig and writes that out to an XML
+	 * file.
 	 */
 	public WaveletConfigExport(double[] scales, Object[] predNB,
-			                Object[] predCoeff, Object[] updCoeff) throws IOException {
-		WaveletConfig conf = new WaveletConfig(scales, predNB, predCoeff, updCoeff);		
+			Object[] predCoeff, Object[] updCoeff) {
+		WaveletConfig conf = new WaveletConfig(scales, predNB, predCoeff, updCoeff);
 		// Fixed path name for now
 		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletConfig.xml";
-		FileOutputStream fs = new FileOutputStream(path);
-		Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-		XMLEncoder obj = new XMLEncoder(fs);
-		obj.writeObject(conf);
-		obj.close();
+		try {
+			FileOutputStream fs = new FileOutputStream(path);
+			xs.toXML(conf, fs);
+			fs.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
-	
+
 	public WaveletConfigExport() {
-		
+
 	}
-	
+
 	public float[][][] loadData() {
-    // Fixed path name for now
+		// Fixed path name for now
 		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletData.xml";
 		MoteData mData = new MoteData();
 		try {
 			FileInputStream fs = new FileInputStream(path);
-			Thread.currentThread().setContextClassLoader(getClass().getClassLoader());
-			//XMLDecoder obj = new XMLDecoder(fs);
-			ObjectInputStream obj = new ObjectInputStream(fs);
-			mData = (MoteData) obj.readObject();
-			obj.close();
+			mData = (MoteData) xs.fromXML(fs);
+			fs.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

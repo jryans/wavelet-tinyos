@@ -9,9 +9,9 @@ package edu.rice.compass.bigpack;
 import java.util.List;
 
 public class MoteStats extends BigPack {
-
+	
 	/** The default size of this message type in bytes. */
-	public static final int DEFAULT_MESSAGE_SIZE = 27;
+	public static final int DEFAULT_MESSAGE_SIZE = 31;
 
 	/**
 	 * Create a new MoteStats using the given byte array as backing store.
@@ -803,9 +803,72 @@ public class MoteStats extends BigPack {
 	}
 
 	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: voltage
+	// Field type: float
+	// Offset (bits): 192
+	// Size (bits): 32
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'voltage' is signed (false).
+	 */
+	public static boolean isSigned_voltage() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'voltage' is an array (false).
+	 */
+	public static boolean isArray_voltage() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'voltage'
+	 */
+	public static int offset_voltage() {
+		return (192 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'voltage'
+	 */
+	public static int offsetBits_voltage() {
+		return 192;
+	}
+
+	/**
+	 * Return the value (as a float) of the field 'voltage'
+	 */
+	public float get_voltage() {
+		return (float) getFloatElement(offsetBits_voltage(), 32);
+	}
+
+	/**
+	 * Set the value of the field 'voltage'
+	 */
+	public void set_voltage(float value) {
+		setFloatElement(offsetBits_voltage(), 32, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'voltage'
+	 */
+	public static int size_voltage() {
+		return (32 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'voltage'
+	 */
+	public static int sizeBits_voltage() {
+		return 32;
+	}
+
+	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: wavelet.numLevels
 	// Field type: short
-	// Offset (bits): 192
+	// Offset (bits): 224
 	// Size (bits): 8
 	// ///////////////////////////////////////////////////////
 
@@ -827,14 +890,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'wavelet.numLevels'
 	 */
 	public static int offset_wavelet_numLevels() {
-		return (192 / 8);
+		return (224 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'wavelet.numLevels'
 	 */
 	public static int offsetBits_wavelet_numLevels() {
-		return 192;
+		return 224;
 	}
 
 	/**
@@ -868,7 +931,7 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: wavelet.level
 	// Field type: array
-	// Offset (bits): 200
+	// Offset (bits): 232
 	// Size (bits): 16
 	// ///////////////////////////////////////////////////////
 
@@ -878,7 +941,7 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the pointer to array 'wavelet.level'
 	 */
 	public static int offset_wavelet_level() {
-		return (200 / 8);
+		return (232 / 8);
 	}
 
 	/**

@@ -7,9 +7,9 @@ public class WaveletConfig {
 	Object[] mPredCoeff;
 	Object[] mUpdCoeff;
     
-	public WaveletConfig() {
+	/* public WaveletConfig() {
 		
-	}
+	} */
 	
 	public WaveletConfig(double[] scale, Object[] predNB, 
 						 Object[] predCoeff, Object[] updCoeff) {
@@ -19,7 +19,7 @@ public class WaveletConfig {
 		mUpdCoeff = updCoeff;
 	}
 
-	public Object[] getMPredCoeff() {
+	/* public Object[] getMPredCoeff() {
 		return mPredCoeff;
 	}
 
@@ -49,5 +49,5 @@ public class WaveletConfig {
 
 	public void setMUpdCoeff(Object[] updCoeff) {
 		mUpdCoeff = updCoeff;
-	}
+	} */
 }

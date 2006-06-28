@@ -2,7 +2,6 @@ package edu.rice.compass.bigpack;
 
 import net.tinyos.message.Message;
 import java.util.*;
-
 import edu.rice.compass.WaveletConfigServer;
 
 public abstract class BigPack extends Message {
@@ -54,22 +53,26 @@ public abstract class BigPack extends Message {
 			BigPackBlock blk = new BigPackBlock(byteRange(rawData, offset,
 					BigPackBlock.DEFAULT_MESSAGE_SIZE));
 			WaveletConfigServer.debugPrintln("BigPack:   Start:  " + blk.get_start());
-      WaveletConfigServer.debugPrintln("BigPack:   Length: " + blk.get_length());
+			WaveletConfigServer
+					.debugPrintln("BigPack:   Length: " + blk.get_length());
 			blocks.add(blk);
 			offset += BigPackBlock.DEFAULT_MESSAGE_SIZE;
 		}
-    for (int i = 0; i < numPtrs; i++) {
+		for (int i = 0; i < numPtrs; i++) {
 			WaveletConfigServer.debugPrintln("BigPack: Pointer #" + (i + 1));
 			BigPackPtr ptr = new BigPackPtr(byteRange(rawData, offset,
 					BigPackPtr.DEFAULT_MESSAGE_SIZE));
-			WaveletConfigServer.debugPrintln("BigPack:   Addr of Block: " + (ptr.get_addrOfBlock() + 1));
-	    WaveletConfigServer.debugPrintln("BigPack:   Dest Block:    " + (ptr.get_destBlock() + 1));
-	    WaveletConfigServer.debugPrintln("BigPack:   Dest Offset:   " + (ptr.get_destOffset()));
-	    if (ptr.get_blockArray() == BPP_ARRAY) {
-	    	WaveletConfigServer.debugPrintln("BigPack:   Block Array:   Yes");
-	    } else {
-	    	WaveletConfigServer.debugPrintln("BigPack:   Block Array:   No");
-	    }
+			WaveletConfigServer.debugPrintln("BigPack:   Addr of Block: "
+					+ (ptr.get_addrOfBlock() + 1));
+			WaveletConfigServer.debugPrintln("BigPack:   Dest Block:    "
+					+ (ptr.get_destBlock() + 1));
+			WaveletConfigServer.debugPrintln("BigPack:   Dest Offset:   "
+					+ (ptr.get_destOffset()));
+			if (ptr.get_blockArray() == BPP_ARRAY) {
+				WaveletConfigServer.debugPrintln("BigPack:   Block Array:   Yes");
+			} else {
+				WaveletConfigServer.debugPrintln("BigPack:   Block Array:   No");
+			}
 			pointers.add(ptr);
 			offset += BigPackPtr.DEFAULT_MESSAGE_SIZE;
 		}
@@ -82,18 +85,23 @@ public abstract class BigPack extends Message {
 			// The pack's block is at blockNum, which helps locate its data.
 			BigPackBlock blk = (BigPackBlock) blocks.get(thisBlk);
 			if (blk.get_length() != data_length)
-				//throw new Exception("Static data block's length doesn't match.");
-				System.out.println("Static data block's length is " + blk.get_length() +
-						", but this class's length should be " + data_length);
+				// throw new Exception("Static data block's length doesn't match.");
+				System.out.println("Static data block's length is " + blk.get_length()
+						+ ", but this class's length should be " + data_length);
 			data = byteRange(rawData, blk.get_start(), data_length);
 			if (numChildTypes() > 0) {
 				// Initialize child storage
 				initChildren();
 				// Grab pointers that reference us as their destination block,
 				// create them, and attach them here as children.
-				List pToC = pointers.subList(pointers.size() - numChildTypes(),
-						pointers.size());
-				// Gives each child the full raw data set, all blocks, but only the 
+				List pToC;
+				if (pointers.size() > 0) {
+					pToC = pointers.subList(pointers.size() - numChildTypes(), pointers
+							.size());
+				} else {
+					pToC = pointers;
+				}
+				// Gives each child the full raw data set, all blocks, but only the
 				// applicable pointers.
 				for (int i = 0; i < pToC.size(); i++) {
 					BigPackPtr ptr = (BigPackPtr) pToC.get(i);
@@ -110,7 +118,7 @@ public abstract class BigPack extends Message {
 							childPtr[c] = pForC;
 						}
 					} else if (ptr.get_blockArray() == BPP_ARRAY) { // Multiple source
-																													// blocks
+						// blocks
 						int pPerC = (pointers.size() - numChildTypes()) / childCnt;
 						for (int c = 0; c < childCnt; c++) {
 							childBlockNum[c] = ptr.get_addrOfBlock() + c;
@@ -124,31 +132,32 @@ public abstract class BigPack extends Message {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void breakUpData(byte[] rawData, int thisBlk, int cOffset) {
 		try {
 			// The pack's block is at blockNum, which helps locate its data.
 			BigPackBlock blk = (BigPackBlock) blocks.get(thisBlk);
 			if (blk.get_length() != data_length)
-				//throw new Exception("Static data block's length doesn't match.");
-				System.out.println("Static data block's length is " + blk.get_length() +
-						", but this class's length should be " + data_length);
-			data = byteRange(rawData, blk.get_start() + cOffset * data_length, data_length);
+				// throw new Exception("Static data block's length doesn't match.");
+				System.out.println("Static data block's length is " + blk.get_length()
+						+ ", but this class's length should be " + data_length);
+			data = byteRange(rawData, blk.get_start() + cOffset * data_length,
+					data_length);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	protected BigPack(byte[] rawData, int dataLength, int blockNum,
-			List nBlocks, List nPtrs) {
+	protected BigPack(byte[] rawData, int dataLength, int blockNum, List nBlocks,
+			List nPtrs) {
 		super(dataLength);
 		blocks = nBlocks;
 		pointers = nPtrs;
 		breakUpData(rawData, blockNum);
 	}
 
-	protected BigPack(byte[] rawData, int dataLength, int blockNum,
-			List nBlocks, List nPtrs, int cOffset) {
+	protected BigPack(byte[] rawData, int dataLength, int blockNum, List nBlocks,
+			List nPtrs, int cOffset) {
 		super(dataLength);
 		blocks = nBlocks;
 		pointers = nPtrs;

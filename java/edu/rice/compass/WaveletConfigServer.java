@@ -8,8 +8,8 @@ package edu.rice.compass;
 import net.tinyos.message.*;
 import java.util.*;
 import java.io.*;
-import java.beans.*;
 import com.martiansoftware.jsap.*;
+import com.thoughtworks.xstream.*;
 import edu.rice.compass.bigpack.*;
 
 public class WaveletConfigServer implements MessageListener {
@@ -18,6 +18,8 @@ public class WaveletConfigServer implements MessageListener {
 	private static WaveletMote mote[];
 	private static MoteIF moteListen = new MoteIF();
 	private static MoteSend moteSend;
+	static JSAPResult config;
+	private static XStream xs = new XStream();;
 
 	private boolean startSent = false;
 
@@ -40,17 +42,21 @@ public class WaveletConfigServer implements MessageListener {
 						new Switch("debug", JSAP.NO_SHORTFLAG, "debug"),
 						new Switch("pack", JSAP.NO_SHORTFLAG, "pack"),
 						new Switch("prog", JSAP.NO_SHORTFLAG, "prog"),
+						new Switch("ping", JSAP.NO_SHORTFLAG, "ping"),
+						new Switch("load", JSAP.NO_SHORTFLAG, "load"),
+						new FlaggedOption("file", JSAP.STRING_PARSER, "",
+								JSAP.NOT_REQUIRED, 'f', "file"),
 						new FlaggedOption("setlength", JSAP.LONG_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, 'l', "length"),
 						new FlaggedOption("sets", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, 's', "sets"),
 						new Switch("clear", 'c', "clear"),
-						new Switch("force", 'f', "force"),
+						new Switch("force", JSAP.NO_SHORTFLAG, "force"),
 						new Switch("stats", JSAP.NO_SHORTFLAG, "stats"),
 						new FlaggedOption("dest", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, 'd', "dest") });
 
-		JSAPResult config = parser.parse(args);
+		config = parser.parse(args);
 		if (parser.messagePrinted())
 			System.exit(1);
 
@@ -82,10 +88,9 @@ public class WaveletConfigServer implements MessageListener {
 			// Fixed path name for now
 			String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletConfig.xml";
 			FileInputStream fs = new FileInputStream(path);
-			XMLDecoder obj = new XMLDecoder(fs);
 			// Read in the config data
-			wc = (WaveletConfig) obj.readObject();
-			obj.close();
+			wc = (WaveletConfig) xs.fromXML(fs);
+			fs.close();
 			// Check for valid set length
 			int maxScale = 0;
 			for (int i = 0; i < wc.mScale.length; i++)
@@ -115,15 +120,13 @@ public class WaveletConfigServer implements MessageListener {
 			// Fixed path name for now
 			String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletConfig.xml";
 			FileInputStream fs = new FileInputStream(path);
-			XMLDecoder obj = new XMLDecoder(fs);
 			// Read in the config data
-			wc = (WaveletConfig) obj.readObject();
-			obj.close();
+			wc = (WaveletConfig) xs.fromXML(fs);
+			fs.close();
 			// Setup mote data
 			mote = new WaveletMote[wc.mScale.length];
 			for (int i = 0; i < mote.length; i++)
 				mote[i] = new WaveletMote(i + 1, wc);
-			
 			int dest = config.getInt("dest");
 			UnicastPack req = new UnicastPack();
 			req.set_data_dest(dest);
@@ -134,6 +137,20 @@ public class WaveletConfigServer implements MessageListener {
 			listen();
 			moteSend.sendPack(req);
 			System.out.println("Sent stats request to mote " + dest);
+		} else if (config.getBoolean("ping")) {
+			pulseTimer.scheduleAtFixedRate(new Ping(config.getInt("sets")), 200, 100);
+		} else if (config.getBoolean("load")) {
+			if (!config.getString("file").equals("")) {
+				try {
+					FileInputStream fs = new FileInputStream(config.getString("out"));
+					MoteStats stats = (MoteStats) xs.fromXML(fs);
+					printStats(stats);
+					fs.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			System.exit(0);
 		}
 	}
 
@@ -232,10 +249,22 @@ public class WaveletConfigServer implements MessageListener {
 				short curPack = pack.get_data_data_bpData_curPack();
 				if (theMote.unpacker.newData(pack)) {
 					System.out.println("Got BP data (" + (curPack + 1) + "/"
-							+ theMote.getNumPacks() + ") from mote " + id);
+							+ theMote.unpacker.getNumPacks() + ") from mote " + id);
 					sendAck(pack);
 					if (!theMote.unpacker.morePacksExist(curPack)) {
-						theMote.extractData();
+						MoteStats stats = theMote.extractData();
+						printStats(stats);
+						// Setup output file
+						if (!config.getString("file").equals("")) {
+							try {
+								FileOutputStream fs = new FileOutputStream(config
+										.getString("file"));
+								xs.toXML(stats, fs);
+								fs.close();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
 						System.exit(0);
 					}
 				}
@@ -311,10 +340,8 @@ public class WaveletConfigServer implements MessageListener {
 		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletData.xml";
 		try {
 			FileOutputStream fs = new FileOutputStream(path);
-			// XMLEncoder obj = new XMLEncoder(fs);
-			ObjectOutputStream obj = new ObjectOutputStream(fs);
-			obj.writeObject(mData);
-			obj.close();
+			xs.toXML(mData, fs);
+			fs.close();
 			System.out.println("Data write successful!");
 			forceStop();
 			System.exit(0);
@@ -379,6 +406,59 @@ public class WaveletConfigServer implements MessageListener {
 			System.out.println(s);
 	}
 
+	public static void sendPing(int mote) {
+		UnicastPack pack = new UnicastPack();
+		pack.set_data_dest(mote);
+		pack.set_data_type(Wavelet.MOTECOMMAND);
+		pack.set_data_data_moteCmd_cmd((short) 0);
+		try {
+			moteSend.sendPack(pack);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private static void printStats(MoteStats stats) {
+		// System.out.println("Stats for Mote " + id + ":");
+		System.out.println("  Voltage: " + (stats.get_voltage() / 1000) + " V");
+		System.out.println("  *Unicast* Packets:");
+		System.out.println("    Received: " + stats.get_pRcvd());
+		if (stats.get_pRcvd() > 0) {
+			System.out.println("      Avg. RSSI: "
+					+ ((stats.get_rssiSum() / stats.get_pRcvd()) - 45));
+			System.out.println("      Min. RSSI: " + (stats.get_rssiMin() - 45));
+			System.out.println("      Max. RSSI: " + (stats.get_rssiMax() - 45));
+			System.out.println("      Avg. LQI:  "
+					+ (stats.get_lqiSum() / stats.get_pRcvd()));
+			System.out.println("      Min. LQI:  " + stats.get_lqiMin());
+			System.out.println("      Max. LQI:  " + stats.get_lqiMax());
+		}
+		System.out.println("    Sent: " + stats.get_pSent());
+		if (stats.get_pSent() > 0)
+			System.out.println("      ACKed: " + stats.get_pAcked() + " ("
+					+ (stats.get_pAcked() * 100 / stats.get_pSent()) + "%)");
+		System.out.println("  Messages:");
+		System.out.println("    Received: " + stats.get_mRcvd());
+		System.out.println("    Sent:     " + stats.get_mSent());
+		if (stats.get_mSent() > 0)
+			System.out.println("      Avg. Retries: "
+					+ ((float) stats.get_mRetriesSum() / stats.get_mSent()));
+		StatsWTL level[] = stats.get_wavelet_level();
+		if (level.length > 0) {
+			System.out.println("  Wavelet:");
+			for (int l = 0; l < level.length; l++) {
+				StatsWTNB nb[] = level[l].get_nb();
+				System.out.println("    Level " + (l + 1) + ":");
+				for (int n = 0; n < nb.length; n++) {
+					System.out.println("      Neighbor " + (n + 1) + ":");
+					System.out.println("        ID:         " + nb[n].get_id());
+					System.out.println("        Retries:    " + nb[n].get_retries());
+					System.out.println("        Cache Hits: " + nb[n].get_cacheHits());
+				}
+			}
+		}
+	}
+
 }
 
 class ConfigPulse extends TimerTask {
@@ -396,6 +476,26 @@ class ConfigPulse extends TimerTask {
 			WaveletConfigServer.directedStartup(curMote);
 		} else {
 			cancel();
+		}
+	}
+
+}
+
+class Ping extends TimerTask {
+
+	private int numPings;
+
+	public Ping(int pings) {
+		numPings = pings;
+	}
+
+	public void run() {
+		if (numPings-- > 0) {
+			System.out.println((numPings + 1) + " pings left!");
+			WaveletConfigServer.sendPing(WaveletConfigServer.config.getInt("dest"));
+		} else {
+			cancel();
+			System.exit(0);
 		}
 	}
 

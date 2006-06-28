@@ -146,39 +146,9 @@ public class WaveletMote {
 		return pack;
 	}
 
-	public void extractData() {
+	public MoteStats extractData() {
 		MoteStats stats = (MoteStats) unpacker.unpack();
-		System.out.println("Stats for Mote " + id + ":");
-		System.out.println("  *Unicast* Packets:");
-		System.out.println("    Received: " + stats.get_pRcvd());
-		System.out.println("      Avg. RSSI: "
-				+ ((stats.get_rssiSum() / stats.get_pRcvd()) - 45));
-		System.out.println("      Min. RSSI: " + stats.get_rssiMin());
-		System.out.println("      Max. RSSI: " + stats.get_rssiMax());
-		System.out.println("      Avg. LQI:  "
-				+ (stats.get_lqiSum() / stats.get_pRcvd()));
-		System.out.println("      Min. LQI:  " + stats.get_lqiMin());
-		System.out.println("      Max. LQI:  " + stats.get_lqiMax());
-		System.out.println("    Sent: " + stats.get_pSent());
-		System.out.println("      ACKed: " + stats.get_pAcked() + " ("
-				+ (stats.get_pAcked() * 100 / stats.get_pSent()) + "%)");
-		System.out.println("  Messages:");
-		System.out.println("    Received: " + stats.get_mRcvd());
-		System.out.println("    Sent:     " + stats.get_mSent());
-		System.out.println("      Avg. Retries: " 
-				+ ((float)stats.get_mRetriesSum() / stats.get_mSent()));
-		System.out.println("  Wavelet:");
-		StatsWTL level[] = stats.get_wavelet_level();
-		for (int l = 0; l < level.length; l++) {
-			System.out.println("    Level " + (l + 1) + ":");
-			StatsWTNB nb[] = level[l].get_nb();
-			for (int n = 0; n < nb.length; n++) {
-				System.out.println("      Neighbor " + (n + 1) + ":");
-				System.out.println("        ID:         " + nb[n].get_id());
-				System.out.println("        Retries:    " + nb[n].get_retries());
-				System.out.println("        Cache Hits: " + nb[n].get_cacheHits());
-			}
-		}
+		return stats;
 	}
 
 	public int getNumPacks() {
