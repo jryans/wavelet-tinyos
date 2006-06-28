@@ -385,9 +385,8 @@ implementation {
     for (mote = 1; mote < level[curLevel].nbCount; mote++) {
       if (level[curLevel].nb[mote].state == S_START_DATASET) {
         report.type = WT_CACHE;
-        report.number = 1;
-        report.data.cache.level = curLevel + 1;
-        report.data.cache.id = level[curLevel].nb[mote].id;
+        report.data.cache.level = curLevel;
+        report.data.cache.index = mote;
         call Stats.file(report);
       } 
     }

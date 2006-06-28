@@ -1,6 +1,7 @@
 /**
  * Transfers various details about the mote's network packets and
  * applications to the computer on request.
+ * TODO: Try to eliminate reporting on ourselves in wavelet stats.
  * @author Ryan Stinnett
  */
  
@@ -34,33 +35,17 @@ implementation {
   
   MoteStats data;
   bool wtAlloc;
-  uint8_t freeReportAt; // Index of next free report
+
   void waveletFree();
   
   /*** Stats: reports sent by applications ***/
   command void Stats.file(StatsReport report) {
- /*   uint8_t i;
-    bool found = FALSE;
-    // Check if report is new
-    for (i = 0; i < MAX_STATS_REPORTS; i++) {
-      if (data.reports[i].type == report.type) {
-        switch (report.type) {
-        case WT_CACHE: {
-          if (data.reports[i].data.cache.level == report.data.cache.level &&
-              data.reports[i].data.cache.mote == report.data.cache.mote)
-            found = TRUE;
-          break; }
-        }
-      if (found)
-        break;
-      }
+    switch (report.type) {
+    case WT_CACHE: {
+      CacheReport *c = &report.data.cache;
+      data.wavelet.level[c->level].nb[c->index].cacheHits++;
+      break; }
     }
-    if (i < MAX_STATS_REPORTS) { // Found the same report
-      data.reports[i].number += report.number;
-    } else if (freeReportAt < MAX_STATS_REPORTS) { // Store a new report
-       data.reports[freeReportAt] = report;
-       freeReportAt++;
-    } */
   }
   
   /*** Snoop: pretends to be Transceiver so it can listen to packets ***/
@@ -69,10 +54,9 @@ implementation {
    * Stores details for each packet sent.
    */
   event result_t Snoop.radioSendDone(TOS_MsgPtr m, result_t result) {
-    data.sent++;
+    data.pSent++;
     if (m->ack == 1)
-      data.acked++;
-    
+      data.pAcked++;
     return SUCCESS;
   }
   
@@ -87,11 +71,25 @@ implementation {
    * Stores details for each packet received.
    */
   event TOS_MsgPtr Snoop.receiveRadio(TOS_MsgPtr m) {
+#ifdef PLATFORM_MICAZ
     int16_t rssi = m->strength;
     if (rssi > 127) 
       rssi -= 256;
-    data.rssi += rssi;
-    data.rcvd++;    
+    data.rssiSum += rssi;
+    data.lqiSum += m->lqi;
+    if (data.pRcvd == 0) {
+      data.rssiMin = rssi;
+      data.rssiMax = rssi;
+      data.lqiMin = m->lqi;
+      data.lqiMax = m->lqi;
+    } else {
+      if (rssi < data.rssiMin) data.rssiMin = rssi;
+      if (rssi > data.rssiMax) data.rssiMax = rssi;
+      if (m->lqi < data.lqiMin) data.lqiMin = m->lqi;
+      if (m->lqi > data.lqiMax) data.lqiMax = m->lqi;
+    }
+#endif
+    data.pRcvd++;   
     return m;
   }
   
@@ -102,9 +100,11 @@ implementation {
     return m;
   }
   
-  /*** Message: transfers stats when requested and listens to Send commands ***/
+  /*** Message: listens to Message events ***/
   
   event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
+    data.mSent++;
+    data.mRetriesSum += retries;
     if (msg.type == WAVELETDATA) {
       if (msg.data.wData.level < data.wavelet.numLevels) {
         uint8_t i;
@@ -121,13 +121,7 @@ implementation {
   }
   
   event void Message.receive(msgData msg) {
- /*   if (msg.src == 0 && msg.type == MOTESTATS) {
-      msg.src = TOS_LOCAL_ADDRESS;
-      msg.dest = 0;
-      msg.data.stats = data;
-      msg.data.stats.numReps = freeReportAt;
-      call Message.send(msg);
-    } */
+    data.mRcvd++;
   }
   
   /*** BigPack: sends and receives multi-packet data ***/
@@ -172,7 +166,7 @@ implementation {
   event result_t StatsPack.buildPack() {
     BigPackEnvelope *env;
     // Find the number of blocks and pointers needed
-    uint8_t numBlks, numPtrs, l;
+    uint8_t numBlks, numPtrs, l, p;
     StatsWT *w = &data.wavelet;
     uint8_t lvls = w->numLevels;
     /* Blocks:
@@ -196,13 +190,19 @@ implementation {
       env->ptr[l].destOffset = 1;
       env->ptr[l].blockArray = FALSE;
     }
+    p = l;
+    l += lvls;
     // MoteStats
-    env->block[l + lvls].length = sizeof(MoteStats);
-    env->blockAddr[l + lvls] = (int8_t *) &data;
-    env->ptr[l].addrOfBlock = lvls;
-    env->ptr[l].destBlock = l;
-    env->ptr[l].destOffset = 12;
-    env->ptr[l].blockArray = TRUE;
+    env->block[l].length = sizeof(MoteStats);
+    env->blockAddr[l] = (int8_t *) &data;
+    env->ptr[p].addrOfBlock = lvls;
+    env->ptr[p].destBlock = l;
+#ifdef PLATFORM_PC
+    env->ptr[p].destOffset = sizeof(MoteStats) - 4;
+#else
+    env->ptr[p].destOffset = sizeof(MoteStats) - 2;
+#endif
+    env->ptr[p].blockArray = TRUE;
     return SUCCESS;
   }
   
@@ -221,6 +221,19 @@ implementation {
   /*** StdControl ***/
   command result_t StdControl.init() {
     wtAlloc = FALSE;
+    // Initialize stats data
+    data.pRcvd = 0; // Packets received (2)
+    data.rssiMin = 0; // Min RSSI over all packets (1)
+    data.rssiMax = 0; // Max RSSI over all packets (1)
+    data.rssiSum = 0; // Sum of RSSI over all packets (4)
+    data.lqiMin = 0; // Min LQI over all packets (1)
+    data.lqiMax = 0; // Max LQI over all packets (1)
+    data.lqiSum = 0; // Sum of LQI over all packets (4)
+    data.pSent = 0; // Packets sent (2)
+    data.pAcked = 0; // Packets sent and were ACKed (2) 
+    data.mRcvd = 0; // Messages received (2)
+    data.mSent = 0; // Messages sent (2)
+    data.mRetriesSum = 0; // Sum of retries over all messages (2)
     return SUCCESS;
   }
   

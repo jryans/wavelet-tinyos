@@ -7,10 +7,6 @@
 #ifndef _STATS_H
 #define _STATS_H
 
-enum {
-  MAX_STATS_REPORTS = 2
-};
-
 // Report Types
 
 enum {
@@ -21,7 +17,7 @@ enum {
 
 typedef struct {
   uint8_t level; // Level when cached data was used
-  uint16_t id; // ID of mote whose data was pulled from cache
+  uint16_t index; // Index of mote whose data was pulled from cache
 } __attribute__ ((packed)) CacheReport;
 
 typedef struct {
@@ -29,30 +25,39 @@ typedef struct {
   union {
     CacheReport cache;
   } data;
-  uint16_t number; // Number of times this report was sent
 } __attribute__ ((packed)) StatsReport;
 
-typedef struct {
+// Stats Storage
+
+typedef struct swtnb {
   uint16_t id;
   uint8_t retries;
   uint8_t cacheHits;
 } __attribute__ ((packed)) StatsWTNB;
 
-typedef struct {
+typedef struct swtl {
   uint8_t nbCount;
   StatsWTNB *nb;
 } __attribute__ ((packed)) StatsWTL;
 
-typedef struct {
+typedef struct swt {
   uint8_t numLevels;
   StatsWTL *level;
 } __attribute__ ((packed)) StatsWT;
 
-typedef struct {
-  uint16_t rcvd; // Packets received (2)
-  float rssi; // Sum of RSSI over mote lifetime (4)
-  uint16_t sent; // Packets sent (2)
-  uint16_t acked; // Packets sent and were ACKed (2) 
+typedef struct ms {
+  uint16_t pRcvd; // Packets received (2)
+  int8_t rssiMin; // Min RSSI over all packets (1)
+  int8_t rssiMax; // Max RSSI over all packets (1)
+  float rssiSum; // Sum of RSSI over all packets (4)
+  uint8_t lqiMin; // Min LQI over all packets (1)
+  uint8_t lqiMax; // Max LQI over all packets (1)
+  float lqiSum; // Sum of LQI over all packets (4)
+  uint16_t pSent; // Packets sent (2)
+  uint16_t pAcked; // Packets sent and were ACKed (2) 
+  uint16_t mRcvd; // Messages received (2)
+  uint16_t mSent; // Messages sent (2)
+  uint16_t mRetriesSum; // Sum of retries over all messages (2)
   StatsWT wavelet; // Wavelet stats per level per neighbor
 } __attribute__ ((packed)) MoteStats;
 

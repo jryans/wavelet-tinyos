@@ -213,7 +213,7 @@ implementation {
 		msg.data.bpHeader.byteTotal = numBytes;
 		msg.data.bpHeader.numBlocks = numBlocks[curType];
 		msg.data.bpHeader.numPtrs = numPtrs;
-		dbg(DBG_USR2, "Sent BP header (0/%i) to sink", numPacks);
+		dbg(DBG_USR2, "Sent BP header (0/%i) to sink\n", numPacks);
 	  } else {
 	    uint8_t i;
 	    uint16_t firstByte = curPackNum * BP_DATA_LEN;
@@ -224,7 +224,7 @@ implementation {
 		msg.data.bpData.curPack = curPackNum;
 		for (i = 0; i < length; i++)
 		  msg.data.bpData.data[i] = bigData[firstByte + i];
-		dbg(DBG_USR2, "Sent BP data (%i/%i) to sink", curPackNum + 1, numPacks);
+		dbg(DBG_USR2, "Sent BP data (%i/%i) to sink\n", curPackNum + 1, numPacks);
 	  }
 	  call Message.send(msg);
 	}
