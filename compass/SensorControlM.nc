@@ -14,7 +14,7 @@ includes Sensors;
 module SensorControlM {
   provides {
   	interface StdControl;
-    interface SensorData;
+    interface SensorData[uint8_t type];
   }
   uses {
     interface ADC as TempADC;
@@ -28,6 +28,7 @@ module SensorControlM {
 
 implementation {
   uint8_t sensToGo;
+  uint8_t curType;
   float curData[NUM_SENSORS];
   task void readData();
   task void dataDone();
@@ -71,10 +72,18 @@ implementation {
   /**
    * Requests new data from the sensor system.
    */
-  command void SensorData.readSensors() {
+  command void SensorData.readSensors[uint8_t type]() {
+    curType = type;
   	atomic { sensToGo = NUM_SENSORS; }
   	post readData();
   }
+  
+  /**
+   * When the sensors are done, this event returns the requested data
+   * to applications.
+   * @param data pointer to the requested values
+   */
+  default event void SensorData.readDone[uint8_t type](float *data) {}
   
   /**
    * When the last sensor finished sampling, it posts this task
@@ -86,7 +95,7 @@ implementation {
     atomic {
       dbg(DBG_USR1, "Values read from sensors: Light = %i, Temp = %i, Volt = %i\n",
           curData[LIGHT], curData[TEMP], curData[VOLT]);
-      signal SensorData.readDone(curData); 
+      signal SensorData.readDone[curType](curData); 
     }
   }
 

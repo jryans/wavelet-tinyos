@@ -11,6 +11,7 @@ configuration StatsC {
     interface Message;
     interface BigPackClient as WaveletPack;
     interface BigPackServer as StatsPack;
+    interface SensorData;
   }
   provides interface Stats;
 }
@@ -20,6 +21,7 @@ implementation {
   StatsM.Snoop -> TransceiverC.Transceiver[AM_UNICASTPACK];
   Main.StdControl -> StatsM;
   
+  SensorData = StatsM;
   WaveletPack = StatsM;
   StatsPack = StatsM;
   Message = StatsM;

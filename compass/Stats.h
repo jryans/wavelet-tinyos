@@ -58,6 +58,7 @@ typedef struct ms {
   uint16_t mRcvd; // Messages received (2)
   uint16_t mSent; // Messages sent (2)
   uint16_t mRetriesSum; // Sum of retries over all messages (2)
+  float voltage; // Current voltage in mV (4)
   StatsWT wavelet; // Wavelet stats per level per neighbor
 } __attribute__ ((packed)) MoteStats;
 

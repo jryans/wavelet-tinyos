@@ -20,6 +20,12 @@ interface BigPackServer {
    * this event is signaled triggering the application to assemble
    * the requested data.
    */
-  event result_t buildPack();
+  event void buildPack();
+  
+  /**
+   * Once the new pack is complete, the application calls this command
+   * to start transmission of the data.
+   */
+  command void packBuilt(result_t result);
   
 }

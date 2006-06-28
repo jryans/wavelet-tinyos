@@ -8,7 +8,7 @@
  */
 
 configuration SensorControlC {
-  provides interface SensorData;
+  provides interface SensorData[uint8_t type];
 }
 
 implementation {

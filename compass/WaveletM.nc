@@ -410,7 +410,7 @@ implementation {
     return SUCCESS;
   }
   
-  event void SensorData.readDone(float newVals[NUM_SENSORS]) {
+  event void SensorData.readDone(float *newVals) {
     uint8_t i;
     for (i = 0; i < WT_SENSORS; i++) {
       level[0].nb[0].value[i] = newVals[i];

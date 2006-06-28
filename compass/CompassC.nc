@@ -38,11 +38,14 @@ implementation {
 #ifdef BEEP
   BigPackM.Beep -> BeepC;
 #endif
+
+  /*** SensorControl: reads various sensor values ***/
+  WaveletM.SensorData -> SensorControlC.SensorData[unique("SensorData")];
+  StatsC.SensorData -> SensorControlC.SensorData[unique("SensorData")];
   
   /*** Wavelet: main wavelet application ***/
   Main.StdControl -> WaveletM;
   WaveletM.Leds -> LedsC;
-  WaveletM.SensorData -> SensorControlC;
 #ifdef BEEP
   WaveletM.Beep -> BeepC;
 #endif  

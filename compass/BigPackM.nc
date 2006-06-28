@@ -63,6 +63,8 @@ implementation {
   void repeatSend(msgData msg, uint16_t bms);
   void rebuildBlocks();
   result_t newRequest(uint8_t type);
+  void decomposeStruct();
+  void sendNextPack();
   
   /*** Outgoing ***/
   BigPackEnvelope env;
@@ -178,8 +180,8 @@ implementation {
    * this event is signaled triggering the application to assemble
    * the requested data.
    */
-  default event result_t BigPackServer.buildPack[uint8_t type]() {
-    return FAIL;
+  default event void BigPackServer.buildPack[uint8_t type]() {
+    call BigPackServer.packBuilt[type](FAIL);
   }
   
   /**
@@ -197,6 +199,24 @@ implementation {
     env.ptr = ptr;
     env.blockAddr = blockAddr[curType];
     return &env;
+  }
+  
+  /**
+   * Once the new pack is complete, the application calls this command
+   * to start transmission of the data.
+   */
+  command void BigPackServer.packBuilt[uint8_t type](result_t result) {
+    if (result == SUCCESS) {
+      // Break up the struct
+      decomposeStruct();
+      // Set curPackNum to -1 (to transmit header first)
+      curPackNum = -1;
+      // Start sending packs
+      sendNextPack();
+    } else {
+      freeEnv();
+      activeRequest = FALSE;
+    }
   }
   
   /*** Internal Helpers ***/
@@ -503,17 +523,8 @@ implementation {
         curType = h->requestType;
         activeRequest = TRUE;
         transState = BP_SENDING;
-        if (signal BigPackServer.buildPack[h->requestType]() == SUCCESS) {
-          // Break up the struct
-          decomposeStruct();
-          // Set curPackNum to -1 (to transmit header first)
-          curPackNum = -1;
-          // Start sending packs
-          sendNextPack();
-        } else {
-          freeEnv();
-          activeRequest = FALSE;
-        }
+        // Tell the application to create a new big data pack
+        signal BigPackServer.buildPack[h->requestType]();
       } else if (activeRequest && h->packTotal == numPacks && 
                  transState == BP_SENDING && h->requestType == curType) {
         // Received a BP header ACK

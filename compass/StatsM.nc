@@ -6,6 +6,7 @@
  */
  
 includes MessageData;
+includes Sensors;
 
 module StatsM {
   uses {
@@ -13,6 +14,7 @@ module StatsM {
     interface Message;
     interface BigPackClient as WaveletPack;
     interface BigPackServer as StatsPack;
+    interface SensorData;
   }
   provides {
     interface Stats;
@@ -37,6 +39,7 @@ implementation {
   bool wtAlloc;
 
   void waveletFree();
+  result_t populatePack();
   
   /*** Stats: reports sent by applications ***/
   command void Stats.file(StatsReport report) {
@@ -163,46 +166,71 @@ implementation {
     call WaveletPack.free();
   }
   
-  event result_t StatsPack.buildPack() {
+  event void StatsPack.buildPack() {
+    // Update voltage value
+    call SensorData.readSensors();
+  }
+  
+  /*** SensorData: reads current voltage ***/
+  
+  event void SensorData.readDone(float *newVals) {
+    data.voltage = newVals[VOLT];
+    call StatsPack.packBuilt(populatePack());
+  }
+  
+  /*** Internal Functions ***/
+  
+  result_t populatePack() {
     BigPackEnvelope *env;
     // Find the number of blocks and pointers needed
     uint8_t numBlks, numPtrs, l, p;
     StatsWT *w = &data.wavelet;
     uint8_t lvls = w->numLevels;
-    /* Blocks:
-     *   For each StatsWTL: one block for neighbor data, one block for level statics
-     *   For the MoteStats: one block for static data */
-    numBlks = lvls * 2 + 1;
-    /* Pointers:
-     *   For each StatsWTL: one pointer to neighbor data
-     *   For the MoteStats: one pointer to StatsWT */
-    numPtrs = lvls + 1;
-    env = call StatsPack.createEnvelope(numBlks, numPtrs);
-    if (env == NULL) return FAIL;
-    // StatsWTL
-    for (l = 0; l < lvls; l++) {
-      env->block[l].length = w->level[l].nbCount * sizeof(StatsWTNB);
-      env->blockAddr[l] = (int8_t *) w->level[l].nb;
-      env->block[l + lvls].length = sizeof(StatsWTL);
-      env->blockAddr[l + lvls] = (int8_t *) &w->level[l];
-      env->ptr[l].addrOfBlock = l;
-      env->ptr[l].destBlock = l + lvls;
-      env->ptr[l].destOffset = 1;
-      env->ptr[l].blockArray = FALSE;
-    }
-    p = l;
-    l += lvls;
-    // MoteStats
-    env->block[l].length = sizeof(MoteStats);
-    env->blockAddr[l] = (int8_t *) &data;
-    env->ptr[p].addrOfBlock = lvls;
-    env->ptr[p].destBlock = l;
+    if (lvls > 0) {
+      /* Blocks:
+       *   For each StatsWTL: one block for neighbor data, one block for level statics
+       *   For the MoteStats: one block for static data */
+      numBlks = lvls * 2 + 1;
+      /* Pointers:
+       *   For each StatsWTL: one pointer to neighbor data
+       *   For the MoteStats: one pointer to StatsWTL array */
+      numPtrs = lvls + 1;
+      env = call StatsPack.createEnvelope(numBlks, numPtrs);
+      if (env == NULL) return FAIL;
+      // StatsWTL
+      for (l = 0; l < lvls; l++) {
+        env->block[l].length = w->level[l].nbCount * sizeof(StatsWTNB);
+        env->blockAddr[l] = (int8_t *) w->level[l].nb;
+        env->block[l + lvls].length = sizeof(StatsWTL);
+        env->blockAddr[l + lvls] = (int8_t *) &w->level[l];
+        env->ptr[l].addrOfBlock = l;
+        env->ptr[l].destBlock = l + lvls;
+        env->ptr[l].destOffset = 1;
+        env->ptr[l].blockArray = FALSE;
+      }
+      p = l;
+      l += lvls;
+      // MoteStats
+      env->block[l].length = sizeof(MoteStats);
+      env->blockAddr[l] = (int8_t *) &data;
+      env->ptr[p].addrOfBlock = lvls;
+      env->ptr[p].destBlock = l;
 #ifdef PLATFORM_PC
-    env->ptr[p].destOffset = sizeof(MoteStats) - 4;
+      env->ptr[p].destOffset = sizeof(MoteStats) - 4;
 #else
-    env->ptr[p].destOffset = sizeof(MoteStats) - 2;
+      env->ptr[p].destOffset = sizeof(MoteStats) - 2;
 #endif
-    env->ptr[p].blockArray = TRUE;
+      env->ptr[p].blockArray = TRUE;
+    } else {
+      // Only need a single block for MoteStats
+      numBlks = 1;
+      numPtrs = 0;
+      env = call StatsPack.createEnvelope(numBlks, numPtrs);
+      if (env == NULL) return FAIL;
+      // MoteStats
+      env->block[0].length = sizeof(MoteStats);
+      env->blockAddr[0] = (int8_t *) &data;
+    }
     return SUCCESS;
   }
   
@@ -219,7 +247,9 @@ implementation {
   }
   
   /*** StdControl ***/
+  
   command result_t StdControl.init() {
+    // Clear alloc tracker
     wtAlloc = FALSE;
     // Initialize stats data
     data.pRcvd = 0; // Packets received (2)
@@ -234,6 +264,8 @@ implementation {
     data.mRcvd = 0; // Messages received (2)
     data.mSent = 0; // Messages sent (2)
     data.mRetriesSum = 0; // Sum of retries over all messages (2)
+    // Clear wavelet.numLevels in case we don't get any
+    data.wavelet.numLevels = 0;
     return SUCCESS;
   }
   
