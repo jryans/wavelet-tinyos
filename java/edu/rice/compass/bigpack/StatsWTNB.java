@@ -6,7 +6,7 @@
 
 package edu.rice.compass.bigpack;
 
-import java.util.Vector;
+import java.util.List;
 
 public class StatsWTNB extends BigPack {
 
@@ -16,7 +16,7 @@ public class StatsWTNB extends BigPack {
     /**
   	 * Create a new StatsWTNB using the given byte array as backing store.
   	 */
-  	public StatsWTNB(byte[] rawData, int blockNum, Vector nBlocks, Vector nPtrs, int cOffset) {
+  	public StatsWTNB(byte[] rawData, int blockNum, List nBlocks, List nPtrs, int cOffset) {
   		super(rawData, DEFAULT_MESSAGE_SIZE, blockNum, nBlocks, nPtrs, cOffset);
   	}
 

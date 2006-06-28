@@ -6,6 +6,7 @@
 
 package edu.rice.compass.bigpack;
 
+import java.util.List;
 import java.util.Vector;
 
 public class StatsWTL extends BigPack {
@@ -16,7 +17,7 @@ public class StatsWTL extends BigPack {
     /**
   	 * Create a new StatsWTL using the given byte array as backing store.
   	 */
-  	public StatsWTL(byte[] rawData, int blockNum, Vector nBlocks, Vector nPtrs) {
+  	public StatsWTL(byte[] rawData, int blockNum, List nBlocks, List nPtrs) {
   		super(rawData, DEFAULT_MESSAGE_SIZE, blockNum, nBlocks, nPtrs);
   	}
 
@@ -24,7 +25,7 @@ public class StatsWTL extends BigPack {
   		nb = new StatsWTNB[get_nbCount()];
   	}
   	
-  	protected void storeChildren(byte[] rawData, int offset, int childBlockNum[], Vector childPtr[]) {
+  	protected void storeChildren(byte[] rawData, int offset, int[] childBlockNum, List[] childPtr) {
   		if (offset == offset_nb()) {
   			for (int c = 0; c < get_nbCount(); c++)
   				nb[c] = new StatsWTNB(rawData, childBlockNum[c], blocks, childPtr[c], c);

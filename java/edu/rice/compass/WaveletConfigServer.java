@@ -23,6 +23,8 @@ public class WaveletConfigServer implements MessageListener {
 
 	private static int transState;
 
+	private static boolean debug;
+
 	/* Sensor Data */
 	private static MoteData mData;
 	private static long setLength;
@@ -35,6 +37,7 @@ public class WaveletConfigServer implements MessageListener {
 	public static void main(String[] args) throws Exception {
 		SimpleJSAP parser = new SimpleJSAP("WaveletConfigServer",
 				"Controls TinyOS motes running CompassC", new Parameter[] {
+						new Switch("debug", JSAP.NO_SHORTFLAG, "debug"),
 						new Switch("pack", JSAP.NO_SHORTFLAG, "pack"),
 						new Switch("prog", JSAP.NO_SHORTFLAG, "prog"),
 						new FlaggedOption("setlength", JSAP.LONG_PARSER, JSAP.NO_DEFAULT,
@@ -57,6 +60,8 @@ public class WaveletConfigServer implements MessageListener {
 			moteSend = new MoteSend(false);
 		}
 
+		debug = config.getBoolean("debug");
+
 		if (config.getBoolean("pack")) {
 			if (args[1].equals("b")) {
 				BroadcastPack tPack = new BroadcastPack();
@@ -72,7 +77,6 @@ public class WaveletConfigServer implements MessageListener {
 			}
 			System.exit(0);
 		} else if (config.getBoolean("prog")) {
-			// forceStartup();
 			setLength = config.getLong("setlength");
 			numSets = config.getInt("sets");
 			// Fixed path name for now
@@ -108,6 +112,18 @@ public class WaveletConfigServer implements MessageListener {
 			// Setup and start config pulse timer
 			pulseTimer.scheduleAtFixedRate(new ConfigPulse(mote.length), 200, 300);
 		} else if (config.getBoolean("stats")) {
+			// Fixed path name for now
+			String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletConfig.xml";
+			FileInputStream fs = new FileInputStream(path);
+			XMLDecoder obj = new XMLDecoder(fs);
+			// Read in the config data
+			wc = (WaveletConfig) obj.readObject();
+			obj.close();
+			// Setup mote data
+			mote = new WaveletMote[wc.mScale.length];
+			for (int i = 0; i < mote.length; i++)
+				mote[i] = new WaveletMote(i + 1, wc);
+			
 			int dest = config.getInt("dest");
 			UnicastPack req = new UnicastPack();
 			req.set_data_dest(dest);
@@ -187,7 +203,7 @@ public class WaveletConfigServer implements MessageListener {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-				} else {
+				} else if (transState == BigPack.BP_RECEIVING) {
 					theMote.unpacker = new Unpacker(pack);
 					System.out.println("Got BP header (0/"
 							+ theMote.unpacker.getNumPacks() + ") from mote " + id);
@@ -212,7 +228,7 @@ public class WaveletConfigServer implements MessageListener {
 					System.out.println("Config done for mote " + id);
 					attemptStart();
 				}
-			} else {
+			} else if (transState == BigPack.BP_RECEIVING) {
 				short curPack = pack.get_data_data_bpData_curPack();
 				if (theMote.unpacker.newData(pack)) {
 					System.out.println("Got BP data (" + (curPack + 1) + "/"
@@ -220,6 +236,7 @@ public class WaveletConfigServer implements MessageListener {
 					sendAck(pack);
 					if (!theMote.unpacker.morePacksExist(curPack)) {
 						theMote.extractData();
+						System.exit(0);
 					}
 				}
 			}
@@ -244,34 +261,6 @@ public class WaveletConfigServer implements MessageListener {
 				mote[id - 1].setRawDone(true);
 			}
 			break;
-		case Wavelet.MOTESTATS:
-			/* int rcvd = pack.get_data_data_stats_rcvd();
-			int sent = pack.get_data_data_stats_sent();
-			int acked = pack.get_data_data_stats_acked();
-			System.out.println("Stats for mote " + pack.get_data_src() + ":");
-			System.out.println("  Received:  " + rcvd);
-			System.out.println("  Avg. RSSI: "
-					+ (pack.get_data_data_stats_rssi() / rcvd - 45));
-			System.out.println("  Sent:      " + sent);
-			System.out.println("  ACKed:     " + acked + " (" + (acked * 100 / sent)
-					+ "%)");
-			for (int i = 0; i < pack.get_data_data_stats_numReps(); i++) {
-				System.out.println("  Report " + (i + 1) + ":");
-				System.out.println("    Count: "
-						+ pack.getElement_data_data_stats_reports_number(i));
-				System.out.print("    Type:  ");
-				switch (pack.getElement_data_data_stats_reports_type(i)) {
-				case Wavelet.WT_CACHE:
-					System.out.println("  Cache Hit");
-					System.out.println("    Level: "
-							+ pack.getElement_data_data_stats_reports_data_cache_level(i));
-					System.out.println("    Mote:  "
-							+ pack.getElement_data_data_stats_reports_data_cache_mote(i));
-					break;
-				}
-			}
-			System.exit(0);
-			break; */
 		}
 	}
 
@@ -378,6 +367,16 @@ public class WaveletConfigServer implements MessageListener {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static void debugPrint(String s) {
+		if (debug)
+			System.out.print(s);
+	}
+
+	public static void debugPrintln(String s) {
+		if (debug)
+			System.out.println(s);
 	}
 
 }

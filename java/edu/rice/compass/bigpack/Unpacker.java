@@ -42,9 +42,7 @@ public class Unpacker {
 
 	public BigPack unpack() {
 		if (type == BigPack.BP_STATS) {
-			BigPack pack = new MoteStats(stream);
-			pack.makeChildren();
-			return pack;
+			return new MoteStats(stream, numBlocks, numPtrs);
 		}
 		return null;
 	}

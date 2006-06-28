@@ -7,11 +7,7 @@ package edu.rice.compass;
 
 import java.util.*;
 
-import edu.rice.compass.bigpack.Packer;
-import edu.rice.compass.bigpack.Unpacker;
-import edu.rice.compass.bigpack.WaveletConf;
-import edu.rice.compass.bigpack.WaveletLevel;
-import edu.rice.compass.bigpack.WaveletNeighbor;
+import edu.rice.compass.bigpack.*;
 
 public class WaveletMote {
 
@@ -147,6 +143,32 @@ public class WaveletMote {
 		UnicastPack pack = packer.getData(packNum);
 		pack.set_data_dest(id);
 		return pack;
+	}
+	
+	public void extractData() {
+		MoteStats stats = (MoteStats) unpacker.unpack();
+		int rcvd = stats.get_rcvd();
+		int sent = stats.get_sent();
+		int acked = stats.get_acked();
+		System.out.println("Stats for mote " + id + ":");
+		System.out.println("  Received:  " + rcvd);
+		System.out.println("  Avg. RSSI: "
+				+ (stats.get_rssi() / rcvd - 45));
+		System.out.println("  Sent:      " + sent);
+		System.out.println("  ACKed:     " + acked + " (" + (acked * 100 / sent)
+				+ "%)");
+		System.out.println("  Wavelet Stats:");
+		StatsWTL level[] = stats.get_wavelet_level();
+		for (int l = 0; l < level.length; l++) {
+			System.out.println("    Wavelet Level " + (l + 1) + ":");
+			StatsWTNB nb[] = level[l].get_nb();
+			for (int n = 0; n < nb.length; n++) {
+				System.out.println("      Neighbor " + (n + 1) + ":");
+				System.out.println("        ID:         " + nb[n].get_id());
+				System.out.println("        Retries:    " + nb[n].get_retries());
+				System.out.println("        Cache Hits: " + nb[n].get_cacheHits());
+			}
+		}
 	}
 
 	public int getNumPacks() {

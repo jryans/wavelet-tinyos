@@ -6,12 +6,12 @@
 
 package edu.rice.compass.bigpack;
 
-import java.util.Vector;
+import java.util.List;
 
 public class MoteStats extends BigPack {
 
 	/** The default size of this message type in bytes. */
-	public static final int DEFAULT_MESSAGE_SIZE = 15;
+	public static final int DEFAULT_MESSAGE_SIZE = 13;
 
 	/**
 	 * Create a new MoteStats using the given byte array as backing store.
@@ -24,7 +24,7 @@ public class MoteStats extends BigPack {
 		wavelet_level = new StatsWTL[get_wavelet_numLevels()];
 	}
 	
-	protected void storeChildren(byte[] rawData, int offset, int childBlockNum[], Vector childPtr[]) {
+	protected void storeChildren(byte[] rawData, int offset, int[] childBlockNum, List[] childPtr) {
 		if (offset == offset_wavelet_level()) {
 			for (int c = 0; c < get_wavelet_numLevels(); c++)
 				wavelet_level[c] = new StatsWTL(rawData, childBlockNum[c], blocks, childPtr[c]);
