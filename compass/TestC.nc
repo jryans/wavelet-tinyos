@@ -3,6 +3,8 @@
  * @author Ryan Stinnett
  */
 
+includes BigPack;
+
 configuration TestC {}
 implementation {
   components Main, 
@@ -11,21 +13,26 @@ implementation {
              TimerC, 
              BigPackM,
              ConfigTestM,
-//             MoteCommandC,
+             StatsC,
+             MoteOptionsC,
 //             WaveletM, 
-             LedsC;
+//             LedsC;
 //             StateC, 
 //             SampleM, 
-//             SensorControlC;
+             SensorControlC;
 #ifdef BEEP
   components BeepC;
 #endif
 
+  /*** MoteOptions: applies mote-wide options ***/
+  ConfigTestM.MoteOptions -> MoteOptionsC;
+
   /*** ConfigTest: requests wavelet config on start ***/
   Main.StdControl -> ConfigTestM;
-  ConfigTestM.BigPack -> BigPackM;
-  ConfigTestM.Timer -> TimerC.Timer[unique("Timer")];
-             
+  
+  /*** Stats: sends packet and app stats when requested ***/
+  MoteOptionsC.Stats -> StatsC;
+            
   /*** Sample: tests sensor and messaging components ***/
   //Main.StdControl -> SampleM;
   //SampleM.Timer -> TimerC.Timer[unique("Timer")];
@@ -36,10 +43,16 @@ implementation {
   Main.StdControl -> DelugeC;
   
   /*** Network: provides broadcast and unicast I/O ***/
-  //MoteCommandC.Message -> NetworkC;
+  MoteOptionsC.Message -> NetworkC;
   //WaveletM.Message -> NetworkC;
   //WaveletM.Router -> NetworkC;
   BigPackM.Message -> NetworkC;
+  ConfigTestM.Message -> NetworkC;
+  StatsC.Message -> NetworkC;
+  
+  /*** SensorControl: reads various sensor values ***/
+  //WaveletM.SensorData -> SensorControlC.SensorData[unique("SensorData")];
+  StatsC.SensorData -> SensorControlC.SensorData[unique("SensorData")];
   
   /*** State: state machine library ***/
   //Main.StdControl -> StateC;
@@ -47,7 +60,9 @@ implementation {
   
   /*** BigPack: receives multi-packet data ***/
   Main.StdControl -> BigPackM;
-  //WaveletM.WaveletConfig -> BigPackM;
+  //WaveletM.BigPackClient -> BigPackM.BigPackClient[BP_WAVELETCONF];
+  StatsC.WaveletPack -> BigPackM.BigPackClient[BP_WAVELETCONF];
+  StatsC.StatsPack -> BigPackM.BigPackServer[BP_STATS];
 #ifdef BEEP
   BigPackM.Beep -> BeepC;
 #endif
@@ -59,6 +74,7 @@ implementation {
   
   /*** Timer: enforces time-based control ***/
   Main.StdControl -> TimerC;
+  ConfigTestM.Timer -> TimerC.Timer[unique("Timer")];
   BigPackM.MsgRepeat -> TimerC.Timer[unique("Timer")];
   //WaveletM.DataSet -> TimerC.Timer[unique("Timer")];
   //WaveletM.StateTimer -> TimerC.Timer[unique("Timer")];

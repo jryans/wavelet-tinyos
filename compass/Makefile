@@ -1,4 +1,4 @@
-COMPONENT = CompassC
+COMPONENT = TestC
 
 CFLAGS += -I%T/lib/Transceiver 
 CFLAGS += -I%T/lib/State

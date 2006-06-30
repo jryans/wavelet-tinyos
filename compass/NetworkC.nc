@@ -18,9 +18,6 @@ implementation {
 #ifdef BEEP
   components BeepC;
 #endif
-#ifdef PLATFORM_MICAZ
-  components CC2420RadioC;
-#endif
   
   /*** Services ***/
   Main.StdControl -> TransceiverC;
@@ -36,7 +33,6 @@ implementation {
   Message = BroadcastM;
   
   /*** Unicast ***/
-  Main.StdControl -> UnicastM;
   UnicastM.IO -> TransceiverC.Transceiver[AM_UNICASTPACK];
   UnicastM.Router -> RouterStaticM;
   UnicastM.Leds -> LedsC;
@@ -49,11 +45,4 @@ implementation {
   Main.StdControl -> RouterStaticM;
   RouterStaticM.IO -> TransceiverC.Transceiver[AM_ROUTER];
   Router = RouterStaticM;
-  
-#ifdef PLATFORM_MICAZ
-  /*** CC2420 ***/
-  UnicastM.TransControl -> CC2420RadioC.StdControl;
-  UnicastM.MacControl -> CC2420RadioC;
-  UnicastM.CC2420Control -> CC2420RadioC;
-#endif
 }

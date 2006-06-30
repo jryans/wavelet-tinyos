@@ -11,14 +11,8 @@ includes IOPack;
 module UnicastM {
   provides {
     interface Message;
-    interface StdControl;
   }
   uses {
-#ifdef PLATFORM_MICAZ
-    interface StdControl as TransControl;
-    interface CC2420Control;
-    interface MacControl;
-#endif
     interface Transceiver as IO;
     interface Router;
     interface Leds;
@@ -82,7 +76,11 @@ implementation {
     memcpy(pFwdPack,pRcvPack,len);
     //pFwdPack->hops++;
     pFwdPack->retriesLeft = retries - 1;
-    nextHop = call Router.getNextAddr(pFwdPack->data.dest);
+    if (pFwdPack->data.dest == TOS_UART_ADDR) {
+      nextHop = call Router.getNextAddr(0);
+    } else {
+      nextHop = call Router.getNextAddr(pFwdPack->data.dest);
+    }
     dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwding to %i, %i retries left...\n", 
         TOS_LOCAL_ADDRESS, pFwdPack->data.src, pFwdPack->data.dest, nextHop, retries);
     if (call IO.sendRadio(nextHop, len) == FAIL) {
@@ -93,18 +91,17 @@ implementation {
   }
   
   /**
-   * Delivers incoming radio messages.
+   * Delivers incoming radio and UART messages.
    */
   TOS_MsgPtr deliver(TOS_MsgPtr pMsg) {
     uPack *pPack =(uPack *)pMsg->data;
     if (pPack->data.dest == TOS_LOCAL_ADDRESS) { // This packet is for us
-      if (TOS_LOCAL_ADDRESS == 0) { // We are the UART bridge, forward to UART
-        fwdUart(pPack);
-      } else { // We are a normal mote, send data on to applications
-        dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, rcvd\n", TOS_LOCAL_ADDRESS,
-            pPack->data.src, pPack->data.dest);
-        signal Message.receive(pPack->data);
-      }
+      // Send data on to applications
+      dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, rcvd\n", TOS_LOCAL_ADDRESS,
+          pPack->data.src, pPack->data.dest);
+      signal Message.receive(pPack->data);
+    } else if (pPack->data.dest == TOS_UART_ADDR && TOS_LOCAL_ADDRESS == 0) {
+      fwdUart(pPack); // From normal motes to the sink
     } else { // This message is not for us, forward it on.
       fwdNextHop(pPack, RADIO_RETRIES);
     }
@@ -112,30 +109,6 @@ implementation {
   }
 
   /*** Commands and Events ***/
-
-  command result_t StdControl.init() {
-#ifdef PLATFORM_MICAZ
-    call TransControl.init();
-#endif
-    return SUCCESS;
-  }
-
-  command result_t StdControl.start() {
-#ifdef PLATFORM_MICAZ
-    call TransControl.start();
-    // TODO: Test effects of following setting from diff distances
-    //call CC2420Control.SetRFPower(31);
-    call MacControl.enableAck();
-#endif
-    return SUCCESS;
-  }
-
-  command result_t StdControl.stop() {
-#ifdef PLATFORM_MICAZ
-    call TransControl.stop();
-#endif
-    return SUCCESS;
-  }
   
   /**
    * Builds a unicast pack from an input message and sends it on its way.
@@ -149,7 +122,11 @@ implementation {
     if (call Router.getStatus() != RO_READY)
       return FAIL; // Router isn't ready, this should be checked before sending
     newPack.data = msg;
-    fwdNextHop(&newPack, RADIO_RETRIES); // Send the message
+    if (TOS_LOCAL_ADDRESS == 0 && msg.dest == TOS_UART_ADDR) {
+      fwdUart(&newPack); // From UART bridge to the sink
+    } else {
+      fwdNextHop(&newPack, RADIO_RETRIES); // Anything else goes on the radio
+    }
     return SUCCESS;
   }
   
@@ -210,7 +187,7 @@ implementation {
    *     event.
    */
   event TOS_MsgPtr IO.receiveRadio(TOS_MsgPtr m) {
-    return deliver(m);	
+    return deliver(m);
   }
   
   /**
@@ -219,12 +196,6 @@ implementation {
    *     event.
    */
   event TOS_MsgPtr IO.receiveUart(TOS_MsgPtr m) {
-    uPack *pPack = (uPack *)m->data;
-    if (pPack->data.dest == 0) {
-      if (pPack->data.data.moteCmd.cmd > 0 && pPack->data.data.moteCmd.cmd < 32)
-        call CC2420Control.SetRFPower(pPack->data.data.moteCmd.cmd);
-    }
-    fwdNextHop(pPack, RADIO_RETRIES); // Forward the message via the radio
-    return m;	
+    return deliver(m);	
   }
 }

@@ -46,7 +46,8 @@ implementation {
   result_t populatePack();
   void clearStats();
   
-  /*** Stats: reports sent by applications ***/
+  /*** Stats: reports sent by applications and erase support ***/
+  
   command void Stats.file(StatsReport report) {
     switch (report.type) {
     case WT_CACHE: {
@@ -54,6 +55,10 @@ implementation {
       data.wavelet.level[c->level].nb[c->index].cacheHits++;
       break; }
     }
+  }
+  
+  command void Stats.clear() {
+    clearStats();
   }
   
   /*** Snoop: pretends to be Transceiver so it can listen to packets ***/
@@ -137,8 +142,6 @@ implementation {
   }
   
   event void Message.receive(msgData msg) {
-    if (msg.type == MOTECOMMAND && msg.data.moteCmd.cmd == 0)
-      clearStats();
     if (checkMsg(msg)) {
       data.mRcvd++;
     }
@@ -291,7 +294,7 @@ implementation {
     case BIGPACKDATA: {
       return !statsBP;
       break; }
-    case MOTECOMMAND: {
+    case MOTEOPTIONS: {
       return FALSE;
       break; }
     }
