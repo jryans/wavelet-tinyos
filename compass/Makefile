@@ -7,7 +7,7 @@ CFLAGS += -I%T/lib/State
 CFLAGS += -DMAX_WT_NBS=6
 
 # For now, use twice the max number of neighbors
-CFLAGS += -DMAX_TOS_MSGS=12
+CFLAGS += -DMAX_TOS_MSGS=20
 
 # Adds (annoying) beeps to indicate various errors
 # CFLAGS += -DBEEP

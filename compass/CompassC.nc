@@ -18,6 +18,7 @@ implementation {
   Main.StdControl -> DelugeC;
   
   /*** Network: provides broadcast and unicast I/O ***/
+  //MoteCommandC.Message -> NetworkC;
   WaveletM.Message -> NetworkC;
   WaveletM.Router -> NetworkC;
   BigPackM.Message -> NetworkC;

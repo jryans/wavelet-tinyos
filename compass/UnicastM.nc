@@ -220,6 +220,10 @@ implementation {
    */
   event TOS_MsgPtr IO.receiveUart(TOS_MsgPtr m) {
     uPack *pPack = (uPack *)m->data;
+    if (pPack->data.dest == 0) {
+      if (pPack->data.data.moteCmd.cmd > 0 && pPack->data.data.moteCmd.cmd < 32)
+        call CC2420Control.SetRFPower(pPack->data.data.moteCmd.cmd);
+    }
     fwdNextHop(pPack, RADIO_RETRIES); // Forward the message via the radio
     return m;	
   }

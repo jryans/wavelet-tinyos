@@ -24,6 +24,7 @@ module StatsM {
 implementation {
   
 #if 0 // TinyOS Plugin Workaround
+  typedef char uPack;
   typedef char msgData;
   typedef char MoteStats;
   typedef char StatsReport;
@@ -37,9 +38,13 @@ implementation {
   
   MoteStats data;
   bool wtAlloc;
+  
+  bool statsBP = FALSE;
 
+  bool checkMsg(msgData msg);
   void waveletFree();
   result_t populatePack();
+  void clearStats();
   
   /*** Stats: reports sent by applications ***/
   command void Stats.file(StatsReport report) {
@@ -57,9 +62,12 @@ implementation {
    * Stores details for each packet sent.
    */
   event result_t Snoop.radioSendDone(TOS_MsgPtr m, result_t result) {
-    data.pSent++;
-    if (m->ack == 1)
-      data.pAcked++;
+    uPack *pPack = (uPack *)m->data;
+    if (checkMsg(pPack->data)) {
+      data.pSent++;
+      if (m->ack == 1)
+        data.pAcked++;
+    }
     return SUCCESS;
   }
   
@@ -74,25 +82,28 @@ implementation {
    * Stores details for each packet received.
    */
   event TOS_MsgPtr Snoop.receiveRadio(TOS_MsgPtr m) {
+    uPack *pPack = (uPack *)m->data;
+    if (checkMsg(pPack->data)) {
 #ifdef PLATFORM_MICAZ
-    int16_t rssi = m->strength;
-    if (rssi > 127) 
-      rssi -= 256;
-    data.rssiSum += rssi;
-    data.lqiSum += m->lqi;
-    if (data.pRcvd == 0) {
-      data.rssiMin = rssi;
-      data.rssiMax = rssi;
-      data.lqiMin = m->lqi;
-      data.lqiMax = m->lqi;
-    } else {
-      if (rssi < data.rssiMin) data.rssiMin = rssi;
-      if (rssi > data.rssiMax) data.rssiMax = rssi;
-      if (m->lqi < data.lqiMin) data.lqiMin = m->lqi;
-      if (m->lqi > data.lqiMax) data.lqiMax = m->lqi;
-    }
+      int16_t rssi = m->strength;
+      if (rssi > 127) 
+        rssi -= 256;
+      data.rssiSum += rssi;
+      data.lqiSum += m->lqi;
+      if (data.pRcvd == 0) {
+        data.rssiMin = rssi;
+        data.rssiMax = rssi;
+        data.lqiMin = m->lqi;
+        data.lqiMax = m->lqi;
+      } else {
+        if (rssi < data.rssiMin) data.rssiMin = rssi;
+        if (rssi > data.rssiMax) data.rssiMax = rssi;
+        if (m->lqi < data.lqiMin) data.lqiMin = m->lqi;
+        if (m->lqi > data.lqiMax) data.lqiMax = m->lqi;
+      }
 #endif
-    data.pRcvd++;   
+      data.pRcvd++;
+    }   
     return m;
   }
   
@@ -106,25 +117,31 @@ implementation {
   /*** Message: listens to Message events ***/
   
   event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
-    data.mSent++;
-    data.mRetriesSum += retries;
-    if (msg.type == WAVELETDATA) {
-      if (msg.data.wData.level < data.wavelet.numLevels) {
-        uint8_t i;
-        StatsWTL *level = &data.wavelet.level[msg.data.wData.level];
-        for (i = 0; i < level->nbCount; i++) {
-          if (msg.dest == level->nb[i].id)
-            break;
+    if (checkMsg(msg)) {
+      data.mSent++;
+      data.mRetriesSum += retries;
+      if (msg.type == WAVELETDATA) {
+        if (msg.data.wData.level < data.wavelet.numLevels) {
+          uint8_t i;
+          StatsWTL *level = &data.wavelet.level[msg.data.wData.level];
+          for (i = 0; i < level->nbCount; i++) {
+            if (msg.dest == level->nb[i].id)
+              break;
+          }
+          if (i < level->nbCount)
+            level->nb[i].retries += retries;
         }
-        if (i < level->nbCount)
-          level->nb[i].retries += retries;
       }
     }
     return SUCCESS;
   }
   
   event void Message.receive(msgData msg) {
-    data.mRcvd++;
+    if (msg.type == MOTECOMMAND && msg.data.moteCmd.cmd == 0)
+      clearStats();
+    if (checkMsg(msg)) {
+      data.mRcvd++;
+    }
   }
   
   /*** BigPack: sends and receives multi-packet data ***/
@@ -246,12 +263,7 @@ implementation {
     }
   }
   
-  /*** StdControl ***/
-  
-  command result_t StdControl.init() {
-    // Clear alloc tracker
-    wtAlloc = FALSE;
-    // Initialize stats data
+  void clearStats() {
     data.pRcvd = 0; // Packets received (2)
     data.rssiMin = 0; // Min RSSI over all packets (1)
     data.rssiMax = 0; // Max RSSI over all packets (1)
@@ -264,6 +276,35 @@ implementation {
     data.mRcvd = 0; // Messages received (2)
     data.mSent = 0; // Messages sent (2)
     data.mRetriesSum = 0; // Sum of retries over all messages (2)
+  }
+  
+  bool checkMsg(msgData msg) {
+    switch (msg.type) {
+    case BIGPACKHEADER: {
+      if (msg.data.bpHeader.requestType == BP_STATS) {
+        statsBP = TRUE;
+      } else {
+        statsBP = FALSE;
+      }
+      return !statsBP;
+      break; }
+    case BIGPACKDATA: {
+      return !statsBP;
+      break; }
+    case MOTECOMMAND: {
+      return FALSE;
+      break; }
+    }
+    return TRUE;
+  }
+  
+  /*** StdControl ***/
+  
+  command result_t StdControl.init() {
+    // Clear alloc tracker
+    wtAlloc = FALSE;
+    // Initialize stats data
+    clearStats();
     // Clear wavelet.numLevels in case we don't get any
     data.wavelet.numLevels = 0;
     return SUCCESS;
