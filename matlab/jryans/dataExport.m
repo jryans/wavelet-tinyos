@@ -4,10 +4,11 @@ function [scales,predneighbs,predfilts,upneighbs,upfilts] = dataExport(coords)
 import edu.rice.compass.*
 [scales,predneighbs,predfilts,upneighbs,upfilts]=moterCoeffs(coords);
 % scale reversal
-biggest = (max(scales) + 1);
-scales = (scales - biggest) * -1;
-zeroels = find(scales == biggest);
+scalesr = scales;
+biggest = (max(scalesr) + 1);
+scalesr = (scalesr - biggest) * -1;
+zeroels = find(scalesr == biggest);
 for i=1:length(zeroels)
-    scales(zeroels(i)) = 0;
+    scalesr(zeroels(i)) = 0;
 end
-WaveletConfigExport(scales, predneighbs, predfilts, upfilts);
+WaveletConfigExport(scalesr, predneighbs, predfilts, upfilts);
