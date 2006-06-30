@@ -7,15 +7,17 @@ package edu.rice.compass;
 import java.io.*;
 import com.thoughtworks.xstream.XStream;
 
-public class WaveletConfigExport {
+public class WaveletMatlab {
 
-	private XStream xs = new XStream();
+	private static XStream xs = new XStream();
+	
+	private WaveletMatlab() {}
 
 	/**
 	 * Stores the parameters in a WaveletConfig and writes that out to an XML
 	 * file.
 	 */
-	public WaveletConfigExport(double[] scales, Object[] predNB,
+	public static void saveConfig(double[] scales, Object[] predNB,
 			Object[] predCoeff, Object[] updCoeff) {
 		WaveletConfig conf = new WaveletConfig(scales, predNB, predCoeff, updCoeff);
 		// Fixed path name for now
@@ -29,11 +31,7 @@ public class WaveletConfigExport {
 		}
 	}
 
-	public WaveletConfigExport() {
-
-	}
-
-	public float[][][] loadData() {
+	public static float[][][] loadData() {
 		// Fixed path name for now
 		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletData.xml";
 		MoteData mData = new MoteData();

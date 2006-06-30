@@ -137,10 +137,10 @@ public abstract class BigPack extends Message {
 		try {
 			// The pack's block is at blockNum, which helps locate its data.
 			BigPackBlock blk = (BigPackBlock) blocks.get(thisBlk);
-			if (blk.get_length() != data_length)
+			if ((cOffset + 1) * data_length > blk.get_length())
 				// throw new Exception("Static data block's length doesn't match.");
-				System.out.println("Static data block's length is " + blk.get_length()
-						+ ", but this class's length should be " + data_length);
+				System.out.println("Static data block does not seem to be large " +
+						"enough to hold data for this class.");
 			data = byteRange(rawData, blk.get_start() + cOffset * data_length,
 					data_length);
 		} catch (Exception e) {

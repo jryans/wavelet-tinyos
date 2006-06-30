@@ -16,7 +16,7 @@ public class WaveletConfigServer implements MessageListener {
 
 	private static WaveletConfig wc;
 	private static WaveletMote mote[];
-	private static MoteIF moteListen = new MoteIF();
+	private static MoteIF moteListen;
 	private static MoteSend moteSend;
 	static JSAPResult config;
 	private static XStream xs = new XStream();;
@@ -43,6 +43,7 @@ public class WaveletConfigServer implements MessageListener {
 						new Switch("pack", JSAP.NO_SHORTFLAG, "pack"),
 						new Switch("prog", JSAP.NO_SHORTFLAG, "prog"),
 						new Switch("ping", JSAP.NO_SHORTFLAG, "ping"),
+						new Switch("power", JSAP.NO_SHORTFLAG, "power"),
 						new Switch("load", JSAP.NO_SHORTFLAG, "load"),
 						new FlaggedOption("file", JSAP.STRING_PARSER, "",
 								JSAP.NOT_REQUIRED, 'f', "file"),
@@ -60,10 +61,13 @@ public class WaveletConfigServer implements MessageListener {
 		if (parser.messagePrinted())
 			System.exit(1);
 
-		if (config.getBoolean("clear")) {
-			moteSend = new MoteSend(true);
-		} else {
-			moteSend = new MoteSend(false);
+		if (!config.getBoolean("load")) {
+			moteListen = new MoteIF();
+			if (config.getBoolean("clear")) {
+				moteSend = new MoteSend(true);
+			} else {
+				moteSend = new MoteSend(false);
+			}
 		}
 
 		debug = config.getBoolean("debug");
@@ -138,11 +142,14 @@ public class WaveletConfigServer implements MessageListener {
 			moteSend.sendPack(req);
 			System.out.println("Sent stats request to mote " + dest);
 		} else if (config.getBoolean("ping")) {
-			pulseTimer.scheduleAtFixedRate(new Ping(config.getInt("sets")), 200, 100);
+			pulseTimer.scheduleAtFixedRate(new Ping(config.getInt("sets")), 100, 50);
+		} else if (config.getBoolean("power")) {
+			sendRFPower(config.getInt("dest"), config.getInt("sets"));
+			System.exit(0);
 		} else if (config.getBoolean("load")) {
 			if (!config.getString("file").equals("")) {
 				try {
-					FileInputStream fs = new FileInputStream(config.getString("out"));
+					FileInputStream fs = new FileInputStream(config.getString("file"));
 					MoteStats stats = (MoteStats) xs.fromXML(fs);
 					printStats(stats);
 					fs.close();
@@ -409,8 +416,20 @@ public class WaveletConfigServer implements MessageListener {
 	public static void sendPing(int mote) {
 		UnicastPack pack = new UnicastPack();
 		pack.set_data_dest(mote);
-		pack.set_data_type(Wavelet.MOTECOMMAND);
+		pack.set_data_type((short) 20);
 		pack.set_data_data_moteCmd_cmd((short) 0);
+		try {
+			moteSend.sendPack(pack);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void sendRFPower(int mote, int power) {
+		UnicastPack pack = new UnicastPack();
+		pack.set_data_dest(mote);
+		pack.set_data_type(Wavelet.MOTECOMMAND);
+		pack.set_data_data_moteCmd_cmd((short) power);
 		try {
 			moteSend.sendPack(pack);
 		} catch (IOException e) {
