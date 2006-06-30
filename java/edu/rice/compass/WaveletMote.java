@@ -15,7 +15,7 @@ public class WaveletMote {
 	Unpacker unpacker;
 
 	private int id; // ID number of the mote represented
-	short state[]; // Mote's state at each scale level that it is used in
+	private short state[]; // Mote's state at each scale level that it is used in
 	// This could easily be less than total number of levels
 
 	private boolean configDone;
@@ -24,6 +24,11 @@ public class WaveletMote {
 	private boolean rawDone;
 	private boolean resultDone;
 
+	public WaveletMote(int id) {
+		this.id = id;
+		configDone = true;
+	}
+	
 	public WaveletMote(int id, WaveletConfig wc) {
 		this.id = id;
 		configDone = false;
@@ -150,9 +155,60 @@ public class WaveletMote {
 		MoteStats stats = (MoteStats) unpacker.unpack();
 		return stats;
 	}
+	
+	public MoteOptions makeOptions() {
+		return new MoteOptions();
+	}
+
+	/**
+	 * Controls various mote-wide options
+	 */
+	class MoteOptions {
+		/* Bitmasks */
+		private static final short MO_DIAGMODE = 0x01;
+		private static final short MO_RFPOWER = 0x02;
+		private static final short MO_CLEARSTATS = 0x04;
+		private static final short MO_RFACK = 0x08;
+
+		// TODO: Shouldn't be public!
+		public UnicastPack pack = new UnicastPack();
+
+		private MoteOptions() {
+			pack.set_data_dest(id);
+			pack.set_data_type(Wavelet.MOTEOPTIONS);
+		}
+
+		public void diagMode(boolean diag) {
+			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_DIAGMODE));
+			pack.set_data_data_opt_diagMode(Wavelet.b2Cs(diag));
+		}
+
+		public void rfPower(int power) {
+			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RFPOWER));
+			pack.set_data_data_opt_rfPower((short) power);
+		}
+
+		public void clearStats() {
+			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_CLEARSTATS));
+		}
+
+		public void rfAck(boolean ack) {
+			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RFACK));
+			pack.set_data_data_opt_diagMode(Wavelet.b2Cs(ack));
+		}
+
+		// TODO: Will be used in the future!
+		public void send() {
+
+		}
+	}
 
 	public int getNumPacks() {
 		return packer.getNumPacks();
+	}
+	
+	public int getNumScales() {
+		return state.length;
 	}
 
 	public boolean isRawDone() {

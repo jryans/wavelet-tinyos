@@ -23,7 +23,7 @@ public class Wavelet {
 	static final short S_RAW = 13;
 
 	/* Message Types */
-	static final short MOTECOMMAND = 0;
+	static final short MOTEOPTIONS = 0;
 	static final short WAVELETDATA = 1;
 	static final short BIGPACKHEADER = 2;
 	static final short BIGPACKDATA = 3;
@@ -38,8 +38,16 @@ public class Wavelet {
 	/* Offsets */
 	static final short RAW_OFFSET = 0;
 	static final short WT_OFFSET = 1;
-
-	/* Stats Report Types */
-	static final short WT_CACHE = 0;
+	
+	/* C Boolean */
+	private static final short C_FALSE = 0;
+	private static final short C_TRUE = 1;
+	
+	/* C Type Helpers */
+	
+	public static short b2Cs(boolean b) {
+		if (b) return C_TRUE;
+		return C_FALSE;
+	}
 
 }

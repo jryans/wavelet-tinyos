@@ -43,6 +43,7 @@ public class MoteSend {
 	static Properties p = new Properties();
 
 	static final int TOS_BCAST_ADDR = 0xffff;
+	static final int TOS_UART_ADDR = 0x007e;
 
 	short sequenceNo = 0;
 
@@ -125,7 +126,7 @@ public class MoteSend {
 
 	public void sendPack(BroadcastPack pack) throws IOException {
 		debugMsg(pack);
-		pack.set_data_src(0);
+		pack.set_data_src(TOS_UART_ADDR);
 		pack.set_data_dest(TOS_BCAST_ADDR);
 		pack.set_seqno(sequenceNo);
 		try {
@@ -138,7 +139,7 @@ public class MoteSend {
 
 	public void sendPack(UnicastPack pack) throws IOException {
 		debugMsg(pack);
-		pack.set_data_src(0);
+		pack.set_data_src(TOS_UART_ADDR);
 		moteCom.send(0, pack);
 	}
 

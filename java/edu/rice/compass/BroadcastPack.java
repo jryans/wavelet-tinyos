@@ -99,7 +99,16 @@ public class BroadcastPack extends net.tinyos.message.Message {
         s += "  [data.type=0x"+Long.toHexString(get_data_type())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.moteCmd.cmd=0x"+Long.toHexString(get_data_data_moteCmd_cmd())+"]\n";
+        s += "  [data.data.opt.mask=0x"+Long.toHexString(get_data_data_opt_mask())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.opt.diagMode=0x"+Long.toHexString(get_data_data_opt_diagMode())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.opt.rfPower=0x"+Long.toHexString(get_data_data_opt_rfPower())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.opt.rfAck=0x"+Long.toHexString(get_data_data_opt_rfAck())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [data.data.wData.dataSet=0x"+Long.toHexString(get_data_data_wData_dataSet())+"]\n";
@@ -406,65 +415,254 @@ public class BroadcastPack extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.moteCmd.cmd
+    // Accessor methods for field: data.data.opt.mask
     //   Field type: short
     //   Offset (bits): 56
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.moteCmd.cmd' is signed (false).
+     * Return whether the field 'data.data.opt.mask' is signed (false).
      */
-    public static boolean isSigned_data_data_moteCmd_cmd() {
+    public static boolean isSigned_data_data_opt_mask() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.moteCmd.cmd' is an array (false).
+     * Return whether the field 'data.data.opt.mask' is an array (false).
      */
-    public static boolean isArray_data_data_moteCmd_cmd() {
+    public static boolean isArray_data_data_opt_mask() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.moteCmd.cmd'
+     * Return the offset (in bytes) of the field 'data.data.opt.mask'
      */
-    public static int offset_data_data_moteCmd_cmd() {
+    public static int offset_data_data_opt_mask() {
         return (56 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.moteCmd.cmd'
+     * Return the offset (in bits) of the field 'data.data.opt.mask'
      */
-    public static int offsetBits_data_data_moteCmd_cmd() {
+    public static int offsetBits_data_data_opt_mask() {
         return 56;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.moteCmd.cmd'
+     * Return the value (as a short) of the field 'data.data.opt.mask'
      */
-    public short get_data_data_moteCmd_cmd() {
-        return (short)getUIntElement(offsetBits_data_data_moteCmd_cmd(), 8);
+    public short get_data_data_opt_mask() {
+        return (short)getUIntElement(offsetBits_data_data_opt_mask(), 8);
     }
 
     /**
-     * Set the value of the field 'data.data.moteCmd.cmd'
+     * Set the value of the field 'data.data.opt.mask'
      */
-    public void set_data_data_moteCmd_cmd(short value) {
-        setUIntElement(offsetBits_data_data_moteCmd_cmd(), 8, value);
+    public void set_data_data_opt_mask(short value) {
+        setUIntElement(offsetBits_data_data_opt_mask(), 8, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.moteCmd.cmd'
+     * Return the size, in bytes, of the field 'data.data.opt.mask'
      */
-    public static int size_data_data_moteCmd_cmd() {
+    public static int size_data_data_opt_mask() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.moteCmd.cmd'
+     * Return the size, in bits, of the field 'data.data.opt.mask'
      */
-    public static int sizeBits_data_data_moteCmd_cmd() {
+    public static int sizeBits_data_data_opt_mask() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.opt.diagMode
+    //   Field type: short
+    //   Offset (bits): 64
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.opt.diagMode' is signed (false).
+     */
+    public static boolean isSigned_data_data_opt_diagMode() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.opt.diagMode' is an array (false).
+     */
+    public static boolean isArray_data_data_opt_diagMode() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.opt.diagMode'
+     */
+    public static int offset_data_data_opt_diagMode() {
+        return (64 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.opt.diagMode'
+     */
+    public static int offsetBits_data_data_opt_diagMode() {
+        return 64;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.opt.diagMode'
+     */
+    public short get_data_data_opt_diagMode() {
+        return (short)getUIntElement(offsetBits_data_data_opt_diagMode(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.opt.diagMode'
+     */
+    public void set_data_data_opt_diagMode(short value) {
+        setUIntElement(offsetBits_data_data_opt_diagMode(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.opt.diagMode'
+     */
+    public static int size_data_data_opt_diagMode() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.opt.diagMode'
+     */
+    public static int sizeBits_data_data_opt_diagMode() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.opt.rfPower
+    //   Field type: short
+    //   Offset (bits): 72
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.opt.rfPower' is signed (false).
+     */
+    public static boolean isSigned_data_data_opt_rfPower() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.opt.rfPower' is an array (false).
+     */
+    public static boolean isArray_data_data_opt_rfPower() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.opt.rfPower'
+     */
+    public static int offset_data_data_opt_rfPower() {
+        return (72 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.opt.rfPower'
+     */
+    public static int offsetBits_data_data_opt_rfPower() {
+        return 72;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.opt.rfPower'
+     */
+    public short get_data_data_opt_rfPower() {
+        return (short)getUIntElement(offsetBits_data_data_opt_rfPower(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.opt.rfPower'
+     */
+    public void set_data_data_opt_rfPower(short value) {
+        setUIntElement(offsetBits_data_data_opt_rfPower(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.opt.rfPower'
+     */
+    public static int size_data_data_opt_rfPower() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.opt.rfPower'
+     */
+    public static int sizeBits_data_data_opt_rfPower() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.opt.rfAck
+    //   Field type: short
+    //   Offset (bits): 80
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.opt.rfAck' is signed (false).
+     */
+    public static boolean isSigned_data_data_opt_rfAck() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.opt.rfAck' is an array (false).
+     */
+    public static boolean isArray_data_data_opt_rfAck() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.opt.rfAck'
+     */
+    public static int offset_data_data_opt_rfAck() {
+        return (80 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.opt.rfAck'
+     */
+    public static int offsetBits_data_data_opt_rfAck() {
+        return 80;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.opt.rfAck'
+     */
+    public short get_data_data_opt_rfAck() {
+        return (short)getUIntElement(offsetBits_data_data_opt_rfAck(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.opt.rfAck'
+     */
+    public void set_data_data_opt_rfAck(short value) {
+        setUIntElement(offsetBits_data_data_opt_rfAck(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.opt.rfAck'
+     */
+    public static int size_data_data_opt_rfAck() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.opt.rfAck'
+     */
+    public static int sizeBits_data_data_opt_rfAck() {
         return 8;
     }
 

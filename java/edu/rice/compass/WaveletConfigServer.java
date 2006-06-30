@@ -14,7 +14,7 @@ import edu.rice.compass.bigpack.*;
 
 public class WaveletConfigServer implements MessageListener {
 
-	private static WaveletConfig wc;
+	// private static WaveletConfig wc;
 	private static WaveletMote mote[];
 	private static MoteIF moteListen;
 	private static MoteSend moteSend;
@@ -39,11 +39,15 @@ public class WaveletConfigServer implements MessageListener {
 	public static void main(String[] args) throws Exception {
 		SimpleJSAP parser = new SimpleJSAP("WaveletConfigServer",
 				"Controls TinyOS motes running CompassC", new Parameter[] {
+						new FlaggedOption("diag", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "diag"),
 						new Switch("debug", JSAP.NO_SHORTFLAG, "debug"),
 						new Switch("pack", JSAP.NO_SHORTFLAG, "pack"),
 						new Switch("prog", JSAP.NO_SHORTFLAG, "prog"),
 						new Switch("ping", JSAP.NO_SHORTFLAG, "ping"),
-						new Switch("power", JSAP.NO_SHORTFLAG, "power"),
+						new FlaggedOption("power", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT, 
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "power"),
+						new Switch("opt", 'o', "options"),
 						new Switch("load", JSAP.NO_SHORTFLAG, "load"),
 						new FlaggedOption("file", JSAP.STRING_PARSER, "",
 								JSAP.NOT_REQUIRED, 'f', "file"),
@@ -61,6 +65,9 @@ public class WaveletConfigServer implements MessageListener {
 		if (parser.messagePrinted())
 			System.exit(1);
 
+		debug = config.getBoolean("debug");
+
+		// Setup mote communications
 		if (!config.getBoolean("load")) {
 			moteListen = new MoteIF();
 			if (config.getBoolean("clear")) {
@@ -70,48 +77,40 @@ public class WaveletConfigServer implements MessageListener {
 			}
 		}
 
-		debug = config.getBoolean("debug");
-
-		if (config.getBoolean("pack")) {
-			if (args[1].equals("b")) {
-				BroadcastPack tPack = new BroadcastPack();
-				tPack.set_data_type(Wavelet.MOTECOMMAND);
-				tPack.set_data_data_moteCmd_cmd((short) Integer.parseInt(args[2]));
-				moteSend.sendPack(tPack);
-			} else if (args[1].equals("u")) {
-				UnicastPack tPack = new UnicastPack();
-				tPack.set_data_dest((short) Integer.parseInt(args[2]));
-				tPack.set_data_type(Wavelet.MOTECOMMAND);
-				tPack.set_data_data_moteCmd_cmd((short) Integer.parseInt(args[3]));
-				moteSend.sendPack(tPack);
-			}
-			System.exit(0);
-		} else if (config.getBoolean("prog")) {
-			setLength = config.getLong("setlength");
-			numSets = config.getInt("sets");
+		// Load wavelet config if needed
+		if (config.getBoolean("prog") || config.getBoolean("stats")) {
 			// Fixed path name for now
 			String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletConfig.xml";
 			FileInputStream fs = new FileInputStream(path);
 			// Read in the config data
-			wc = (WaveletConfig) xs.fromXML(fs);
+			WaveletConfig wc = (WaveletConfig) xs.fromXML(fs);
 			fs.close();
-			// Check for valid set length
-			int maxScale = 0;
-			for (int i = 0; i < wc.mScale.length; i++)
-				if (wc.mScale[i] > maxScale)
-					maxScale = (int) wc.mScale[i];
-			long minSetLen = 6000 + 4000 * (maxScale - 1);
-			if (setLength < minSetLen && !config.getBoolean("force")) {
-				System.out
-						.println("Set length is smaller than "
-								+ minSetLen
-								+ ", the minimum time required for the motes to process this data set.");
-				System.out.println("Run again with --force if you wish to proceed.");
-			}
 			// Setup mote data
 			mote = new WaveletMote[wc.mScale.length];
 			for (int i = 0; i < mote.length; i++)
 				mote[i] = new WaveletMote(i + 1, wc);
+		} else {
+			// Setup empty motes
+			mote = new WaveletMote[256];
+			for (int i = 0; i < mote.length; i++)
+				mote[i] = new WaveletMote(i + 1);
+		}
+
+		if (config.getBoolean("prog")) {
+			setLength = config.getLong("setlength");
+			numSets = config.getInt("sets");
+			// Check for valid set length
+			int maxScale = 0;
+			for (int i = 0; i < mote.length; i++)
+				if (mote[i].getNumScales() > maxScale)
+					maxScale = mote[i].getNumScales();
+			long minSetLen = 6000 + 4000 * (maxScale - 1);
+			if (setLength < minSetLen && !config.getBoolean("force")) {
+				System.out.println("Set length is smaller than "
+						+ minSetLen
+						+ ", the minimum time required for the motes to process this data set.");
+				System.out.println("Run again with --force if you wish to proceed.");
+			}
 			// Init data collection
 			curSet = 0;
 			mData = new MoteData(numSets, Wavelet.WT_SENSORS, mote.length);
@@ -121,16 +120,6 @@ public class WaveletConfigServer implements MessageListener {
 			// Setup and start config pulse timer
 			pulseTimer.scheduleAtFixedRate(new ConfigPulse(mote.length), 200, 300);
 		} else if (config.getBoolean("stats")) {
-			// Fixed path name for now
-			String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletConfig.xml";
-			FileInputStream fs = new FileInputStream(path);
-			// Read in the config data
-			wc = (WaveletConfig) xs.fromXML(fs);
-			fs.close();
-			// Setup mote data
-			mote = new WaveletMote[wc.mScale.length];
-			for (int i = 0; i < mote.length; i++)
-				mote[i] = new WaveletMote(i + 1, wc);
 			int dest = config.getInt("dest");
 			UnicastPack req = new UnicastPack();
 			req.set_data_dest(dest);
@@ -143,8 +132,19 @@ public class WaveletConfigServer implements MessageListener {
 			System.out.println("Sent stats request to mote " + dest);
 		} else if (config.getBoolean("ping")) {
 			pulseTimer.scheduleAtFixedRate(new Ping(config.getInt("sets")), 100, 50);
-		} else if (config.getBoolean("power")) {
-			sendRFPower(config.getInt("dest"), config.getInt("sets"));
+		} else if (config.getBoolean("opt")) {
+			WaveletMote.MoteOptions opt = mote[config.getInt("dest") - 1].makeOptions();
+			if (config.contains("power")) 
+				opt.rfPower(config.getInt("power"));
+			if (config.getBoolean("clear"))
+				opt.clearStats();
+			if (config.contains("diag"))
+				opt.diagMode(config.getBoolean("diag"));
+			try {
+				moteSend.sendPack(opt.pack);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			System.exit(0);
 		} else if (config.getBoolean("load")) {
 			if (!config.getString("file").equals("")) {
@@ -200,8 +200,6 @@ public class WaveletConfigServer implements MessageListener {
 	public void messageReceived(int to, Message m) {
 		UnicastPack pack = (UnicastPack) m;
 		int id = pack.get_data_src();
-		if (pack.get_data_dest() != 0)
-			return; // This would be quite strange
 		WaveletMote theMote = mote[id - 1];
 		switch (pack.get_data_type()) {
 		case Wavelet.BIGPACKHEADER:
@@ -264,8 +262,8 @@ public class WaveletConfigServer implements MessageListener {
 						// Setup output file
 						if (!config.getString("file").equals("")) {
 							try {
-								FileOutputStream fs = new FileOutputStream(config
-										.getString("file"));
+								FileOutputStream fs = new FileOutputStream(
+										config.getString("file"));
 								xs.toXML(stats, fs);
 								fs.close();
 							} catch (Exception e) {
@@ -282,17 +280,13 @@ public class WaveletConfigServer implements MessageListener {
 			setCheck(pack.get_data_data_wData_dataSet() - 1);
 			// Store mote data
 			if (pack.get_data_data_wData_state() == Wavelet.S_DONE) {
-				mData.value[curSet][Wavelet.TEMP * 2 + Wavelet.WT_OFFSET][id - 1] = pack
-						.getElement_data_data_wData_value(Wavelet.TEMP);
-				mData.value[curSet][Wavelet.LIGHT * 2 + Wavelet.WT_OFFSET][id - 1] = pack
-						.getElement_data_data_wData_value(Wavelet.LIGHT);
+				mData.value[curSet][Wavelet.TEMP * 2 + Wavelet.WT_OFFSET][id - 1] = pack.getElement_data_data_wData_value(Wavelet.TEMP);
+				mData.value[curSet][Wavelet.LIGHT * 2 + Wavelet.WT_OFFSET][id - 1] = pack.getElement_data_data_wData_value(Wavelet.LIGHT);
 				System.out.println("Got wavelet data from mote " + id);
 				mote[id - 1].setResultDone(true);
 			} else if (pack.get_data_data_wData_state() == Wavelet.S_RAW) {
-				mData.value[curSet][Wavelet.TEMP * 2 + Wavelet.RAW_OFFSET][id - 1] = pack
-						.getElement_data_data_wData_value(Wavelet.TEMP);
-				mData.value[curSet][Wavelet.LIGHT * 2 + Wavelet.RAW_OFFSET][id - 1] = pack
-						.getElement_data_data_wData_value(Wavelet.LIGHT);
+				mData.value[curSet][Wavelet.TEMP * 2 + Wavelet.RAW_OFFSET][id - 1] = pack.getElement_data_data_wData_value(Wavelet.TEMP);
+				mData.value[curSet][Wavelet.LIGHT * 2 + Wavelet.RAW_OFFSET][id - 1] = pack.getElement_data_data_wData_value(Wavelet.LIGHT);
 				System.out.println("Got raw data from mote " + id);
 				mote[id - 1].setRawDone(true);
 			}
@@ -417,19 +411,6 @@ public class WaveletConfigServer implements MessageListener {
 		UnicastPack pack = new UnicastPack();
 		pack.set_data_dest(mote);
 		pack.set_data_type((short) 20);
-		pack.set_data_data_moteCmd_cmd((short) 0);
-		try {
-			moteSend.sendPack(pack);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static void sendRFPower(int mote, int power) {
-		UnicastPack pack = new UnicastPack();
-		pack.set_data_dest(mote);
-		pack.set_data_type(Wavelet.MOTECOMMAND);
-		pack.set_data_data_moteCmd_cmd((short) power);
 		try {
 			moteSend.sendPack(pack);
 		} catch (IOException e) {
@@ -443,13 +424,13 @@ public class WaveletConfigServer implements MessageListener {
 		System.out.println("  *Unicast* Packets:");
 		System.out.println("    Received: " + stats.get_pRcvd());
 		if (stats.get_pRcvd() > 0) {
+			System.out.println("      Min. RSSI: " + (stats.get_rssiMin() - 45));
 			System.out.println("      Avg. RSSI: "
 					+ ((stats.get_rssiSum() / stats.get_pRcvd()) - 45));
-			System.out.println("      Min. RSSI: " + (stats.get_rssiMin() - 45));
 			System.out.println("      Max. RSSI: " + (stats.get_rssiMax() - 45));
+			System.out.println("      Min. LQI:  " + stats.get_lqiMin());
 			System.out.println("      Avg. LQI:  "
 					+ (stats.get_lqiSum() / stats.get_pRcvd()));
-			System.out.println("      Min. LQI:  " + stats.get_lqiMin());
 			System.out.println("      Max. LQI:  " + stats.get_lqiMax());
 		}
 		System.out.println("    Sent: " + stats.get_pSent());
