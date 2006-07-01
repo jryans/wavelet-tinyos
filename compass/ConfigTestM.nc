@@ -14,6 +14,8 @@ module ConfigTestM {
   provides interface StdControl;
 }
 implementation {
+  
+  //bool go = FALSE;
  
   command result_t StdControl.init() {
     return SUCCESS;
@@ -28,7 +30,8 @@ implementation {
     msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = 2;
     msg.type = 20;
-    call Message.send(msg);
+    //while (go) {
+    call Message.send(msg);// }
     return SUCCESS;
   }
 
@@ -38,8 +41,11 @@ implementation {
    
   event void MoteOptions.diag(bool state) {
     if (state) {
-      call Timer.start(TIMER_REPEAT, 10);
+      //go = TRUE;
+      //call Timer.start(TIMER_ONE_SHOT, 100);
+      call Timer.start(TIMER_REPEAT, 5);
     } else {
+      //go = FALSE;
       call Timer.stop();
     }
   }

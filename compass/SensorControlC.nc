@@ -12,14 +12,14 @@ configuration SensorControlC {
 }
 
 implementation {
-  components SensorControlM, PhotoTemp, Voltage, Main;
+  components SensorControlM, PhotoTemp, VoltageC, Main;
 
   SensorData = SensorControlM;
   Main.StdControl -> SensorControlM;
   SensorControlM.LightADC -> PhotoTemp.ExternalPhotoADC;
   SensorControlM.TempADC -> PhotoTemp.ExternalTempADC;
-  SensorControlM.VoltADC -> Voltage.ADC;
+  SensorControlM.VoltADC -> VoltageC.Voltage;
   SensorControlM.LightControl -> PhotoTemp.PhotoStdControl;
   SensorControlM.TempControl -> PhotoTemp.TempStdControl; 
-  SensorControlM.VoltControl -> Voltage.StdControl;
+  SensorControlM.VoltControl -> VoltageC.StdControl;
 }

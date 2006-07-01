@@ -11,7 +11,7 @@ configuration MoteOptionsC {
   provides interface MoteOptions;
 }
 implementation {
-  components MoteOptionsM, Main;
+  components MoteOptionsM, Main, TimerC;
 #ifdef PLATFORM_MICAZ
   components CC2420RadioC;
 
@@ -19,6 +19,9 @@ implementation {
   MoteOptionsM.MacControl -> CC2420RadioC;
   MoteOptionsM.CC2420Control -> CC2420RadioC;
 #endif
+
+  Main.StdControl -> TimerC;
+  MoteOptionsM.RadioDelay -> TimerC.Timer[unique("Timer")];
   
   Stats = MoteOptionsM;
   MoteOptions = MoteOptionsM;

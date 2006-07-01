@@ -159,7 +159,7 @@ implementation {
         dbg(DBG_USR2, "Ucast: Mote: %i, Src: %i, Dest: %i, fwd to %i failed!\n", 
           TOS_LOCAL_ADDRESS, pPack->data.src, pPack->data.dest, m->addr);
         if (pPack->data.src == TOS_LOCAL_ADDRESS)
-          signal Message.sendDone(pPack->data, FAIL, RADIO_RETRIES);
+          signal Message.sendDone(pPack->data, FAIL, RADIO_RETRIES - 1);
       }
     }
     return SUCCESS;

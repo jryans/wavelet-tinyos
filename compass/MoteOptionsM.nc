@@ -15,6 +15,7 @@ module MoteOptionsM {
 #endif
   	interface Stats;
     interface Message;
+    interface Timer as RadioDelay;
   }
   provides {
     interface MoteOptions;
@@ -37,29 +38,39 @@ implementation {
         dbg(DBG_USR2, "MoteOptions: Setting diagnostics mode to %i\n", o->diagMode);
         signal MoteOptions.diag(o->diagMode);
       }
-#ifdef PLATFORM_MICAZ        
-      if ((o->mask & MO_RFPOWER) != 0) {
-        if (o->rfPower > 0 && o->rfPower < 32) {
-          dbg(DBG_USR2, "MoteOptions: Setting RF power to %i\n", o->rfPower);
-          call CC2420Control.SetRFPower(o->rfPower);
-        }
-      }
-#endif
       if ((o->mask & MO_CLEARSTATS) != 0) {
         dbg(DBG_USR2, "MoteOptions: Clearing stats data\n");
         call Stats.clear();
       }
 #ifdef PLATFORM_MICAZ
+      if ((o->mask & MO_TXPOWER) != 0) {
+        if (o->txPower > 0 && o->txPower < 32) {
+          dbg(DBG_USR2, "MoteOptions: Setting TX power level to %i\n", o->txPower);
+          call CC2420Control.SetRFPower(o->txPower);
+        }
+      }
       if ((o->mask & MO_RFACK) != 0) {
         dbg(DBG_USR2, "MoteOptions: Setting RF ACK support to %i\n", o->rfAck);
         (o->rfAck) ? call MacControl.enableAck()
                    : call MacControl.disableAck();
+      }
+      if ((o->mask & MO_RADIOOFFTIME) != 0) {
+        dbg(DBG_USR2, "MoteOptions: Turning radio off for %i seconds\n", o->radioOffTime);
+        call RadioDelay.start(TIMER_ONE_SHOT, o->radioOffTime * 1024);
+        call TransControl.stop();
       }
 #endif
     }
   }
  
   event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
+    return SUCCESS;
+  }
+  
+  /*** Timer ***/
+  
+  event result_t RadioDelay.fired() {
+    call TransControl.start();
     return SUCCESS;
   }
   
