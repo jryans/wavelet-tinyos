@@ -105,10 +105,13 @@ public class BroadcastPack extends net.tinyos.message.Message {
         s += "  [data.data.opt.diagMode=0x"+Long.toHexString(get_data_data_opt_diagMode())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.opt.rfPower=0x"+Long.toHexString(get_data_data_opt_rfPower())+"]\n";
+        s += "  [data.data.opt.txPower=0x"+Long.toHexString(get_data_data_opt_txPower())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [data.data.opt.rfAck=0x"+Long.toHexString(get_data_data_opt_rfAck())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.opt.radioOffTime=0x"+Long.toHexString(get_data_data_opt_radioOffTime())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [data.data.wData.dataSet=0x"+Long.toHexString(get_data_data_wData_dataSet())+"]\n";
@@ -541,65 +544,65 @@ public class BroadcastPack extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.opt.rfPower
+    // Accessor methods for field: data.data.opt.txPower
     //   Field type: short
     //   Offset (bits): 72
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.opt.rfPower' is signed (false).
+     * Return whether the field 'data.data.opt.txPower' is signed (false).
      */
-    public static boolean isSigned_data_data_opt_rfPower() {
+    public static boolean isSigned_data_data_opt_txPower() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.opt.rfPower' is an array (false).
+     * Return whether the field 'data.data.opt.txPower' is an array (false).
      */
-    public static boolean isArray_data_data_opt_rfPower() {
+    public static boolean isArray_data_data_opt_txPower() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.opt.rfPower'
+     * Return the offset (in bytes) of the field 'data.data.opt.txPower'
      */
-    public static int offset_data_data_opt_rfPower() {
+    public static int offset_data_data_opt_txPower() {
         return (72 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.opt.rfPower'
+     * Return the offset (in bits) of the field 'data.data.opt.txPower'
      */
-    public static int offsetBits_data_data_opt_rfPower() {
+    public static int offsetBits_data_data_opt_txPower() {
         return 72;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.opt.rfPower'
+     * Return the value (as a short) of the field 'data.data.opt.txPower'
      */
-    public short get_data_data_opt_rfPower() {
-        return (short)getUIntElement(offsetBits_data_data_opt_rfPower(), 8);
+    public short get_data_data_opt_txPower() {
+        return (short)getUIntElement(offsetBits_data_data_opt_txPower(), 8);
     }
 
     /**
-     * Set the value of the field 'data.data.opt.rfPower'
+     * Set the value of the field 'data.data.opt.txPower'
      */
-    public void set_data_data_opt_rfPower(short value) {
-        setUIntElement(offsetBits_data_data_opt_rfPower(), 8, value);
+    public void set_data_data_opt_txPower(short value) {
+        setUIntElement(offsetBits_data_data_opt_txPower(), 8, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.opt.rfPower'
+     * Return the size, in bytes, of the field 'data.data.opt.txPower'
      */
-    public static int size_data_data_opt_rfPower() {
+    public static int size_data_data_opt_txPower() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.opt.rfPower'
+     * Return the size, in bits, of the field 'data.data.opt.txPower'
      */
-    public static int sizeBits_data_data_opt_rfPower() {
+    public static int sizeBits_data_data_opt_txPower() {
         return 8;
     }
 
@@ -664,6 +667,69 @@ public class BroadcastPack extends net.tinyos.message.Message {
      */
     public static int sizeBits_data_data_opt_rfAck() {
         return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.opt.radioOffTime
+    //   Field type: int
+    //   Offset (bits): 88
+    //   Size (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.opt.radioOffTime' is signed (false).
+     */
+    public static boolean isSigned_data_data_opt_radioOffTime() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.opt.radioOffTime' is an array (false).
+     */
+    public static boolean isArray_data_data_opt_radioOffTime() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.opt.radioOffTime'
+     */
+    public static int offset_data_data_opt_radioOffTime() {
+        return (88 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.opt.radioOffTime'
+     */
+    public static int offsetBits_data_data_opt_radioOffTime() {
+        return 88;
+    }
+
+    /**
+     * Return the value (as a int) of the field 'data.data.opt.radioOffTime'
+     */
+    public int get_data_data_opt_radioOffTime() {
+        return (int)getUIntElement(offsetBits_data_data_opt_radioOffTime(), 16);
+    }
+
+    /**
+     * Set the value of the field 'data.data.opt.radioOffTime'
+     */
+    public void set_data_data_opt_radioOffTime(int value) {
+        setUIntElement(offsetBits_data_data_opt_radioOffTime(), 16, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.opt.radioOffTime'
+     */
+    public static int size_data_data_opt_radioOffTime() {
+        return (16 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.opt.radioOffTime'
+     */
+    public static int sizeBits_data_data_opt_radioOffTime() {
+        return 16;
     }
 
     /////////////////////////////////////////////////////////

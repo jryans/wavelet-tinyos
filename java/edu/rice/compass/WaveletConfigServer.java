@@ -47,6 +47,8 @@ public class WaveletConfigServer implements MessageListener {
 						new Switch("ping", JSAP.NO_SHORTFLAG, "ping"),
 						new FlaggedOption("power", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT, 
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "power"),
+						new FlaggedOption("rofftime", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT, 
+								JSAP.NOT_REQUIRED, 'r', "radioofftime"),
 						new Switch("opt", 'o', "options"),
 						new Switch("load", JSAP.NO_SHORTFLAG, "load"),
 						new FlaggedOption("file", JSAP.STRING_PARSER, "",
@@ -135,11 +137,13 @@ public class WaveletConfigServer implements MessageListener {
 		} else if (config.getBoolean("opt")) {
 			WaveletMote.MoteOptions opt = mote[config.getInt("dest") - 1].makeOptions();
 			if (config.contains("power")) 
-				opt.rfPower(config.getInt("power"));
+				opt.txPower(config.getInt("power"));
 			if (config.getBoolean("clear"))
 				opt.clearStats();
 			if (config.contains("diag"))
 				opt.diagMode(config.getBoolean("diag"));
+			if (config.contains("rofftime"))
+				opt.radioOffTime(config.getInt("rofftime"));
 			try {
 				moteSend.sendPack(opt.pack);
 			} catch (IOException e) {

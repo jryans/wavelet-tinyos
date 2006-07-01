@@ -166,9 +166,10 @@ public class WaveletMote {
 	class MoteOptions {
 		/* Bitmasks */
 		private static final short MO_DIAGMODE = 0x01;
-		private static final short MO_RFPOWER = 0x02;
+		private static final short MO_TXPOWER = 0x02;
 		private static final short MO_CLEARSTATS = 0x04;
 		private static final short MO_RFACK = 0x08;
+		private static final short MO_RADIOOFFTIME = 0x10;
 
 		// TODO: Shouldn't be public!
 		public UnicastPack pack = new UnicastPack();
@@ -183,9 +184,9 @@ public class WaveletMote {
 			pack.set_data_data_opt_diagMode(Wavelet.b2Cs(diag));
 		}
 
-		public void rfPower(int power) {
-			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RFPOWER));
-			pack.set_data_data_opt_rfPower((short) power);
+		public void txPower(int power) {
+			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_TXPOWER));
+			pack.set_data_data_opt_txPower((short) power);
 		}
 
 		public void clearStats() {
@@ -195,6 +196,11 @@ public class WaveletMote {
 		public void rfAck(boolean ack) {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RFACK));
 			pack.set_data_data_opt_diagMode(Wavelet.b2Cs(ack));
+		}
+		
+		public void radioOffTime(int time) {
+			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RADIOOFFTIME));
+			pack.set_data_data_opt_radioOffTime(time);
 		}
 
 		// TODO: Will be used in the future!
