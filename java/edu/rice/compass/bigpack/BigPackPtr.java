@@ -4,7 +4,7 @@
  * message type.
  */
 
-package edu.rice.compass.comm;
+package edu.rice.compass.bigpack;
 
 public class BigPackPtr extends net.tinyos.message.Message {
 

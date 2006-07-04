@@ -41,22 +41,21 @@ import edu.rice.compass.WaveletConfigServer;
 import net.tinyos.message.*;
 
 public class MoteCom extends MoteIF {
-	private static Properties p = new Properties();
-
 	public static final int NET_UART_ADDR = 0xfffe;
 
-	private short sequenceNo = 0;
+	private static Properties p = new Properties();
+	private static short sequenceNo;
+	public static MoteCom singleton = new MoteCom();
 
-	public MoteCom(boolean clear) {
-		if (clear) {
-			sequenceNo = 1;
-		} else {
-			if (sequenceNo == 0)
-				sequenceNo = restoreSequenceNo();
-		}
+	private MoteCom() {
+		sequenceNo = 1;
 	}
-	
-	private short restoreSequenceNo() {
+
+	public static void loadSeqNo() {
+		sequenceNo = restoreSequenceNo();
+	}
+
+	private static short restoreSequenceNo() {
 		try {
 			FileInputStream fis = new FileInputStream("bcast.properties");
 			p.load(fis);
@@ -102,9 +101,10 @@ public class MoteCom extends MoteIF {
 		}
 	}
 
-	public void sendPack(UnicastPack pack) throws IOException {
+	public void sendPack(UnicastPack pack, int dest) throws IOException {
 		debugMsg(pack);
 		pack.set_data_src(NET_UART_ADDR);
+		pack.set_data_dest(dest);
 		send(0, pack);
 	}
 

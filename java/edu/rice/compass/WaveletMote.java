@@ -3,18 +3,22 @@
  * @author Ryan Stinnett
  */
 
-package edu.rice.compass.comm;
+package edu.rice.compass;
 
 import java.util.*;
 
-import edu.rice.compass.Wavelet;
-import edu.rice.compass.WaveletConfig;
+import edu.rice.compass.bigpack.MoteStats;
+import edu.rice.compass.bigpack.Packer;
+import edu.rice.compass.bigpack.Unpacker;
+import edu.rice.compass.bigpack.WaveletConf;
+import edu.rice.compass.bigpack.WaveletLevel;
+import edu.rice.compass.bigpack.WaveletNeighbor;
 import edu.rice.compass.comm.*;
 
 public class WaveletMote {
 	
 	/* Mote Communication */
-	private static 
+	//private static 
 
 	private Packer packer = new Packer();
 	Unpacker unpacker;

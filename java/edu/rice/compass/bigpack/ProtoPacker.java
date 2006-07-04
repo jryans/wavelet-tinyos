@@ -24,7 +24,6 @@ abstract class ProtoPacker implements MessageListener {
 	
 	protected ProtoPacker(PackerHost mOwner) {
 		owner = mOwner;
-		owner.getMoteCom().registerListener(new UnicastPack(), this);
 	}
 
 	protected boolean morePacksExist() {
@@ -37,8 +36,12 @@ abstract class ProtoPacker implements MessageListener {
 		return busy;
 	}
 	
-	public void close() {
-		owner.getMoteCom().deregisterListener(new UnicastPack(), this);
+	public void enable() {
+		MoteCom.singleton.registerListener(new UnicastPack(), this);
+	}
+	
+	public void disable() {
+		MoteCom.singleton.deregisterListener(new UnicastPack(), this);
 	}
 
 }

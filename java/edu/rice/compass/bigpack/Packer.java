@@ -22,7 +22,7 @@ public class Packer extends ProtoPacker {
 			stream = msg.dataStream();
 			numBlocks = msg.numBlocks();
 			numPtrs = msg.numPointers();
-			type = BigPack.getType(); // potential problem...
+			type = msg.getType();
 			numPacks = stream.length / BigPack.BP_DATA_LEN;
 			if (stream.length % BigPack.BP_DATA_LEN != 0)
 				numPacks++;
@@ -38,7 +38,7 @@ public class Packer extends ProtoPacker {
 		pack.set_data_data_bpHeader_numBlocks((short) numBlocks);
 		pack.set_data_data_bpHeader_numPtrs((short) numPtrs);
 		try {
-			owner.getMoteCom().sendPack(pack);
+			owner.sendPack(pack);
 			System.out.println("Sent BP header (0/" + numPacks + ") to mote "
 					+ owner.getID());
 		} catch (IOException e) {
@@ -56,7 +56,7 @@ public class Packer extends ProtoPacker {
 			length = stream.length - firstByte;
 		pack.set_data_data_bpData_data(byteRange(firstByte, length));
 		try {
-			owner.getMoteCom().sendPack(pack);
+			owner.sendPack(pack);
 			System.out.println("Sent BP data (" + (curPackNum + 1) + "/" + numPacks
 					+ ") to mote " + owner.getID());
 		} catch (IOException e) {
@@ -82,7 +82,12 @@ public class Packer extends ProtoPacker {
 				System.out.println("Got BP header request from mote " + id);
 				type = pack.get_data_data_bpHeader_requestType();
 				// Build a new BigPack of the requested type
-				newMessage(owner.buildPack(type));
+				BigPack newPack = owner.buildPack(type);
+				if (newPack == null) {
+					System.out.println("BP could not be built for mote " + id + "!");
+					return;
+				}
+				newMessage(newPack);
 				curPackNum = HEADER_PACK_NUM;
 				sendHeader(); // Send BP header
 			} else if (busy && pack.get_data_data_bpHeader_packTotal() != 0
@@ -102,7 +107,7 @@ public class Packer extends ProtoPacker {
 				} else {
 					System.out.println("BP sent to mote " + id + " complete");
 					busy = false;
-					owner.packerDone(null); // Done!
+					owner.packerDone(type); // Done!
 				}
 			}
 			break;

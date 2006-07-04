@@ -4,7 +4,7 @@
  * message type.
  */
 
-package edu.rice.compass.comm;
+package edu.rice.compass.bigpack;
 
 public class WaveletConf extends BigPack {
 
@@ -18,7 +18,7 @@ public class WaveletConf extends BigPack {
 				       offset_lvlPtr());
 	}
 	
-	public static short getType() {
+	public short getType() {
 		return BP_WAVELETCONF;
 	}
 

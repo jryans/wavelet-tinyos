@@ -11,6 +11,11 @@ import java.io.*;
 import com.martiansoftware.jsap.*;
 import com.thoughtworks.xstream.*;
 
+import edu.rice.compass.bigpack.BigPack;
+import edu.rice.compass.bigpack.MoteStats;
+import edu.rice.compass.bigpack.StatsWTL;
+import edu.rice.compass.bigpack.StatsWTNB;
+import edu.rice.compass.bigpack.Unpacker;
 import edu.rice.compass.comm.*;
 
 public class WaveletConfigServer implements MessageListener {
@@ -118,7 +123,7 @@ public class WaveletConfigServer implements MessageListener {
 			curSet = 0;
 			mData = new MoteData(numSets, Wavelet.WT_SENSORS, mote.length);
 			clearDataCheck();
-			transState = BigPack.BP_SENDING;
+			transState = edu.rice.compass.bigpack.BP_SENDING;
 			listen();
 			// Setup and start config pulse timer
 			pulseTimer.scheduleAtFixedRate(new ConfigPulse(mote.length), 200, 300);
@@ -129,7 +134,7 @@ public class WaveletConfigServer implements MessageListener {
 			req.set_data_type(BigPack.BIGPACKHEADER);
 			req.set_data_data_bpHeader_requestType(BigPack.BP_STATS);
 			req.set_data_data_bpHeader_packTotal((short) 0);
-			transState = BigPack.BP_RECEIVING;
+			transState = edu.rice.compass.bigpack.BP_RECEIVING;
 			listen();
 			moteSend.sendPack(req);
 			System.out.println("Sent stats request to mote " + dest);
@@ -219,7 +224,7 @@ public class WaveletConfigServer implements MessageListener {
 					e.printStackTrace();
 				}
 			} else {
-				if (transState == BigPack.BP_SENDING) {
+				if (transState == edu.rice.compass.bigpack.BP_SENDING) {
 					System.out.println("Got BP header ack from mote " + id);
 					try {
 						UnicastPack newPack = theMote.getData(0);
@@ -230,7 +235,7 @@ public class WaveletConfigServer implements MessageListener {
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
-				} else if (transState == BigPack.BP_RECEIVING) {
+				} else if (transState == edu.rice.compass.bigpack.BP_RECEIVING) {
 					theMote.unpacker = new Unpacker(pack);
 					System.out.println("Got BP header (0/"
 							+ theMote.unpacker.getNumPacks() + ") from mote " + id);
@@ -239,7 +244,7 @@ public class WaveletConfigServer implements MessageListener {
 			}
 			break;
 		case Wavelet.BIGPACKDATA:
-			if (transState == BigPack.BP_SENDING) {
+			if (transState == edu.rice.compass.bigpack.BP_SENDING) {
 				System.out.println("Got BP data ack from mote " + id);
 				short curPack = pack.get_data_data_bpData_curPack();
 				if (!theMote.isConfigDone(curPack)) {
@@ -255,7 +260,7 @@ public class WaveletConfigServer implements MessageListener {
 					System.out.println("Config done for mote " + id);
 					attemptStart();
 				}
-			} else if (transState == BigPack.BP_RECEIVING) {
+			} else if (transState == edu.rice.compass.bigpack.BP_RECEIVING) {
 				short curPack = pack.get_data_data_bpData_curPack();
 				if (theMote.unpacker.newData(pack)) {
 					System.out.println("Got BP data (" + (curPack + 1) + "/"

@@ -20,7 +20,7 @@ public class Unpacker extends ProtoPacker {
 	public void newRequest(BigPack msg) {
 		if (!busy) {
 			busy = true;
-			type = BigPack.getType(); // potential problem...
+			type = msg.getType();
 			curPackNum = HEADER_PACK_NUM;
 			sendRequest();
 		}
@@ -32,7 +32,7 @@ public class Unpacker extends ProtoPacker {
 		req.set_data_data_bpHeader_requestType(type);
 		req.set_data_data_bpHeader_packTotal((short) 0);
 		try {
-			owner.getMoteCom().sendPack(req);
+			owner.sendPack(req);
 			System.out.println("Sent BP request to mote " + owner.getID());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -48,14 +48,14 @@ public class Unpacker extends ProtoPacker {
 
 	private void sendAck(UnicastPack pack) {
 		try {
-			owner.getMoteCom().sendPack(pack);
+			owner.sendPack(pack);
 			System.out.println("Sent ack to mote " + owner.getID());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void newData(UnicastPack d) {
+	private void newData(UnicastPack d) {
 		int firstByte = d.get_data_data_bpData_curPack() * BigPack.BP_DATA_LEN;
 		int length = BigPack.BP_DATA_LEN;
 		if ((firstByte + length) > stream.length)
@@ -82,15 +82,18 @@ public class Unpacker extends ProtoPacker {
 			break;
 		case Wavelet.BIGPACKDATA:
 			if (pack.get_data_data_bpData_curPack() == curPackNum) {
+				newData(pack); // Store new data
 				System.out.println("Got BP data (" + (curPackNum + 1) + "/" + numPacks
 						+ ") from mote " + id);
-				sendAck(pack); // Send an ACK
-				if (!morePacksExist()) {
+				if (morePacksExist()) {
+					curPackNum++;
+				} else {
 					System.out.println("BP rcvd from mote " + id + " complete");
 					busy = false;
 					// Done!
-					owner.packerDone(new MoteStats(stream, numBlocks, numPtrs));
+					owner.unpackerDone(new MoteStats(stream, numBlocks, numPtrs));
 				}
+				sendAck(pack); // Send an ACK
 			}
 			break;
 		}

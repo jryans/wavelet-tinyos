@@ -4,7 +4,7 @@
  * message type.
  */
 
-package edu.rice.compass.comm;
+package edu.rice.compass.bigpack;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class MoteStats extends BigPack {
 		super(data, DEFAULT_MESSAGE_SIZE, numBlks, numPtrs);
 	}
 	
-	public static short getType() {
+	public short getType() {
 		return BP_STATS;
 	}
 

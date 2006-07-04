@@ -6,6 +6,8 @@
 package edu.rice.compass;
 
 public class Wavelet {
+	
+	// TODO: Move wavelet config specific types out of here
 
 	/* Wavelet States */
 	static final short S_IDLE = 0;
@@ -23,12 +25,12 @@ public class Wavelet {
 	static final short S_RAW = 13;
 
 	/* Message Types */
-	static final short MOTEOPTIONS = 0;
-	static final short WAVELETDATA = 1;
-	static final short BIGPACKHEADER = 2;
-	static final short BIGPACKDATA = 3;
-	static final short WAVELETSTATE = 4;
-	static final short MOTESTATS = 5;
+	public static final short MOTEOPTIONS = 0;
+	public static final short WAVELETDATA = 1;
+	public static final short BIGPACKHEADER = 2;
+	public static final short BIGPACKDATA = 3;
+	public static final short WAVELETSTATE = 4;
+	public static final short MOTESTATS = 5;
 
 	/* Sensors */
 	static final short TEMP = 0;

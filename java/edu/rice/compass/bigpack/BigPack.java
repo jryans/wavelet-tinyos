@@ -1,4 +1,4 @@
-package edu.rice.compass.comm;
+package edu.rice.compass.bigpack;
 
 import net.tinyos.message.Message;
 import java.util.*;
@@ -18,10 +18,6 @@ public abstract class BigPack extends Message {
 	public static final short BP_UNKNOWN = -1;
 	public static final short BP_WAVELETCONF = 0;
 	public static final short BP_STATS = 1;
-	
-
-	//public static final short BP_SENDING = 0;
-	//public static final short BP_RECEIVING = 1;
 
 	public static final short BIGPACKHEADER = 2;
 	public static final short BIGPACKDATA = 3;
@@ -313,7 +309,7 @@ public abstract class BigPack extends Message {
 		return stream;
 	}
 
-	public static short getType() {
+	public short getType() {
 		return BP_UNKNOWN;
 	}
 

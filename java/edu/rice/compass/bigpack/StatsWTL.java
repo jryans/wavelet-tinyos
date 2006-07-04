@@ -4,7 +4,7 @@
  * message type.
  */
 
-package edu.rice.compass.comm;
+package edu.rice.compass.bigpack;
 
 import java.util.List;
 
