@@ -10,14 +10,15 @@ import java.util.*;
 import java.io.*;
 import com.martiansoftware.jsap.*;
 import com.thoughtworks.xstream.*;
-import edu.rice.compass.bigpack.*;
+
+import edu.rice.compass.comm.*;
 
 public class WaveletConfigServer implements MessageListener {
 
 	// private static WaveletConfig wc;
 	private static WaveletMote mote[];
 	private static MoteIF moteListen;
-	private static MoteSend moteSend;
+	private static MoteCom moteSend;
 	static JSAPResult config;
 	private static XStream xs = new XStream();;
 
@@ -73,9 +74,9 @@ public class WaveletConfigServer implements MessageListener {
 		if (!config.getBoolean("load")) {
 			moteListen = new MoteIF();
 			if (config.getBoolean("clear")) {
-				moteSend = new MoteSend(true);
+				moteSend = new MoteCom(true);
 			} else {
-				moteSend = new MoteSend(false);
+				moteSend = new MoteCom(false);
 			}
 		}
 
@@ -409,6 +410,11 @@ public class WaveletConfigServer implements MessageListener {
 	public static void debugPrintln(String s) {
 		if (debug)
 			System.out.println(s);
+	}
+	
+	public static void debugPrintln() {
+		if (debug)
+			System.out.println();
 	}
 
 	public static void sendPing(int mote) {

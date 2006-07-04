@@ -3,25 +3,21 @@
  * @author Ryan Stinnett
  */
 
-package edu.rice.compass.bigpack;
+package edu.rice.compass.comm;
 
-import edu.rice.compass.UnicastPack;
+import net.tinyos.message.Message;
 
-public class Packer {
+public class Packer extends ProtoPacker {
 
-	private short type;
-	private int numPacks;
-	private int numBlocks;
-	private int numPtrs;
-	private byte[] stream;
-
-	public void setMessage(BigPack msg) {
+	public Packer(PackerDest owner) {
+		super(owner);
+	}
+	
+	public void sendMessage(BigPack msg) {
 		stream = msg.dataStream();
 		numBlocks = msg.numBlocks();
 		numPtrs = msg.numPointers();
-		if (msg.getClass().getName().endsWith("WaveletConf")) {
-			type = BigPack.BP_WAVELETCONF;
-		}
+		type = BigPack.getType(); // potential problem...
 		numPacks = stream.length / BigPack.BP_DATA_LEN;
 		if (stream.length % BigPack.BP_DATA_LEN != 0)
 			numPacks++;
@@ -56,14 +52,11 @@ public class Packer {
 		return tmp;
 	}
 
-	public boolean morePacksExist(int curPack) {
-		if (curPack + 1 >= numPacks)
-			return false;
-		return true;
+	public void messageReceived(int to, Message m) {
+		// TODO Auto-generated method stub
+		
 	}
-
-	public int getNumPacks() {
-		return numPacks;
-	}
+	
+	
 
 }

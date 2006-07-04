@@ -4,7 +4,7 @@
  * message type.
  */
 
-package edu.rice.compass.bigpack;
+package edu.rice.compass.comm;
 
 public class WaveletConf extends BigPack {
 
@@ -16,6 +16,10 @@ public class WaveletConf extends BigPack {
 		addArray((BigPackBlock)blocks.get(firstMainBlk), 
 				       addBlock(offset_lvlCount(), staticDataLen), 
 				       offset_lvlPtr());
+	}
+	
+	public static short getType() {
+		return BP_WAVELETCONF;
 	}
 
 	// Message-type-specific access methods appear below.

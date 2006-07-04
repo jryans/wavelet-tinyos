@@ -1,4 +1,4 @@
-package edu.rice.compass.bigpack;
+package edu.rice.compass.comm;
 
 import net.tinyos.message.Message;
 import java.util.*;
@@ -15,19 +15,21 @@ public abstract class BigPack extends Message {
 	static final short UPACK_MSG_DATA_LEN = UPACK_DATA_LEN - MSG_DATA_OFFSET;
 	static final short BP_DATA_LEN = UPACK_MSG_DATA_LEN - 1;
 
+	public static final short BP_UNKNOWN = -1;
 	public static final short BP_WAVELETCONF = 0;
 	public static final short BP_STATS = 1;
+	
 
-	public static final short BP_SENDING = 0;
-	public static final short BP_RECEIVING = 1;
+	//public static final short BP_SENDING = 0;
+	//public static final short BP_RECEIVING = 1;
 
 	public static final short BIGPACKHEADER = 2;
 	public static final short BIGPACKDATA = 3;
-
-	/* Variables */
-
+	
 	private static final short BPP_PTR = 0;
 	private static final short BPP_ARRAY = 1;
+
+	/* Variables */
 
 	protected List blocks = new Vector();
 	private List pointers = new Vector();
@@ -309,6 +311,10 @@ public abstract class BigPack extends Message {
 		}
 		System.arraycopy(data, 0, stream, offset, data_length);
 		return stream;
+	}
+
+	public static short getType() {
+		return BP_UNKNOWN;
 	}
 
 }

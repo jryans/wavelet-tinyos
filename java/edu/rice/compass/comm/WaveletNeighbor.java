@@ -4,7 +4,7 @@
  * message type.
  */
 
-package edu.rice.compass.bigpack;
+package edu.rice.compass.comm;
 
 public class WaveletNeighbor extends net.tinyos.message.Message {
 

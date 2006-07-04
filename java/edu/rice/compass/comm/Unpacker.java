@@ -3,18 +3,10 @@
  * @author Ryan Stinnett
  */
 
-package edu.rice.compass.bigpack;
+package edu.rice.compass.comm;
 
-import edu.rice.compass.UnicastPack;
 
-public class Unpacker {
-
-	private short type;
-	private int numPacks;
-	private int numBlocks;
-	private int numPtrs;
-	private byte[] stream;
-	private int curPackNum;
+public class Unpacker extends ProtoPacker {
 
 	public Unpacker(UnicastPack h) {
 		type = h.get_data_data_bpHeader_requestType();
@@ -44,16 +36,6 @@ public class Unpacker {
 			return new MoteStats(stream, numBlocks, numPtrs);
 		}
 		return null;
-	}
-
-	public boolean morePacksExist(int curPack) {
-		if (curPack + 1 >= numPacks)
-			return false;
-		return true;
-	}
-
-	public int getNumPacks() {
-		return numPacks;
 	}
 
 }
