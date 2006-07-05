@@ -273,7 +273,7 @@ implementation {
     msgData msg;
     uint8_t i;
     msg.src = TOS_LOCAL_ADDRESS;
-    msg.dest = TOS_UART_ADDR;
+    msg.dest = NET_UART_ADDR;
     msg.type = WAVELETDATA;
     msg.data.wData.dataSet = dataSet;
     msg.data.wData.level = curLevel;
@@ -293,7 +293,7 @@ implementation {
     msgData msg;
     uint8_t i;
     msg.src = TOS_LOCAL_ADDRESS;
-    msg.dest = TOS_UART_ADDR;
+    msg.dest = NET_UART_ADDR;
     msg.type = WAVELETDATA;
     msg.data.wData.dataSet = dataSet;
     msg.data.wData.level = curLevel;

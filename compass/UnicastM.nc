@@ -76,7 +76,7 @@ implementation {
     memcpy(pFwdPack,pRcvPack,len);
     //pFwdPack->hops++;
     pFwdPack->retriesLeft = retries - 1;
-    if (pFwdPack->data.dest == TOS_UART_ADDR) {
+    if (pFwdPack->data.dest == NET_UART_ADDR) {
       nextHop = call Router.getNextAddr(0);
     } else {
       nextHop = call Router.getNextAddr(pFwdPack->data.dest);
@@ -100,7 +100,7 @@ implementation {
       dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, rcvd\n", TOS_LOCAL_ADDRESS,
           pPack->data.src, pPack->data.dest);
       signal Message.receive(pPack->data);
-    } else if (pPack->data.dest == TOS_UART_ADDR && TOS_LOCAL_ADDRESS == 0) {
+    } else if (pPack->data.dest == NET_UART_ADDR && TOS_LOCAL_ADDRESS == 0) {
       fwdUart(pPack); // From normal motes to the sink
     } else { // This message is not for us, forward it on.
       fwdNextHop(pPack, RADIO_RETRIES);
@@ -122,7 +122,7 @@ implementation {
     if (call Router.getStatus() != RO_READY)
       return FAIL; // Router isn't ready, this should be checked before sending
     newPack.data = msg;
-    if (TOS_LOCAL_ADDRESS == 0 && msg.dest == TOS_UART_ADDR) {
+    if (TOS_LOCAL_ADDRESS == 0 && msg.dest == NET_UART_ADDR) {
       fwdUart(&newPack); // From UART bridge to the sink
     } else {
       fwdNextHop(&newPack, RADIO_RETRIES); // Anything else goes on the radio

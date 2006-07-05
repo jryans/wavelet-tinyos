@@ -225,7 +225,7 @@ implementation {
     if (curPackNum < numPacks) {
       msgData msg;
       msg.src = TOS_LOCAL_ADDRESS;
-      msg.dest = TOS_UART_ADDR;
+      msg.dest = NET_UART_ADDR;
       if (curPackNum == -1) {
 		msg.type = BIGPACKHEADER;
 		msg.data.bpHeader.requestType = curType;
@@ -255,7 +255,7 @@ implementation {
    */
   void sendAck(msgData msg) {
     msg.src = TOS_LOCAL_ADDRESS;
-    msg.dest = TOS_UART_ADDR;
+    msg.dest = NET_UART_ADDR;
     //repeatSend(msg, 3000); 
     call Message.send(msg);
   }

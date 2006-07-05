@@ -46,7 +46,7 @@ implementation {
     msgData msg;
     uint8_t i;
     msg.src = TOS_LOCAL_ADDRESS;
-    msg.dest = TOS_UART_ADDR;
+    msg.dest = NET_UART_ADDR;
     msg.type = WAVELETDATA;
     msg.data.wData.state = 13;
     for (i = 0; i < WT_SENSORS; i++)

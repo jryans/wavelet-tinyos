@@ -21,4 +21,8 @@ enum {
   RADIO_RETRIES = 1
 };
 
+enum {
+  NET_UART_ADDR = 0xfffe
+};
+
 #endif /* _UNICASTPACK_H */
