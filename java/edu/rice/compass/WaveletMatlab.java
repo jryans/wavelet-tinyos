@@ -5,7 +5,7 @@
 package edu.rice.compass;
 
 import java.io.*;
-import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.*;
 
 public class WaveletMatlab {
 
@@ -19,7 +19,7 @@ public class WaveletMatlab {
 	 */
 	public static void saveConfig(double[] scales, Object[] predNB,
 			Object[] predCoeff, Object[] updCoeff) {
-		WaveletConfig conf = new WaveletConfig(scales, predNB, predCoeff, updCoeff);
+		WaveletConfigData conf = new WaveletConfigData(scales, predNB, predCoeff, updCoeff);
 		// Fixed path name for now
 		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletConfig.xml";
 		try {
@@ -34,10 +34,10 @@ public class WaveletMatlab {
 	public static float[][][] loadData() {
 		// Fixed path name for now
 		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletData.xml";
-		MoteData mData = new MoteData();
+		WaveletData mData = new WaveletData();
 		try {
 			FileInputStream fs = new FileInputStream(path);
-			mData = (MoteData) xs.fromXML(fs);
+			mData = (WaveletData) xs.fromXML(fs);
 			fs.close();
 		} catch (Exception e) {
 			e.printStackTrace();

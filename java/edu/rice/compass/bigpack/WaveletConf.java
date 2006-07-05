@@ -18,7 +18,7 @@ public class WaveletConf extends BigPack {
 				       offset_lvlPtr());
 	}
 	
-	public short getType() {
+	public static short getType() {
 		return BP_WAVELETCONF;
 	}
 

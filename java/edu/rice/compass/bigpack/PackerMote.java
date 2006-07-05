@@ -14,7 +14,7 @@ public class PackerMote extends Mote implements PackerHost {
 	private Packer packer = new Packer(this);
 	private ProtoPacker curPacker;
 
-	private static Hashtable packApps = new Hashtable();
+	private Hashtable packApps = new Hashtable();
 
 	public PackerMote(int mID) {
 		super(mID);
@@ -22,16 +22,16 @@ public class PackerMote extends Mote implements PackerHost {
 		curPacker.enable();
 	}
 
-	public static void setPackApp(BigPack tPack, PackerApp app) {
-		Integer type = new Integer(tPack.getType());
+	public void setPackerApp(short pType, PackerMoteApp app) {
+		Integer type = new Integer(pType);
 		packApps.put(type, app);
 	}
 
 	public BigPack buildPack(short type) {
-		PackerApp pa = (PackerApp) packApps.get(new Integer(type));
+		PackerMoteApp pa = (PackerMoteApp) packApps.get(new Integer(type));
 		if (pa == null)
 			return null;
-		BigPack bp = pa.buildPack(id);
+		BigPack bp = pa.buildPack();
 		if (bp == null)
 			return null;
 		return bp;
@@ -39,17 +39,17 @@ public class PackerMote extends Mote implements PackerHost {
 
 	public void unpackerDone(BigPack msg) {
 		switchPacker(packer);
-		PackerApp pa = (PackerApp) packApps.get(new Integer(msg.getType()));
+		PackerMoteApp pa = (PackerMoteApp) packApps.get(new Integer(msg.getType()));
 		if (pa == null)
 			return;
-		pa.unpackerDone(msg, id);
+		pa.unpackerDone(msg);
 	}
 
 	public void packerDone(short type) {
-		PackerApp pa = (PackerApp) packApps.get(new Integer(type));
+		PackerMoteApp pa = (PackerMoteApp) packApps.get(new Integer(type));
 		if (pa == null)
 			return;
-		pa.packerDone(id);
+		pa.packerDone();
 	}
 
 	public boolean switchPacker(ProtoPacker newPacker) {
@@ -65,11 +65,12 @@ public class PackerMote extends Mote implements PackerHost {
 		return true;
 	}
 
-	public boolean requestPack(BigPack msg) {
+	public boolean requestPack(short mType) {
 		if (switchPacker(unpacker)) {
-			unpacker.newRequest(msg);
+			unpacker.newRequest(mType);
 			return true;
 		}
+		System.out.println("Request failed!");
 		return false;
 	}
 }

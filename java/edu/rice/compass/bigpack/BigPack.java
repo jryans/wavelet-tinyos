@@ -2,7 +2,7 @@ package edu.rice.compass.bigpack;
 
 import net.tinyos.message.Message;
 import java.util.*;
-import edu.rice.compass.WaveletConfigServer;
+import edu.rice.compass.CompassTools;
 
 public abstract class BigPack extends Message {
 
@@ -44,32 +44,32 @@ public abstract class BigPack extends Message {
 	protected BigPack(byte[] rawData, int dataLength, int numBlks, int numPtrs) {
 		super(dataLength);
 		int offset = 0;
-		WaveletConfigServer.debugPrintln("BigPack: Blocks and Pointers");
+		CompassTools.debugPrintln("BigPack: Blocks and Pointers");
 		// Pull blocks and pointers out of data stream
 		for (int i = 0; i < numBlks; i++) {
-			WaveletConfigServer.debugPrintln("BigPack: Block #" + (i + 1));
+			CompassTools.debugPrintln("BigPack: Block #" + (i + 1));
 			BigPackBlock blk = new BigPackBlock(byteRange(rawData, offset,
 					BigPackBlock.DEFAULT_MESSAGE_SIZE));
-			WaveletConfigServer.debugPrintln("BigPack:   Start:  " + blk.get_start());
-			WaveletConfigServer
+			CompassTools.debugPrintln("BigPack:   Start:  " + blk.get_start());
+			CompassTools
 					.debugPrintln("BigPack:   Length: " + blk.get_length());
 			blocks.add(blk);
 			offset += BigPackBlock.DEFAULT_MESSAGE_SIZE;
 		}
 		for (int i = 0; i < numPtrs; i++) {
-			WaveletConfigServer.debugPrintln("BigPack: Pointer #" + (i + 1));
+			CompassTools.debugPrintln("BigPack: Pointer #" + (i + 1));
 			BigPackPtr ptr = new BigPackPtr(byteRange(rawData, offset,
 					BigPackPtr.DEFAULT_MESSAGE_SIZE));
-			WaveletConfigServer.debugPrintln("BigPack:   Addr of Block: "
+			CompassTools.debugPrintln("BigPack:   Addr of Block: "
 					+ (ptr.get_addrOfBlock() + 1));
-			WaveletConfigServer.debugPrintln("BigPack:   Dest Block:    "
+			CompassTools.debugPrintln("BigPack:   Dest Block:    "
 					+ (ptr.get_destBlock() + 1));
-			WaveletConfigServer.debugPrintln("BigPack:   Dest Offset:   "
+			CompassTools.debugPrintln("BigPack:   Dest Offset:   "
 					+ (ptr.get_destOffset()));
 			if (ptr.get_blockArray() == BPP_ARRAY) {
-				WaveletConfigServer.debugPrintln("BigPack:   Block Array:   Yes");
+				CompassTools.debugPrintln("BigPack:   Block Array:   Yes");
 			} else {
-				WaveletConfigServer.debugPrintln("BigPack:   Block Array:   No");
+				CompassTools.debugPrintln("BigPack:   Block Array:   No");
 			}
 			pointers.add(ptr);
 			offset += BigPackPtr.DEFAULT_MESSAGE_SIZE;
@@ -309,7 +309,7 @@ public abstract class BigPack extends Message {
 		return stream;
 	}
 
-	public short getType() {
+	public static short getType() {
 		return BP_UNKNOWN;
 	}
 

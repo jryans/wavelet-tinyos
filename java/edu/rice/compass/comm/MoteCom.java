@@ -37,7 +37,7 @@ package edu.rice.compass.comm;
 import java.io.*;
 import java.util.Properties;
 
-import edu.rice.compass.WaveletConfigServer;
+import edu.rice.compass.CompassTools;
 import net.tinyos.message.*;
 
 public class MoteCom extends MoteIF {
@@ -80,12 +80,12 @@ public class MoteCom extends MoteIF {
 	}
 
 	private void debugMsg(Message msg) {
-		WaveletConfigServer.debugPrint("Payload: ");
+		CompassTools.debugPrint("Payload: ");
 		for (int i = 0; i < msg.dataLength(); i++) {
-			WaveletConfigServer.debugPrint(Integer.toHexString(msg.dataGet()[i] & 0xff)
+			CompassTools.debugPrint(Integer.toHexString(msg.dataGet()[i] & 0xff)
 					+ " ");
 		}
-		WaveletConfigServer.debugPrintln();
+		CompassTools.debugPrintln();
 	}
 
 	public void sendPack(BroadcastPack pack) throws IOException {

@@ -6,7 +6,6 @@
 package edu.rice.compass.bigpack;
 
 import java.io.*;
-
 import net.tinyos.message.*;
 import edu.rice.compass.*;
 import edu.rice.compass.comm.*;
@@ -17,10 +16,10 @@ public class Unpacker extends ProtoPacker {
 		super(owner);
 	}
 
-	public void newRequest(BigPack msg) {
+	public void newRequest(short mType) {
 		if (!busy) {
 			busy = true;
-			type = msg.getType();
+			type = mType;
 			curPackNum = HEADER_PACK_NUM;
 			sendRequest();
 		}
@@ -70,7 +69,7 @@ public class Unpacker extends ProtoPacker {
 		if (!busy || id != owner.getID())
 			return;
 		switch (pack.get_data_type()) {
-		case Wavelet.BIGPACKHEADER:
+		case CompassMote.BIGPACKHEADER:
 			if (curPackNum == HEADER_PACK_NUM
 					&& pack.get_data_data_bpHeader_requestType() == type) {
 				// Store specific details of the request
@@ -80,7 +79,7 @@ public class Unpacker extends ProtoPacker {
 				sendAck(pack); // Send an ACK
 			}
 			break;
-		case Wavelet.BIGPACKDATA:
+		case CompassMote.BIGPACKDATA:
 			if (pack.get_data_data_bpData_curPack() == curPackNum) {
 				newData(pack); // Store new data
 				System.out.println("Got BP data (" + (curPackNum + 1) + "/" + numPacks

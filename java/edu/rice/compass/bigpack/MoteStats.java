@@ -20,7 +20,7 @@ public class MoteStats extends BigPack {
 		super(data, DEFAULT_MESSAGE_SIZE, numBlks, numPtrs);
 	}
 	
-	public short getType() {
+	public static short getType() {
 		return BP_STATS;
 	}
 
@@ -46,6 +46,46 @@ public class MoteStats extends BigPack {
 
 	protected int numChildTypes() {
 		return 1;
+	}
+	
+	public void printStats() {
+		System.out.println("  Voltage: " + (get_voltage() / 1000) + " V");
+		System.out.println("  *Unicast* Packets:");
+		System.out.println("    Received: " + get_pRcvd());
+		if (get_pRcvd() > 0) {
+			System.out.println("      Min. RSSI: " + (get_rssiMin() - 45));
+			System.out.println("      Avg. RSSI: "
+					+ ((get_rssiSum() / get_pRcvd()) - 45));
+			System.out.println("      Max. RSSI: " + (get_rssiMax() - 45));
+			System.out.println("      Min. LQI:  " + get_lqiMin());
+			System.out.println("      Avg. LQI:  "
+					+ (get_lqiSum() / get_pRcvd()));
+			System.out.println("      Max. LQI:  " + get_lqiMax());
+		}
+		System.out.println("    Sent: " + get_pSent());
+		if (get_pSent() > 0)
+			System.out.println("      ACKed: " + get_pAcked() + " ("
+					+ (get_pAcked() * 100 / get_pSent()) + "%)");
+		System.out.println("  Messages:");
+		System.out.println("    Received: " + get_mRcvd());
+		System.out.println("    Sent:     " + get_mSent());
+		if (get_mSent() > 0)
+			System.out.println("      Avg. Retries: "
+					+ ((float) get_mRetriesSum() / get_mSent()));
+		StatsWTL level[] = get_wavelet_level();
+		if (level.length > 0) {
+			System.out.println("  Wavelet:");
+			for (int l = 0; l < level.length; l++) {
+				StatsWTNB nb[] = level[l].get_nb();
+				System.out.println("    Level " + (l + 1) + ":");
+				for (int n = 0; n < nb.length; n++) {
+					System.out.println("      Neighbor " + (n + 1) + ":");
+					System.out.println("        ID:         " + nb[n].get_id());
+					System.out.println("        Retries:    " + nb[n].get_retries());
+					System.out.println("        Cache Hits: " + nb[n].get_cacheHits());
+				}
+			}
+		}
 	}
 
 	// Message-type-specific access methods appear below.

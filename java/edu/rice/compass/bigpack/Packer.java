@@ -76,7 +76,7 @@ public class Packer extends ProtoPacker {
 		if (id != owner.getID())
 			return;
 		switch (pack.get_data_type()) {
-		case Wavelet.BIGPACKHEADER:
+		case CompassMote.BIGPACKHEADER:
 			// If true, this is the initial request, else an ACK.
 			if (!busy && pack.get_data_data_bpHeader_packTotal() == 0) {
 				System.out.println("Got BP header request from mote " + id);
@@ -98,7 +98,7 @@ public class Packer extends ProtoPacker {
 				sendData(); // Send BP data
 			}
 			break;
-		case Wavelet.BIGPACKDATA:
+		case CompassMote.BIGPACKDATA:
 			if (busy && pack.get_data_data_bpData_curPack() == curPackNum) {
 				if (morePacksExist()) {
 					System.out.println("Got BP data ack from mote " + id);

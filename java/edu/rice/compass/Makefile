@@ -2,7 +2,7 @@
 
 PACKAGE = edu.rice.compass
 
-SUBDIRS = bigpack
+SUBDIRS = bigpack comm
 
 ROOT = ../../..
 include $(ROOT)/Makefile.include
