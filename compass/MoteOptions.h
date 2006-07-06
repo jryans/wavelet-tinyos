@@ -13,6 +13,8 @@ typedef struct
   uint8_t txPower; // (MICAZ) Sets the TX power level (valid: 1 - 31)
   bool rfAck; // (MICAZ) Toggles ACK support (d: on)
   uint16_t radioOffTime; // (MICAZ) Number of seconds to disable radio
+  bool hplPM; // Toggles HPLPowerManagement (d: off)
+  uint8_t rfChan; // (MICAZ) Sets the RF channel (valid: 11 - 26)
 } MoteOptData;
 
 enum { // Bitmasks
@@ -20,7 +22,9 @@ enum { // Bitmasks
   MO_TXPOWER = 0x02,
   MO_CLEARSTATS = 0x04,
   MO_RFACK = 0x08,
-  MO_RADIOOFFTIME = 0x10
+  MO_RADIOOFFTIME = 0x10,
+  MO_HPLPM = 0x20,
+  MO_RFCHAN = 0x40
 };
 
 #endif // _MOTEOPTIONS_H

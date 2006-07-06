@@ -18,8 +18,8 @@ implementation {
   Main.StdControl -> SensorControlM;
   SensorControlM.LightADC -> PhotoTemp.ExternalPhotoADC;
   SensorControlM.TempADC -> PhotoTemp.ExternalTempADC;
-  SensorControlM.VoltADC -> VoltageC.Voltage;
+  SensorControlM.VoltADC -> VoltageC;
   SensorControlM.LightControl -> PhotoTemp.PhotoStdControl;
   SensorControlM.TempControl -> PhotoTemp.TempStdControl; 
-  SensorControlM.VoltControl -> VoltageC.StdControl;
+  SensorControlM.VoltControl -> VoltageC;
 }

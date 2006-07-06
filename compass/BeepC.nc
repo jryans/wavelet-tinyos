@@ -13,6 +13,6 @@ implementation {
   
   Beep = BeepM;  
   Main.StdControl -> BeepM;
-  BeepM.Sounder -> Sounder.StdControl;
+  BeepM.Sounder -> Sounder;
   BeepM.Timer -> TimerC.Timer[unique("Timer")];
 }

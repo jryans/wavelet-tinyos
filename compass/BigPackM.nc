@@ -135,7 +135,7 @@ implementation {
       curType = type;
       mainBlock[type] = (int8_t *) 1122; // Just so it's not NULL
       msg.src = TOS_LOCAL_ADDRESS;
-      msg.dest = 0;
+      msg.dest = NET_UART_ADDR;
       msg.type = BIGPACKHEADER;
       msg.data.bpHeader.requestType = type;
       msg.data.bpHeader.packTotal = 0;

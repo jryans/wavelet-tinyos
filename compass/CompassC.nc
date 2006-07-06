@@ -9,7 +9,8 @@ includes BigPack;
 configuration CompassC {}
 implementation {
   components Main, DelugeC, NetworkC, TimerC, BigPackM,
-             WaveletM, LedsC, StateC, SensorControlC, StatsC;
+             WaveletM, LedsC, StateC, SensorControlC, StatsC,
+             MoteOptionsC;
 #ifdef BEEP
   components BeepC;
 #endif
@@ -18,13 +19,14 @@ implementation {
   Main.StdControl -> DelugeC;
   
   /*** Network: provides broadcast and unicast I/O ***/
-  //MoteCommandC.Message -> NetworkC;
+  MoteOptionsC.Message -> NetworkC;
   WaveletM.Message -> NetworkC;
   WaveletM.Router -> NetworkC;
   BigPackM.Message -> NetworkC;
   StatsC.Message -> NetworkC;
   
   /*** Stats: sends packet and app stats when requested ***/
+  MoteOptionsC.Stats -> StatsC;
   WaveletM.Stats -> StatsC;
   
   /*** State: state machine library ***/

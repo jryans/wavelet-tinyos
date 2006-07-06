@@ -16,6 +16,7 @@ module MoteOptionsM {
   	interface Stats;
     interface Message;
     interface Timer as RadioDelay;
+    interface PowerManagement as PM;
   }
   provides {
     interface MoteOptions;
@@ -42,11 +43,22 @@ implementation {
         dbg(DBG_USR2, "MoteOptions: Clearing stats data\n");
         call Stats.clear();
       }
+      if ((o->mask & MO_HPLPM) != 0) {
+        dbg(DBG_USR2, "MoteOptions: Setting power management to %i\n", o->hplPM);
+        (o->hplPM) ? call PM.enable()
+                   : call PM.disable();
+      }
 #ifdef PLATFORM_MICAZ
       if ((o->mask & MO_TXPOWER) != 0) {
         if (o->txPower > 0 && o->txPower < 32) {
           dbg(DBG_USR2, "MoteOptions: Setting TX power level to %i\n", o->txPower);
           call CC2420Control.SetRFPower(o->txPower);
+        }
+      }
+      if ((o->mask & MO_RFCHAN) != 0) {
+        if (o->rfChan > 10 && o->rfChan < 27) {
+          dbg(DBG_USR2, "MoteOptions: Setting RF channel to %i\n", o->rfChan);
+          call CC2420Control.TunePreset(o->rfChan);
         }
       }
       if ((o->mask & MO_RFACK) != 0) {
@@ -66,6 +78,10 @@ implementation {
   event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
     return SUCCESS;
   }
+  
+  /*** MoteOptions ***/
+  
+  default event void MoteOptions.diag(bool state) {}
   
   /*** Timer ***/
   
