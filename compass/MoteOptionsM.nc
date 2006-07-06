@@ -70,7 +70,9 @@ implementation {
   /*** Timer ***/
   
   event result_t RadioDelay.fired() {
+#ifdef PLATFORM_MICAZ
     call TransControl.start();
+#endif
     return SUCCESS;
   }
   
