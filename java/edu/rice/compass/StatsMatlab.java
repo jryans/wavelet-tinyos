@@ -4,6 +4,7 @@
 package edu.rice.compass;
 
 import java.io.*;
+import java.net.*;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -14,8 +15,12 @@ public class StatsMatlab {
 	private StatsMatlab() {}
 
 	public static Object[][] loadStats(String subdir) {
-		// Fixed path name for now
-		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\" + subdir;
+    // Get package path
+		Class pClass = StatsMatlab.class;
+		Package mPackage = pClass.getPackage();
+		URL pAddr = pClass.getResource("/" + mPackage.getName().replace('.', '/'));
+		// Add subdirectory
+		String path = pAddr.getPath() + "/" + subdir;
 		File dir = new File(path);
 		if (dir.exists()) {
 			File[] files = dir.listFiles(XmlFilter.filter);

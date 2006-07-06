@@ -5,13 +5,16 @@
 package edu.rice.compass;
 
 import java.io.*;
+import java.net.*;
+
 import com.thoughtworks.xstream.*;
 
 public class WaveletMatlab {
 
 	private static XStream xs = new XStream();
-	
-	private WaveletMatlab() {}
+
+	private WaveletMatlab() {
+	}
 
 	/**
 	 * Stores the parameters in a WaveletConfig and writes that out to an XML
@@ -19,9 +22,14 @@ public class WaveletMatlab {
 	 */
 	public static void saveConfig(double[] scales, Object[] predNB,
 			Object[] predCoeff, Object[] updCoeff) {
-		WaveletConfigData conf = new WaveletConfigData(scales, predNB, predCoeff, updCoeff);
-		// Fixed path name for now
-		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletConfig.xml";
+		WaveletConfigData conf = new WaveletConfigData(scales, predNB, predCoeff,
+				updCoeff);
+		// Get package path
+		Class pClass = WaveletMatlab.class;
+		Package mPackage = pClass.getPackage();
+		URL pAddr = pClass.getResource("/" + mPackage.getName().replace('.', '/'));
+		// Add file name
+		String path = pAddr.getPath() + "/waveletConfig.xml";
 		try {
 			FileOutputStream fs = new FileOutputStream(path);
 			xs.toXML(conf, fs);
@@ -32,8 +40,12 @@ public class WaveletMatlab {
 	}
 
 	public static float[][][] loadData() {
-		// Fixed path name for now
-		String path = "C:\\tinyos\\cygwin\\opt\\tinyos-1.x\\tools\\java\\edu\\rice\\compass\\waveletData.xml";
+		// Get package path
+		Class pClass = WaveletMatlab.class;
+		Package mPackage = pClass.getPackage();
+		URL pAddr = pClass.getResource("/" + mPackage.getName().replace('.', '/'));
+		// Add file name
+		String path = pAddr.getPath() + "/waveletData.xml";
 		WaveletData mData = new WaveletData();
 		try {
 			FileInputStream fs = new FileInputStream(path);
