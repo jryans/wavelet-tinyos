@@ -18,14 +18,18 @@ public class Packer extends ProtoPacker {
 
 	private void newMessage(BigPack msg) {
 		if (!busy) {
-			busy = true;
 			stream = msg.dataStream();
 			numBlocks = msg.numBlocks();
 			numPtrs = msg.numPointers();
-			type = msg.getType();
+			try {
+				type = BigPack.getTypeFromClass(msg.getClass()).shortValue();
+			} catch (Exception e) {
+				return;
+			}
 			numPacks = stream.length / BigPack.BP_DATA_LEN;
 			if (stream.length % BigPack.BP_DATA_LEN != 0)
 				numPacks++;
+			busy = true;
 		}
 	}
 

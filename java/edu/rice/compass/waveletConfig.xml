@@ -1,4 +1,4 @@
-<edu.rice.compass.WaveletConfig>
+<edu.rice.compass.WaveletConfigData>
   <mScale>
     <double>0.0</double>
     <double>3.0</double>
@@ -99,4 +99,4 @@
     </double-array>
     <null/>
   </mUpdCoeff>
-</edu.rice.compass.WaveletConfig>
+</edu.rice.compass.WaveletConfigData>

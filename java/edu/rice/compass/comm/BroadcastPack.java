@@ -114,6 +114,12 @@ public class BroadcastPack extends net.tinyos.message.Message {
         s += "  [data.data.opt.radioOffTime=0x"+Long.toHexString(get_data_data_opt_radioOffTime())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
+        s += "  [data.data.opt.hplPM=0x"+Long.toHexString(get_data_data_opt_hplPM())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.opt.rfChan=0x"+Long.toHexString(get_data_data_opt_rfChan())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
         s += "  [data.data.wData.dataSet=0x"+Long.toHexString(get_data_data_wData_dataSet())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
@@ -730,6 +736,132 @@ public class BroadcastPack extends net.tinyos.message.Message {
      */
     public static int sizeBits_data_data_opt_radioOffTime() {
         return 16;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.opt.hplPM
+    //   Field type: short
+    //   Offset (bits): 104
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.opt.hplPM' is signed (false).
+     */
+    public static boolean isSigned_data_data_opt_hplPM() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.opt.hplPM' is an array (false).
+     */
+    public static boolean isArray_data_data_opt_hplPM() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.opt.hplPM'
+     */
+    public static int offset_data_data_opt_hplPM() {
+        return (104 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.opt.hplPM'
+     */
+    public static int offsetBits_data_data_opt_hplPM() {
+        return 104;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.opt.hplPM'
+     */
+    public short get_data_data_opt_hplPM() {
+        return (short)getUIntElement(offsetBits_data_data_opt_hplPM(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.opt.hplPM'
+     */
+    public void set_data_data_opt_hplPM(short value) {
+        setUIntElement(offsetBits_data_data_opt_hplPM(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.opt.hplPM'
+     */
+    public static int size_data_data_opt_hplPM() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.opt.hplPM'
+     */
+    public static int sizeBits_data_data_opt_hplPM() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.opt.rfChan
+    //   Field type: short
+    //   Offset (bits): 112
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.opt.rfChan' is signed (false).
+     */
+    public static boolean isSigned_data_data_opt_rfChan() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.opt.rfChan' is an array (false).
+     */
+    public static boolean isArray_data_data_opt_rfChan() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.opt.rfChan'
+     */
+    public static int offset_data_data_opt_rfChan() {
+        return (112 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.opt.rfChan'
+     */
+    public static int offsetBits_data_data_opt_rfChan() {
+        return 112;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.opt.rfChan'
+     */
+    public short get_data_data_opt_rfChan() {
+        return (short)getUIntElement(offsetBits_data_data_opt_rfChan(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.opt.rfChan'
+     */
+    public void set_data_data_opt_rfChan(short value) {
+        setUIntElement(offsetBits_data_data_opt_rfChan(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.opt.rfChan'
+     */
+    public static int size_data_data_opt_rfChan() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.opt.rfChan'
+     */
+    public static int sizeBits_data_data_opt_rfChan() {
+        return 8;
     }
 
     /////////////////////////////////////////////////////////

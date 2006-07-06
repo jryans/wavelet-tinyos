@@ -23,12 +23,12 @@ public class PackerMote extends Mote implements PackerHost {
 	}
 
 	public void setPackerApp(short pType, PackerMoteApp app) {
-		Integer type = new Integer(pType);
+		Short type = new Short(pType);
 		packApps.put(type, app);
 	}
 
 	public BigPack buildPack(short type) {
-		PackerMoteApp pa = (PackerMoteApp) packApps.get(new Integer(type));
+		PackerMoteApp pa = (PackerMoteApp) packApps.get(new Short(type));
 		if (pa == null)
 			return null;
 		BigPack bp = pa.buildPack();
@@ -39,14 +39,20 @@ public class PackerMote extends Mote implements PackerHost {
 
 	public void unpackerDone(BigPack msg) {
 		switchPacker(packer);
-		PackerMoteApp pa = (PackerMoteApp) packApps.get(new Integer(msg.getType()));
+		Short type = new Short(BigPack.BP_UNKNOWN);
+		try {
+			type = BigPack.getTypeFromClass(msg.getClass());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		PackerMoteApp pa = (PackerMoteApp) packApps.get(type);
 		if (pa == null)
 			return;
 		pa.unpackerDone(msg);
 	}
 
 	public void packerDone(short type) {
-		PackerMoteApp pa = (PackerMoteApp) packApps.get(new Integer(type));
+		PackerMoteApp pa = (PackerMoteApp) packApps.get(new Short(type));
 		if (pa == null)
 			return;
 		pa.packerDone();

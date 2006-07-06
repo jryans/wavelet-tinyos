@@ -6,6 +6,7 @@
 package edu.rice.compass.bigpack;
 
 import java.io.*;
+import java.lang.reflect.*;
 import net.tinyos.message.*;
 import edu.rice.compass.*;
 import edu.rice.compass.comm.*;
@@ -84,18 +85,25 @@ public class Unpacker extends ProtoPacker {
 				newData(pack); // Store new data
 				System.out.println("Got BP data (" + (curPackNum + 1) + "/" + numPacks
 						+ ") from mote " + id);
+				sendAck(pack); // Send an ACK
 				if (morePacksExist()) {
 					curPackNum++;
 				} else {
 					System.out.println("BP rcvd from mote " + id + " complete");
-					busy = false;
-					// Done!
-					owner.unpackerDone(new MoteStats(stream, numBlocks, numPtrs));
+					busy = false; // Done!
+					// Find the right class, and make it.
+					try {
+						Class msgClass = BigPack.getClassFromType(type);
+						Constructor msgMake = msgClass.getConstructor(new Class[] {
+								byte[].class, int.class, int.class });
+						owner.unpackerDone((BigPack) msgMake.newInstance(new Object[] {
+								stream, new Integer(numBlocks), new Integer(numPtrs) }));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
-				sendAck(pack); // Send an ACK
 			}
 			break;
 		}
 	}
-
 }

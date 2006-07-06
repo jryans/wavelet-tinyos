@@ -1,6 +1,9 @@
 package edu.rice.compass.bigpack;
 
 import net.tinyos.message.Message;
+import java.io.*;
+import java.lang.reflect.*;
+import java.net.*;
 import java.util.*;
 import edu.rice.compass.CompassTools;
 
@@ -21,7 +24,7 @@ public abstract class BigPack extends Message {
 
 	public static final short BIGPACKHEADER = 2;
 	public static final short BIGPACKDATA = 3;
-	
+
 	private static final short BPP_PTR = 0;
 	private static final short BPP_ARRAY = 1;
 
@@ -31,6 +34,10 @@ public abstract class BigPack extends Message {
 	private List pointers = new Vector();
 
 	protected int firstMainBlk;
+
+	/* Class Translation */
+	private static Hashtable classNameByType;
+	private static Hashtable typeByClassName;
 
 	protected BigPack(int dataLength) {
 		super(dataLength);
@@ -51,8 +58,7 @@ public abstract class BigPack extends Message {
 			BigPackBlock blk = new BigPackBlock(byteRange(rawData, offset,
 					BigPackBlock.DEFAULT_MESSAGE_SIZE));
 			CompassTools.debugPrintln("BigPack:   Start:  " + blk.get_start());
-			CompassTools
-					.debugPrintln("BigPack:   Length: " + blk.get_length());
+			CompassTools.debugPrintln("BigPack:   Length: " + blk.get_length());
 			blocks.add(blk);
 			offset += BigPackBlock.DEFAULT_MESSAGE_SIZE;
 		}
@@ -94,8 +100,8 @@ public abstract class BigPack extends Message {
 				// create them, and attach them here as children.
 				List pToC;
 				if (pointers.size() > 0) {
-					pToC = pointers.subList(pointers.size() - numChildTypes(), pointers
-							.size());
+					pToC = pointers.subList(pointers.size() - numChildTypes(),
+							pointers.size());
 				} else {
 					pToC = pointers;
 				}
@@ -137,8 +143,8 @@ public abstract class BigPack extends Message {
 			BigPackBlock blk = (BigPackBlock) blocks.get(thisBlk);
 			if ((cOffset + 1) * data_length > blk.get_length())
 				// throw new Exception("Static data block's length doesn't match.");
-				System.out.println("Static data block does not seem to be large " +
-						"enough to hold data for this class.");
+				System.out.println("Static data block does not seem to be large "
+						+ "enough to hold data for this class.");
 			data = byteRange(rawData, blk.get_start() + cOffset * data_length,
 					data_length);
 		} catch (Exception e) {
@@ -307,6 +313,65 @@ public abstract class BigPack extends Message {
 		}
 		System.arraycopy(data, 0, stream, offset, data_length);
 		return stream;
+	}
+
+	/**
+	 * Adds every subclass in the same package whose getType() does not return
+	 * BP_UNKNOWN (meaning it is a root pack) to translation tables for lookup by
+	 * class name or type number.
+	 */
+	private static void buildClassTransTables() {
+		// Make new tables
+		classNameByType = new Hashtable();
+		typeByClassName = new Hashtable();
+		// Get directory corresponding to this package
+		Class pClass = BigPack.class;
+		Package mPackage = pClass.getPackage();
+		URL pAddr = pClass.getResource("/" + mPackage.getName().replace('.', '/'));
+		File pDir = new File(pAddr.getFile());
+		// Find all .class files in that directory
+		String[] pClasses = pDir.list();
+		for (int f = 0; f < pClasses.length; f++) {
+			if (pClasses[f].endsWith(".class")) {
+				String cName = pClasses[f].substring(0, pClasses[f].length() - 6);
+				try {
+					Class cClass = Class.forName(mPackage.getName() + "." + cName);
+					// Check if this is either this class or a subclass
+					if (pClass.isAssignableFrom(cClass)) {
+						// Check if getType() is not BP_UNKNOWN
+						Method mGetType = cClass.getDeclaredMethod("getType", null);
+						Short cType = (Short) mGetType.invoke(null, null);
+						if (cType.shortValue() != BP_UNKNOWN) {
+							// Should be registered
+							classNameByType.put(cType, cClass.getName());
+							typeByClassName.put(cClass.getName(), cType);
+						}
+					}
+				} catch (NoSuchMethodException e) {
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.exit(0);
+				}
+			}
+		}
+	}
+	
+	public static Short getTypeFromClass(Class cClass) throws Exception {
+		if (typeByClassName == null)
+			buildClassTransTables();
+		Short cType = (Short) typeByClassName.get(cClass.getName());
+		if (cType == null)
+			throw new Exception("Class not registered!");
+		return cType;
+	}
+	
+	public static Class getClassFromType(short cType) throws Exception {
+		if (classNameByType == null)
+			buildClassTransTables();
+		String cName = (String) classNameByType.get(new Short(cType));
+		if (cName == null)
+			throw new Exception("Type not registered!");
+		return Class.forName(cName);
 	}
 
 	public static short getType() {

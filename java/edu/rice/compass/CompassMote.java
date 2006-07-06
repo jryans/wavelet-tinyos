@@ -61,10 +61,6 @@ public class CompassMote extends PackerMote {
 		};
 	}
 
-	public static void printStats(MoteStats stats) {
-
-	}
-
 	private PackerMoteApp makeWaveletConfApp(final WaveletConf conf) {
 		return new PackerMoteApp() {
 			public BigPack buildPack() {
@@ -146,8 +142,20 @@ public class CompassMote extends PackerMote {
 		private static final short MO_CLEARSTATS = 0x04;
 		private static final short MO_RFACK = 0x08;
 		private static final short MO_RADIOOFFTIME = 0x10;
+		private static final short MO_HPLPM = 0x20;
+		private static final short MO_RFCHAN = 0x40;
 
 		private UnicastPack pack = new UnicastPack();
+		
+		/* C Boolean */
+		private static final short C_FALSE = 0;
+		private static final short C_TRUE = 1;
+		
+		/* C Type Helpers */
+		private short b2Cs(boolean b) {
+			if (b) return C_TRUE;
+			return C_FALSE;
+		}
 
 		private MoteOptions() {
 			pack.set_data_type(MOTEOPTIONS);
@@ -155,7 +163,7 @@ public class CompassMote extends PackerMote {
 
 		public void diagMode(boolean diag) {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_DIAGMODE));
-			pack.set_data_data_opt_diagMode(Wavelet.b2Cs(diag));
+			pack.set_data_data_opt_diagMode(b2Cs(diag));
 		}
 
 		public void txPower(int power) {
@@ -169,12 +177,22 @@ public class CompassMote extends PackerMote {
 
 		public void rfAck(boolean ack) {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RFACK));
-			pack.set_data_data_opt_diagMode(Wavelet.b2Cs(ack));
+			pack.set_data_data_opt_diagMode(b2Cs(ack));
 		}
 
 		public void radioOffTime(int time) {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RADIOOFFTIME));
 			pack.set_data_data_opt_radioOffTime(time);
+		}
+		
+		public void hplPM(boolean pm) {
+			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_HPLPM));
+			pack.set_data_data_opt_hplPM(b2Cs(pm));
+		}
+		
+		public void rfChan(int chan) {
+			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RFCHAN));
+			pack.set_data_data_opt_rfChan((short) chan);
 		}
 		
 		public void send() {

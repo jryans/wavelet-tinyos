@@ -9,6 +9,8 @@ package edu.rice.compass;
 
 import java.util.*;
 import java.io.*;
+import java.net.*;
+
 import com.martiansoftware.jsap.*;
 import com.thoughtworks.xstream.*;
 import edu.rice.compass.bigpack.*;
@@ -23,6 +25,7 @@ public class CompassTools {
 	private XStream xs = new XStream();
 	private WaveletController wCont;
 	private long setLength;
+	public String packagePath;
 
 	public static void main(String[] args) {
 		try {
@@ -41,6 +44,10 @@ public class CompassTools {
 						new Switch("pack", JSAP.NO_SHORTFLAG, "pack"),
 						new Switch("prog", JSAP.NO_SHORTFLAG, "prog"),
 						new Switch("ping", JSAP.NO_SHORTFLAG, "ping"),
+						new FlaggedOption("pm", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "pm"),
+						new FlaggedOption("chan", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "chan"),
 						new FlaggedOption("power", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "power"),
 						new FlaggedOption("rofftime", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
@@ -66,6 +73,12 @@ public class CompassTools {
 			System.exit(0);
 
 		debug = config.getBoolean("debug");
+		
+		// Store package path
+		Class pClass = CompassTools.class;
+		Package mPackage = pClass.getPackage();
+		URL pAddr = pClass.getResource("/" + mPackage.getName().replace('.', '/'));
+		packagePath = pAddr.getPath() + "/";
 
 		// Load broadcast sequence number
 		if (config.getBoolean("loadseqno"))
@@ -76,8 +89,10 @@ public class CompassTools {
 			File wcFile;
 			if (config.contains("config")) { // Supplied path
 				wcFile = new File(config.getString("config"));
+				if (!wcFile.isAbsolute())
+					wcFile = new File(packagePath + config.getString("config"));
 			} else { // Default path
-				wcFile = new File("waveletConfig.xml");
+				wcFile = new File(packagePath + "waveletConfig.xml");
 			}
 			if (!wcFile.exists()) {
 				System.out.println("Wavelet config file at " + wcFile.getPath()
@@ -129,12 +144,19 @@ public class CompassTools {
 				opt.diagMode(config.getBoolean("diag"));
 			if (config.contains("rofftime"))
 				opt.radioOffTime(config.getInt("rofftime"));
+			if (config.contains("pm"))
+				opt.hplPM(config.getBoolean("pm"));
+			if (config.contains("chan"))
+				opt.rfChan(config.getInt("chan"));
 			opt.send();
 			System.exit(0);
 		} else if (config.getBoolean("load")) {
 			if (config.contains("file")) {
 				try {
-					FileInputStream fs = new FileInputStream(config.getString("file"));
+					File in = new File(config.getString("file"));
+					if (!in.isAbsolute())
+						in = new File(packagePath + config.getString("file"));
+					FileInputStream fs = new FileInputStream(in);
 					MoteStats stats = (MoteStats) xs.fromXML(fs);
 					System.out.println("Stats from file:");
 					stats.printStats();
@@ -164,6 +186,9 @@ public class CompassTools {
 	public void saveResult(Object data, String fileName) {
 		if (config.contains("file"))
 			fileName = config.getString("file");
+		File out = new File(fileName);
+		if (!out.isAbsolute())
+			out = new File(packagePath + fileName);
 		try {
 			FileOutputStream fs = new FileOutputStream(fileName);
 			xs.toXML(data, fs);

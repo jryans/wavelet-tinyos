@@ -12,7 +12,7 @@ import edu.rice.compass.bigpack.*;
 public class WaveletController {
 
 	/* Variables */
-	private Vector mote;
+	private Vector mote = new Vector();
 	private WaveletConfigData wc;
 	private int maxScale = 0;
 
@@ -36,6 +36,7 @@ public class WaveletController {
 	}
 
 	public void configMotes() {
+		System.out.println("Wavelet config starting");
 		new Timer().scheduleAtFixedRate(new ConfigPulse(mote), 200, 300);
 	}
 
@@ -72,6 +73,7 @@ class ConfigPulse extends TimerTask {
 				}
 			}
 			if (allDone) {
+				System.out.println("Wavelet config complete");
 				CompassTools.main.configDone();
 				cancel();
 			}
