@@ -12,7 +12,7 @@ implementation {
              NetworkC,
              TimerC, 
              BigPackM,
-             ConfigTestM,
+//             ConfigTestM,
              StatsC,
              MoteOptionsC,
 //             WaveletM, 
@@ -25,10 +25,10 @@ implementation {
 #endif
 
   /*** MoteOptions: applies mote-wide options ***/
-  ConfigTestM.MoteOptions -> MoteOptionsC;
+  //ConfigTestM.MoteOptions -> MoteOptionsC;
 
   /*** ConfigTest: requests wavelet config on start ***/
-  Main.StdControl -> ConfigTestM;
+  //Main.StdControl -> ConfigTestM;
   
   /*** Stats: sends packet and app stats when requested ***/
   MoteOptionsC.Stats -> StatsC;
@@ -74,7 +74,7 @@ implementation {
   
   /*** Timer: enforces time-based control ***/
   Main.StdControl -> TimerC;
-  ConfigTestM.Timer -> TimerC.Timer[unique("Timer")];
+  //ConfigTestM.Timer -> TimerC.Timer[unique("Timer")];
   BigPackM.MsgRepeat -> TimerC.Timer[unique("Timer")];
   //WaveletM.DataSet -> TimerC.Timer[unique("Timer")];
   //WaveletM.StateTimer -> TimerC.Timer[unique("Timer")];

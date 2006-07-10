@@ -17,11 +17,6 @@ struct UnicastPack {
 typedef struct UnicastPack uPack;
 
 enum {
-  //RADIO_RETRIES = 5
-  RADIO_RETRIES = 1
-};
-
-enum {
   NET_UART_ADDR = 0xfffe
 };
 
