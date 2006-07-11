@@ -37,7 +37,7 @@ implementation {
       dbg(DBG_USR2, "MoteOptions: Rcvd new options data\n");
       if ((o->mask & MO_DIAGMODE) != 0) {
         dbg(DBG_USR2, "MoteOptions: Setting diagnostics mode to %i\n", o->diagMode);
-        signal MoteOptions.diag(o->diagMode);
+        signal MoteOptions.receive(MO_DIAGMODE, o->diagMode);
       }
       if ((o->mask & MO_CLEARSTATS) != 0) {
         dbg(DBG_USR2, "MoteOptions: Clearing stats data\n");
@@ -47,6 +47,10 @@ implementation {
         dbg(DBG_USR2, "MoteOptions: Setting power management to %i\n", o->hplPM);
         (o->hplPM) ? call PM.enable()
                    : call PM.disable();
+      }
+      if ((o->mask & MO_RADIORETRIES) != 0) {
+        dbg(DBG_USR2, "MoteOptions: Setting radio retries to %i\n", o->radioRetries);
+        signal MoteOptions.receive(MO_RADIORETRIES, o->radioRetries);
       }
 #ifdef PLATFORM_MICAZ
       if ((o->mask & MO_TXPOWER) != 0) {
@@ -81,7 +85,10 @@ implementation {
   
   /*** MoteOptions ***/
   
-  default event void MoteOptions.diag(bool state) {}
+  /**
+   * Signaled when an option affecting other applications is received.
+   */
+  default event void MoteOptions.receive(uint8_t optMask, uint8_t optValue) {}
   
   /*** Timer ***/
   

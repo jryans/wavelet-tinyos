@@ -14,7 +14,7 @@ configuration NetworkC {
 }
 implementation {
   components Main, BroadcastM, UnicastM, RouterC, 
-             TransceiverC, LedsC, TimerC;
+             TransceiverC, LedsC, TimerC, MoteOptionsC;
 #ifdef BEEP
   components BeepC;
 #endif
@@ -34,6 +34,7 @@ implementation {
   
   /*** Unicast ***/
   UnicastM.IO -> TransceiverC.Transceiver[AM_UNICASTPACK];
+  UnicastM.MoteOptions -> MoteOptionsC;
   UnicastM.Router -> RouterC;
   UnicastM.Leds -> LedsC;
 #ifdef BEEP

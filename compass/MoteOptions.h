@@ -15,6 +15,7 @@ typedef struct
   uint16_t radioOffTime; // (MICAZ) Number of seconds to disable radio
   bool hplPM; // Toggles HPLPowerManagement (d: off)
   uint8_t rfChan; // (MICAZ) Sets the RF channel (valid: 11 - 26)
+  uint8_t radioRetries; // Sets number of attempts for unicast packets (d: 5)
 } MoteOptData;
 
 enum { // Bitmasks
@@ -24,7 +25,8 @@ enum { // Bitmasks
   MO_RFACK = 0x08,
   MO_RADIOOFFTIME = 0x10,
   MO_HPLPM = 0x20,
-  MO_RFCHAN = 0x40
+  MO_RFCHAN = 0x40,
+  MO_RADIORETRIES = 0x80
 };
 
 #endif // _MOTEOPTIONS_H

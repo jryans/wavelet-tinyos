@@ -13,9 +13,6 @@ CFLAGS += -DMAX_WT_NBS=6
 # For now, use twice the max number of neighbors
 CFLAGS += -DMAX_TOS_MSGS=20
 
-# Attempts for each unicast transmission
-CFLAGS += -DRADIO_RETRIES=5
-
 # Adds (annoying) beeps to indicate various errors
 # CFLAGS += -DBEEP
 

@@ -6,8 +6,8 @@
 interface MoteOptions {
   
   /**
-   * Signaled when the diagnostic state is changed.
+   * Signaled when an option affecting other applications is received.
    */
-  event void diag(bool state);
+  event void receive(uint8_t optMask, uint8_t optValue);
   
 }

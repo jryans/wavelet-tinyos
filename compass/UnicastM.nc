@@ -16,6 +16,7 @@ module UnicastM {
     interface Transceiver as IO;
     interface Router;
     interface Leds;
+    interface MoteOptions;
 #ifdef BEEP
     interface Beep;
 #endif
@@ -29,6 +30,8 @@ implementation {
 
   TOS_MsgPtr tmpPtr;
   uint8_t len = sizeof(uPack);
+  
+  uint8_t RADIO_RETRIES = 5;
 
   /*** Internal Functions ***/
 
@@ -201,5 +204,13 @@ implementation {
    */
   event TOS_MsgPtr IO.receiveUart(TOS_MsgPtr m) {
     return deliver(m);	
+  }
+  
+  /**
+   * Signaled when an option affecting other applications is received.
+   */
+  event void MoteOptions.receive(uint8_t optMask, uint8_t optValue) {
+    if ((optMask & MO_RADIORETRIES) != 0)
+      RADIO_RETRIES = optValue;
   }
 }
