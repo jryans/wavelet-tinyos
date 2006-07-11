@@ -66,7 +66,7 @@ implementation {
    */
   void fwdNextHop(uPack *pRcvPack, uint8_t retries) {
     uPack *pFwdPack;
-    int16_t nextHop;
+    uint16_t nextHop;
     if (pRcvPack->data.dest == NET_UART_ADDR) {
       nextHop = call Router.getNextAddr(0);
     } else {

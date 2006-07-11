@@ -135,11 +135,6 @@ implementation {
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Waiting to hear from update nodes...\n",
             dataSet, curLevel + 1);
         break; }  
-      case S_CACHE: {
-        delayState();
-        checkData();
-        call State.toIdle();
-        break; }
       case S_PREDICTED: {
         delayState();
         calcNewValues();
@@ -147,12 +142,14 @@ implementation {
             dataSet, curLevel + 1);
         sendValuesToNeighbors();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
+        checkData();
         call State.toIdle();
         break; }
       case S_UPDATED: {
         delayState();
         calcNewValues();
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
+        checkData();
         nextWaveletLevel();
         call State.toIdle();
         break; }
@@ -211,31 +208,30 @@ implementation {
                                 : (delay = 500);
       break; }
     case S_UPDATING: {
-      nextState = S_CACHE;
+      nextState = S_UPDATED;
       forceNextState = TRUE;
-      delay = 2500;
+      delay = 2000;
       break; }
     case S_PREDICTING: {
-      nextState = S_CACHE;
+      nextState = S_PREDICTED;
       forceNextState = TRUE;
       delay = 1500;
       break; }
-    case S_CACHE: {
-      (level[curLevel].nb[0].state == S_UPDATING) 
-        ? (nextState = S_UPDATED)
-        : (nextState = S_PREDICTED);                         
-      delay = 500;
-      break; }
     case S_PREDICTED: {
       nextState = S_DONE;
-      delay = 1000;
+      delay = 500;
       break; }
     case S_UPDATED: {
       (curLevel + 1 == numLevels) 
         ? (nextState = S_DONE)
         : (nextState = level[curLevel + 1].nb[0].state);
-      (nextState == S_UPDATING) ? (delay = 1000)
-                                : (delay = 500);
+      if (nextState == S_UPDATING) {
+        delay = 2000;
+      } else if (nextState == S_DONE) {
+        delay = 500;
+      } else {
+        delay = 1500;
+      }
       break; }
     case S_SKIPLEVEL: {
       (curLevel + 1 == numLevels) 
@@ -562,20 +558,20 @@ implementation {
    * Enforces delays between each state change.
    */
   event result_t StateTimer.fired() {
-    if (forceNextState) {
-      call State.forceState(nextState);
-      dbg(DBG_USR2, "Wavelet: Forced to state %i\n", nextState);
-      post runState();
-    } else {
-      if (call State.requestState(nextState) == FAIL) {
+    if (call State.requestState(nextState) == FAIL) {
+      if (forceNextState) {
+        call State.forceState(nextState);
+        dbg(DBG_USR2, "Wavelet: Forced to state %i\n", nextState);
+        post runState();
+      } else {      
         dbg(DBG_USR2, "Wavelet: Not enough time before moving to state %i!\n", nextState);
 #ifdef BEEP
         call Beep.play(1, 250);
 #endif
-      } else {
-        dbg(DBG_USR2, "Wavelet: Moved to state %i\n", nextState);
-        post runState();
       }
+    } else { 
+      dbg(DBG_USR2, "Wavelet: Moved to state %i\n", nextState);
+      post runState();      
     }
     return SUCCESS;
   }
