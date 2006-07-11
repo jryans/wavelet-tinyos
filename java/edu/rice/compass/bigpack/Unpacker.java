@@ -33,7 +33,7 @@ public class Unpacker extends ProtoPacker {
 		req.set_data_data_bpHeader_packTotal((short) 0);
 		try {
 			owner.sendPack(req);
-			System.out.println("Sent BP request to mote " + owner.getID());
+			CompassTools.debugPrintln("Sent BP request to mote " + owner.getID());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -49,7 +49,7 @@ public class Unpacker extends ProtoPacker {
 	private void sendAck(UnicastPack pack) {
 		try {
 			owner.sendPack(pack);
-			System.out.println("Sent ack to mote " + owner.getID());
+			CompassTools.debugPrintln("Sent ack to mote " + owner.getID());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -75,7 +75,7 @@ public class Unpacker extends ProtoPacker {
 					&& pack.get_data_data_bpHeader_requestType() == type) {
 				// Store specific details of the request
 				storeRequestData(pack);
-				System.out.println("Got BP header (0/" + numPacks + ") from mote " + id);
+				CompassTools.debugPrintln("Got BP header (0/" + numPacks + ") from mote " + id);
 				curPackNum++;
 				sendAck(pack); // Send an ACK
 			}
@@ -83,13 +83,13 @@ public class Unpacker extends ProtoPacker {
 		case CompassMote.BIGPACKDATA:
 			if (pack.get_data_data_bpData_curPack() == curPackNum) {
 				newData(pack); // Store new data
-				System.out.println("Got BP data (" + (curPackNum + 1) + "/" + numPacks
+				CompassTools.debugPrintln("Got BP data (" + (curPackNum + 1) + "/" + numPacks
 						+ ") from mote " + id);
 				sendAck(pack); // Send an ACK
 				if (morePacksExist()) {
 					curPackNum++;
 				} else {
-					System.out.println("BP rcvd from mote " + id + " complete");
+					CompassTools.debugPrintln("BP rcvd from mote " + id + " complete");
 					busy = false; // Done!
 					// Find the right class, and make it.
 					try {

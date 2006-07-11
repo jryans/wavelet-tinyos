@@ -51,7 +51,8 @@ public class CompassTools {
 						new FlaggedOption("prog", JSAP.BOOLEAN_PARSER, "yes",
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "prog"),
 						new Switch("transform", 't', "transform"),
-						new Switch("ping", JSAP.NO_SHORTFLAG, "ping"),
+						new FlaggedOption("ping", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "ping"),
 						new FlaggedOption("pm", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "pm"),
 						new FlaggedOption("chan", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
@@ -60,6 +61,8 @@ public class CompassTools {
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "power"),
 						new FlaggedOption("rofftime", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, 'r', "radioofftime"),
+						new FlaggedOption("retries", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "radioretries"),
 						new Switch("opt", 'o', "options"),
 						new Switch("load", JSAP.NO_SHORTFLAG, "load"),
 						new UnflaggedOption("file"),
@@ -90,7 +93,6 @@ public class CompassTools {
 		URL pAddr = pClass.getResource("/" + mPackage.getName().replace('.', '/'));
 		packagePath = pAddr.getPath() + "/";
 		workingDir = System.getProperty("user.dir") + "/";
-		
 
 		// Load broadcast sequence number
 		if (config.getBoolean("loadseqno"))
@@ -146,11 +148,11 @@ public class CompassTools {
 			}
 		} else if (config.getBoolean("stats")) {
 			new CompassMote(destCheck()).getStats();
-		} else if (config.getBoolean("ping")) {
-			new Timer().scheduleAtFixedRate(new Ping(config.getInt("sets"),
-					new CompassMote(destCheck())), 100, 50);
+		} else if (config.getInt("ping", 0) != 0) {
+			new Timer().scheduleAtFixedRate(new Ping(config.getInt("ping"),
+					new CompassMote(destCheck())), 100, 30);
 		} else if (config.getBoolean("opt")) {
-			CompassMote cm = new CompassMote(config.getInt("dest"));
+			CompassMote cm = new CompassMote(destCheck());
 			CompassMote.MoteOptions opt = cm.makeOptions();
 			if (config.contains("power"))
 				opt.txPower(config.getInt("power"));
@@ -164,10 +166,12 @@ public class CompassTools {
 				opt.hplPM(config.getBoolean("pm"));
 			if (config.contains("chan"))
 				opt.rfChan(config.getInt("chan"));
+			if (config.contains("retries"))
+				opt.radioRetries(config.getInt("retries"));
 			opt.send();
 			System.exit(0);
 		} else if (config.contains("route") && config.contains("mote")) {
-			CompassMote cm = new CompassMote(config.getInt("dest"));
+			CompassMote cm = new CompassMote(destCheck());
 			cm.sendRouterLink(config.getInt("mote"), config.getBoolean("route"));
 			System.exit(0);
 		} else if (config.getBoolean("load")) {

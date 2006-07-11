@@ -167,6 +167,7 @@ public class CompassMote extends PackerMote {
 		private static final short MO_RADIOOFFTIME = 0x10;
 		private static final short MO_HPLPM = 0x20;
 		private static final short MO_RFCHAN = 0x40;
+		private static final short MO_RADIORETRIES = 0x80;
 
 		private UnicastPack pack = new UnicastPack();
 
@@ -196,6 +197,11 @@ public class CompassMote extends PackerMote {
 		public void radioOffTime(int time) {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RADIOOFFTIME));
 			pack.set_data_data_opt_radioOffTime(time);
+		}
+		
+		public void radioRetries(int retries) {
+			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RADIORETRIES));
+			pack.set_data_data_opt_radioRetries((short) retries);
 		}
 
 		public void hplPM(boolean pm) {

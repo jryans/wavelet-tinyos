@@ -43,7 +43,7 @@ public class Packer extends ProtoPacker {
 		pack.set_data_data_bpHeader_numPtrs((short) numPtrs);
 		try {
 			owner.sendPack(pack);
-			System.out.println("Sent BP header (0/" + numPacks + ") to mote "
+			CompassTools.debugPrintln("Sent BP header (0/" + numPacks + ") to mote "
 					+ owner.getID());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -61,7 +61,7 @@ public class Packer extends ProtoPacker {
 		pack.set_data_data_bpData_data(byteRange(firstByte, length));
 		try {
 			owner.sendPack(pack);
-			System.out.println("Sent BP data (" + (curPackNum + 1) + "/" + numPacks
+			CompassTools.debugPrintln("Sent BP data (" + (curPackNum + 1) + "/" + numPacks
 					+ ") to mote " + owner.getID());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -83,12 +83,12 @@ public class Packer extends ProtoPacker {
 		case CompassMote.BIGPACKHEADER:
 			// If true, this is the initial request, else an ACK.
 			if (!busy && pack.get_data_data_bpHeader_packTotal() == 0) {
-				System.out.println("Got BP header request from mote " + id);
+				CompassTools.debugPrintln("Got BP header request from mote " + id);
 				type = pack.get_data_data_bpHeader_requestType();
 				// Build a new BigPack of the requested type
 				BigPack newPack = owner.buildPack(type);
 				if (newPack == null) {
-					System.out.println("BP could not be built for mote " + id + "!");
+					CompassTools.debugPrintln("BP could not be built for mote " + id + "!");
 					return;
 				}
 				newMessage(newPack);
@@ -97,7 +97,7 @@ public class Packer extends ProtoPacker {
 			} else if (busy && pack.get_data_data_bpHeader_packTotal() != 0
 					&& curPackNum == HEADER_PACK_NUM
 					&& pack.get_data_data_bpHeader_requestType() == type) {
-				System.out.println("Got BP header ack from mote " + id);
+				CompassTools.debugPrintln("Got BP header ack from mote " + id);
 				curPackNum++;
 				sendData(); // Send BP data
 			}
@@ -105,11 +105,11 @@ public class Packer extends ProtoPacker {
 		case CompassMote.BIGPACKDATA:
 			if (busy && pack.get_data_data_bpData_curPack() == curPackNum) {
 				if (morePacksExist()) {
-					System.out.println("Got BP data ack from mote " + id);
+					CompassTools.debugPrintln("Got BP data ack from mote " + id);
 					curPackNum++;
 					sendData(); // Send BP data
 				} else {
-					System.out.println("BP sent to mote " + id + " complete");
+					CompassTools.debugPrintln("BP sent to mote " + id + " complete");
 					busy = false;
 					owner.packerDone(type); // Done!
 				}

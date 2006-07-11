@@ -120,6 +120,9 @@ public class BroadcastPack extends net.tinyos.message.Message {
         s += "  [data.data.opt.rfChan=0x"+Long.toHexString(get_data_data_opt_rfChan())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
+        s += "  [data.data.opt.radioRetries=0x"+Long.toHexString(get_data_data_opt_radioRetries())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
         s += "  [data.data.wData.dataSet=0x"+Long.toHexString(get_data_data_wData_dataSet())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
@@ -867,6 +870,69 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * Return the size, in bits, of the field 'data.data.opt.rfChan'
      */
     public static int sizeBits_data_data_opt_rfChan() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.opt.radioRetries
+    //   Field type: short
+    //   Offset (bits): 120
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.opt.radioRetries' is signed (false).
+     */
+    public static boolean isSigned_data_data_opt_radioRetries() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.opt.radioRetries' is an array (false).
+     */
+    public static boolean isArray_data_data_opt_radioRetries() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.opt.radioRetries'
+     */
+    public static int offset_data_data_opt_radioRetries() {
+        return (120 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.opt.radioRetries'
+     */
+    public static int offsetBits_data_data_opt_radioRetries() {
+        return 120;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.opt.radioRetries'
+     */
+    public short get_data_data_opt_radioRetries() {
+        return (short)getUIntElement(offsetBits_data_data_opt_radioRetries(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.opt.radioRetries'
+     */
+    public void set_data_data_opt_radioRetries(short value) {
+        setUIntElement(offsetBits_data_data_opt_radioRetries(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.opt.radioRetries'
+     */
+    public static int size_data_data_opt_radioRetries() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.opt.radioRetries'
+     */
+    public static int sizeBits_data_data_opt_radioRetries() {
         return 8;
     }
 
