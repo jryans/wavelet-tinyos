@@ -11,12 +11,20 @@ module RouterStaticM {
     interface StdControl;
     interface Router; 
   }
-  uses interface Transceiver as IO;
+  uses {
+    interface Message;
+    interface Transceiver as IO;
+  }
 }
 implementation {
+  
+#if 0
+  typedef char RouterData;
+#endif
+  
   uint8_t curState; // Holds the current state of the router.
   
-  int16_t routeTable[9][9] =
+  int16_t cleanTable[9][9] =
     { { -1, 1, 2, 3, 1, 2, 1, 2, 3 } ,
       { 0, -1, 2, 2, 4, 2, 4, 4, 2 } ,
       { 0, 1, -1, 3, 4, 5, 4, 5, 5 } ,
@@ -26,6 +34,8 @@ implementation {
       { 4, 4, 4, 4, 4, 7, -1, 7, 7 } ,
       { 5, 4, 5, 5, 4, 5, 6, -1, 8 } ,
       { 5, 5, 5, 5, 7, 5, 7, 7, -1 } };
+      
+  bool moteEnable[9] = { TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE };
   
   command result_t StdControl.init() {
     curState = RO_READY;
@@ -53,7 +63,27 @@ implementation {
    * Gives the address of the next hop for a given destination.
    */
   command int16_t Router.getNextAddr(int16_t dest) {
-    return routeTable[TOS_LOCAL_ADDRESS][dest];
+    if (!moteEnable[dest])
+      return NET_BAD_ROUTE;
+    return cleanTable[TOS_LOCAL_ADDRESS][dest];
+  }
+  
+  /**
+   * sendDone is signaled when the send has completed
+   */
+  event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
+    return SUCCESS;
+  }
+    
+  /**
+   * Receive is signaled when a new message arrives
+   */
+  event void Message.receive(msgData msg) {
+    if (msg.type == ROUTERDATA) {
+      RouterData *r = &msg.data.rData;
+      dbg(DBG_USR1, "Router: Setting mote %i's link to %i\n", r->mote, r->enable);
+      moteEnable[r->mote] = r->enable;
+    }
   }
 
   /*** Not needed in RouterStaticM ***/

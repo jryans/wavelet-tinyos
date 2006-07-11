@@ -1,5 +1,5 @@
 /**
- * Defines the setting carried in a MoteOptions message.
+ * Defines the settings carried in a MoteOptions message.
  * @author Ryan Stinnett
  */
 

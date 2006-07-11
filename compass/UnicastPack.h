@@ -17,7 +17,8 @@ struct UnicastPack {
 typedef struct UnicastPack uPack;
 
 enum {
-  NET_UART_ADDR = 0xfffe
+  NET_UART_ADDR = 0xfffe,
+  NET_BAD_ROUTE = 0xfffd
 };
 
 #endif /* _UNICASTPACK_H */

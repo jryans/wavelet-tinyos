@@ -1,5 +1,5 @@
 /**
- * Constucts a large, sortable array on top of the Blackbook
+ * Constucts a large, sortable array on top of the BlockStorage
  * interface to the mote's flash space.
  * @author Ryan Stinnett
  */
@@ -10,14 +10,12 @@ configuration SortedArrayC {
   }
 }
 implementation {
-  components Main, ByteEEPROM, SortedArrayM;
+  components Main, BlockStorageC, SortedArrayM;
   
   Main.StdControl -> SortedArrayM;
-  SortedArrayM.ByteControl -> ByteEEPROM;
-  SortedArrayM.AllocationReq -> ByteEEPROM;
-  SortedArrayM.WriteData -> ByteEEPROM;
-  SortedArrayM.ReadData -> ByteEEPROM;
-  SortedArrayM.LogData -> ByteEEPROM;
+  SortedArrayM.BlockRead -> BlockStorageC;
+  SortedArrayM.BlockWrite -> BlockStorageC;
+  SortedArrayM.Mount -> BlockStorageC;
   
   SortedArray = SortedArrayM;
 }

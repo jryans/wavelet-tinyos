@@ -100,8 +100,8 @@ implementation {
   task void runState() {
     switch (call State.getState()) {
       case S_STARTUP: { // Retrieve wavelet config data
-        dataSet = 0;
         call Leds.redOn();
+        waveletFree();
         call BigPackClient.request();
         break; }
       case S_START_DATASET: {
@@ -174,7 +174,7 @@ implementation {
         break; }
       case S_OFFLINE: {
         dbg(DBG_USR2, "Wavelet: Offline\n");
-        waveletFree();
+        dataSet = 0;        
         call Leds.redOff();
         call Leds.yellowOff();
         call State.toIdle();

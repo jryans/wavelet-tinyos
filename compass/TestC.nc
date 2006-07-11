@@ -14,6 +14,9 @@ implementation {
              BigPackM,
 //             ConfigTestM,
              StatsC,
+             ArrayTestM,
+             RandomLFSR,
+             SortedArrayC,
              MoteOptionsC,
 //             WaveletM, 
 //             LedsC;
@@ -29,6 +32,12 @@ implementation {
 
   /*** ConfigTest: requests wavelet config on start ***/
   //Main.StdControl -> ConfigTestM;
+  
+  /*** ArrayTest: verifys operation of sorted arrays ***/
+  Main.StdControl -> ArrayTestM;
+  ArrayTestM.Random -> RandomLFSR;
+  ArrayTestM.SA1 -> SortedArrayC.SortedArray[unique("SortedArray")];
+  ArrayTestM.SA2 -> SortedArrayC.SortedArray[unique("SortedArray")];  
   
   /*** Stats: sends packet and app stats when requested ***/
   MoteOptionsC.Stats -> StatsC;
@@ -74,6 +83,7 @@ implementation {
   
   /*** Timer: enforces time-based control ***/
   Main.StdControl -> TimerC;
+  ArrayTestM.Timer -> TimerC.Timer[unique("Timer")];
   //ConfigTestM.Timer -> TimerC.Timer[unique("Timer")];
   BigPackM.MsgRepeat -> TimerC.Timer[unique("Timer")];
   //WaveletM.DataSet -> TimerC.Timer[unique("Timer")];

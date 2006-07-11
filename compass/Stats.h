@@ -62,4 +62,9 @@ typedef struct ms {
   StatsWT wavelet; // Wavelet stats per level per neighbor
 } __attribute__ ((packed)) MoteStats;
 
+enum {
+  rssiBlock = unique("StorageManager"),
+  lqiBlock = unique("StorageManager")
+};
+
 #endif // _STATS_H

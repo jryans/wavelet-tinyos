@@ -1,16 +1,14 @@
 /**
- * Constucts a large, sortable array on top of the Blackbook
+ * Constucts a large, sortable array on top of the BlockStorage
  * interface to the mote's flash space.
  * @author Ryan Stinnett
  */
 
 module SortedArrayM {
   uses {
-    interface AllocationReq[uint8_t id];
-    interface WriteData[uint8_t id];
-    interface LogData[uint8_t id];
-    interface ReadData[uint8_t id];
-    interface StdControl as ByteControl;
+    interface BlockRead[uint8_t id];
+    interface BlockWrite[uint8_t id];
+    interface Mount[uint8_t id];
   }
   provides {
     interface SortedArray[uint8_t id];
@@ -21,7 +19,9 @@ module SortedArrayM {
 implementation {
   
   enum {
-    BLOCK_SIZE = 128
+    SA_BLOCK_SIZE = 256,
+    SA_HEADER_SIZE = 5,
+    SA_NEW_ARRAY = -1
   };
   
   enum {
@@ -39,25 +39,31 @@ implementation {
     SAI_READ,
     SAI_WRITE,
     SAI_ERASE,
+    SAI_MOUNT,
+    SAI_SEEK,
     SAI_ERROR
   };
   
   typedef struct {
+    uint8_t volid;
+    int8_t curArrNum;
+    int8_t targetArrNum;
+    uint16_t numBlocks;
     uint8_t elemSize;
     uint16_t numElems;
     uint8_t iState;
     uint8_t cState;
-    int8_t curBlock;
-    int8_t newBlock;
+    int8_t curBlockId;
+    int8_t nextBlockId;
     uint8_t *block;
     uint8_t *temp;
     bool blkDirty;
-    uint16_t curArrIdx;
+    uint16_t curVolIdx;
     uint8_t curBlkIdx;
   } saInfo;
   
-  uint8_t numArrays = uniqueCount("SortedArray");
-  saInfo sa[numArrays];
+  uint8_t numArrays = uniqueCount("StorageManager");
+  saInfo sa[uniqueCount("StorageManager")];
   
   /*** Internal Functions ***/
   
@@ -69,33 +75,34 @@ implementation {
   
   command result_t StdControl.init() {
     int i;
-    call ByteControl.init();
+    //call ByteControl.init();
     for (i = 0; i < numArrays; i++) {
+      //sa[i].numBlocks = 0;
       sa[i].elemSize = 0;
       sa[i].numElems = 0;    
       sa[i].iState = SAI_INIT;
       sa[i].cState = SAC_IDLE;
-      sa[i].curBlock = -1;
-      sa[i].newBlock = -1;      
+      sa[i].curBlockId = -1;
+      sa[i].nextBlockId = -1;      
       sa[i].block = NULL;
       sa[i].temp = NULL;
       sa[i].blkDirty = FALSE;
-      sa[i].curArrIdx = 0;
+      sa[i].curVolIdx = 0;
       sa[i].curBlkIdx = 0;
-      beginOp(i);
+      //beginOp(i);
     }
     return SUCCESS;
   }
 
   command result_t StdControl.start() {
-    call ByteControl.start();
-    for (i = 0; i < numArrays; i++)
-      beginOp(i);
+    //call ByteControl.start();
+    //for (i = 0; i < numArrays; i++)
+    //  beginOp(i);
     return SUCCESS;
   }
 
   command result_t StdControl.stop() {
-    call ByteControl.stop();
+    //call ByteControl.stop();
     return SUCCESS;
   }
   
@@ -104,7 +111,7 @@ implementation {
   result_t beginOp(uint8_t id) {
     saInfo *s = &sa[id];
     switch (s->iState) {
-    case SAI_INIT: {
+  /*  case SAI_INIT: {
       dbg(DBG_USR1, "SortedArray: Allocating array #%i\n", id);
       finishOp(id, call AllocationReq[id].request(20480));
       break; }
@@ -112,6 +119,14 @@ implementation {
       dbg(DBG_USR1, "SortedArray: Erasing array #%i\n", id);
       if (call LogData[id].erase() == FAIL) {
         dbg(DBG_USR2, "SortedArray: Call to erase array #%i failed!\n", id);
+        finishOp(id, FAIL);
+        return FAIL;
+      } 
+      break; } */
+    case SAI_MOUNT: {
+      dbg(DBG_USR1, "SortedArray: Mounting array #%i\n", id);
+      if (call Mount[id].mount(s->volid) == FAIL) {
+        dbg(DBG_USR2, "SortedArray: Call to mount array #%i failed!\n", id);
         finishOp(id, FAIL);
         return FAIL;
       } 
@@ -161,7 +176,7 @@ implementation {
   void finishOp(uint8_t id, result_t result) {
     saInfo *s = &sa[id];
     switch (s->iState) {
-    case SAI_INIT: {
+  /*  case SAI_INIT: {
       if (result == SUCCESS) {
         dbg(DBG_USR1, "SortedArray: Array #%i allocation complete\n", id);
         s->iState = SAI_ERASE;
@@ -176,6 +191,16 @@ implementation {
         s->iState = SAI_IDLE;
       } else {        
         dbg(DBG_USR2, "SortedArray: Erasing array #%i failed!\n", id);
+        s->iState = SAI_ERROR;
+      }
+      break; } */   
+    case SAI_MOUNT: {
+      if (result == SUCCESS) {
+        dbg(DBG_USR1, "SortedArray: Mounting array #%i complete\n", id);
+        s->iState = SAI_IDLE;
+        signal SortedArray.mountDone[id](SUCCESS);
+      } else {        
+        dbg(DBG_USR2, "SortedArray: Mounting array #%i failed!\n", id);
         s->iState = SAI_ERROR;
       }
       break; }
@@ -226,7 +251,7 @@ implementation {
     uint16_t bOffset;
     int8_t bNum;
     saInfo *s = &sa[id];
-    bOffset = s->curArrIdx * s->elemSize;
+    bOffset = s->curVolIdx * s->elemSize;
     bNum = bOffset / BLOCK_SIZE;
     curBlkIdx = bOffset % BLOCK_SIZE;
     s->newBlock = bNum;
@@ -238,13 +263,34 @@ implementation {
   /**
    * Gets the value stored at index.
    */
-  command result_t SortedArray.read[uint8_t id](uint16_t index) {
+  command result_t SortedArray.read[uint8_t id](uint16_t idx) {
     saInfo *s = &sa[id];    
-    if (s->cState != SAC_IDLE || s->iState != SAI_IDLE || index > s->numElems)
+    if (s->cState != SAC_IDLE || s->iState != SAI_IDLE || idx > s->numElems)
       return FAIL;
     s->cState = SAC_READ;
     s->iState = SAI_WRITE;
-    s->curArrIdx = index;
+    s->curVolIdx = idx;
+    return beginOp(id);
+  }
+  
+  command result_t SortedArray.mount[uint8_t id](uint8_t volid) {
+    saInfo *s = &sa[id];    
+    if (s->iState != SAI_INIT)
+      return FAIL;
+    s->iState = SAI_MOUNT;
+    s->volid = volid;
+    return beginOp(id);
+  }
+  
+  command result_t SortedArray.seek[uint8_t id](int8_t arraynum) {
+    saInfo *s = &sa[id];    
+    if (s->cState != SAC_IDLE || s->iState != SAI_IDLE)
+      return FAIL;
+    s->iState = SAI_WRITE;
+    s->cState = SAC_SEEK;
+    s->targetArrNum = arraynum;
+    s->curArrNum = 0;
+    s->curVolIdx = 0;
     return beginOp(id);
   }
   
@@ -278,58 +324,14 @@ implementation {
   /**
    * Sorts the values stored in the array.
    */
-  command result_t SortedArray.sort[uint8_t id]() {
+  //command result_t SortedArray.sort[uint8_t id]() {
     // Start sorting
-  }
+  //}
   
   /**
    * Removes all data stored in the array.
    */
   //command result_t SortedArray.clear[uint8_t id]() {}
   
-  /**
-   * Report erase completion.
-   * @param success FAIL if erase failed, in which case appends are not allowed.
-   * @return Ignored.
-   */
-  event result_t LogData.eraseDone[uint8_t id](result_t success) {
-    finishOp(id, success);
-    return SUCCESS;
-  }
-  
-  /**
-   * Report append completion.
-   * @param data Address of data written
-   * @param numBytesWrite Number of bytes written
-   * @param success SUCCESS if write was successful, FAIL otherwise
-   * @return Ignored.
-   */
-  event result_t LogData.appendDone[uint8_t id](uint8_t* data, uint32_t numBytes, result_t success) {
-    finishOp(id, success);
-    return SUCCESS;
-  }
-  
-  /**
-   * Signal write completion
-   * @param data Address of data written
-   * @param numBytesWrite Number of bytes written
-   * @param success SUCCESS if write was successful, FAIL otherwise
-   * @return Ignored.
-   */
-  event result_t WriteData.writeDone[uint8_t id](uint8_t *data, uint32_t numBytesWrite, result_t success) {
-    finishOp(id, success);
-    return SUCCESS;
-  }
-  
-  /**
-   * Signal read completion
-   * @param data Address where read data was placed
-   * @param numBytesRead Number of bytes read
-   * @param success SUCCESS if read was successful, FAIL otherwise
-   * @return Ignored.
-   */
-  event result_t ReadData.readDone[uint8_t id](uint8_t* buffer, uint32_t numBytesRead, result_t success) {
-    finishOp(id, success);
-    return SUCCESS;
-  }
+
 }

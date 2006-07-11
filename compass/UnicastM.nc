@@ -67,6 +67,15 @@ implementation {
   void fwdNextHop(uPack *pRcvPack, uint8_t retries) {
     uPack *pFwdPack;
     int16_t nextHop;
+    if (pRcvPack->data.dest == NET_UART_ADDR) {
+      nextHop = call Router.getNextAddr(0);
+    } else {
+      nextHop = call Router.getNextAddr(pRcvPack->data.dest);
+    }
+    if (nextHop == NET_BAD_ROUTE) {
+      dbg(DBG_USR1, "Ucast: Route disabled intentionally\n");
+      return;
+    }
     if (newMsg() == SUCCESS) { 
       pFwdPack = (uPack *)tmpPtr->data;
     } else {
@@ -76,11 +85,6 @@ implementation {
     memcpy(pFwdPack,pRcvPack,len);
     //pFwdPack->hops++;
     pFwdPack->retriesLeft = retries - 1;
-    if (pFwdPack->data.dest == NET_UART_ADDR) {
-      nextHop = call Router.getNextAddr(0);
-    } else {
-      nextHop = call Router.getNextAddr(pFwdPack->data.dest);
-    }
     dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwding to %i, %i retries left...\n", 
         TOS_LOCAL_ADDRESS, pFwdPack->data.src, pFwdPack->data.dest, nextHop, retries);
     if (call IO.sendRadio(nextHop, len) == FAIL) {

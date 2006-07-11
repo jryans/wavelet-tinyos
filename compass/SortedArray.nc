@@ -9,8 +9,13 @@ interface SortedArray {
   /**
    * Gets the value stored at index.
    */
-  command result_t read(uint16_t index);
+  command result_t read(uint16_t idx);
   event void readDone(uint8_t *data, result_t result);
+  
+  command result_t mount(uint8_t volid);
+  event void mountDone(result_t result);
+  
+  command result_t seek(int8_t arraynum);
   
   /**
    * Stores a value at the end of the array.
@@ -30,8 +35,8 @@ interface SortedArray {
   /**
    * Sorts the values stored in the array.
    */
-  command result_t sort();
-  event void sortDone(result_t result);
+  //command result_t sort();
+  //event void sortDone(result_t result);
   
   /**
    * Removes all data stored in the array.

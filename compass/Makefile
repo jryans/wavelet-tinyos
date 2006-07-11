@@ -1,4 +1,4 @@
-COMPONENT = TestC
+COMPONENT = CompassC
 
 # Used by Wavelet and Network
 CFLAGS += -I%T/lib/Transceiver 
