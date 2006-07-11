@@ -39,13 +39,13 @@ public class WaveletMatlab {
 		}
 	}
 
-	public static float[][][] loadData() {
+	public static float[][][] loadData(String fileName) {
 		// Get package path
 		Class pClass = WaveletMatlab.class;
 		Package mPackage = pClass.getPackage();
 		URL pAddr = pClass.getResource("/" + mPackage.getName().replace('.', '/'));
 		// Add file name
-		String path = pAddr.getPath() + "/waveletData.xml";
+		String path = pAddr.getPath() + "/" + fileName;
 		WaveletData mData = new WaveletData();
 		try {
 			FileInputStream fs = new FileInputStream(path);

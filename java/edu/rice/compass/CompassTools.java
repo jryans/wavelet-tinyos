@@ -26,10 +26,12 @@ public class CompassTools {
 	private WaveletController wCont;
 	private long setLength;
 	public String packagePath;
+	public String workingDir;
 
 	public static void main(String[] args) {
 		try {
 			main = new CompassTools(args);
+			main.execute();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -40,9 +42,15 @@ public class CompassTools {
 				"Controls TinyOS motes running CompassC", new Parameter[] {
 						new FlaggedOption("diag", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "diag"),
+						new FlaggedOption("route", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "route"),
+						new FlaggedOption("mote", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "mote"),
 						new Switch("debug", JSAP.NO_SHORTFLAG, "debug"),
 						new Switch("pack", JSAP.NO_SHORTFLAG, "pack"),
-						new Switch("prog", JSAP.NO_SHORTFLAG, "prog"),
+						new FlaggedOption("prog", JSAP.BOOLEAN_PARSER, "yes",
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "prog"),
+						new Switch("transform", 't', "transform"),
 						new Switch("ping", JSAP.NO_SHORTFLAG, "ping"),
 						new FlaggedOption("pm", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "pm"),
@@ -71,26 +79,30 @@ public class CompassTools {
 		config = parser.parse(args);
 		if (parser.messagePrinted())
 			System.exit(0);
+	}
 
+	private void execute() {
 		debug = config.getBoolean("debug");
-		
-		// Store package path
+
+		// Store package path and working directory
 		Class pClass = CompassTools.class;
 		Package mPackage = pClass.getPackage();
 		URL pAddr = pClass.getResource("/" + mPackage.getName().replace('.', '/'));
 		packagePath = pAddr.getPath() + "/";
+		workingDir = System.getProperty("user.dir") + "/";
+		
 
 		// Load broadcast sequence number
 		if (config.getBoolean("loadseqno"))
 			MoteCom.loadSeqNo();
 
-		if (config.getBoolean("prog")) {
+		if (config.getBoolean("transform")) {
 			// Ensure the wavelet config file exists
 			File wcFile;
 			if (config.contains("config")) { // Supplied path
 				wcFile = new File(config.getString("config"));
 				if (!wcFile.isAbsolute())
-					wcFile = new File(packagePath + config.getString("config"));
+					wcFile = new File(workingDir + config.getString("config"));
 			} else { // Default path
 				wcFile = new File(packagePath + "waveletConfig.xml");
 			}
@@ -115,7 +127,7 @@ public class CompassTools {
 				System.exit(0);
 			}
 			// Check for valid set length
-			setLength = config.getLong("setlength");
+			setLength = config.getLong("setlength", 0);
 			if (!config.getBoolean("force")) {
 				long minSetLen = 6000 + 4000 * (wCont.getMaxScale() - 1);
 				if (setLength < minSetLen) {
@@ -126,8 +138,12 @@ public class CompassTools {
 					setLength = minSetLen;
 				}
 			}
-			// Send config to each mote
-			wCont.configMotes();
+			if (config.getBoolean("prog")) {
+				wCont.configMotes(); // Send config to each mote
+			} else {
+				System.out.println("Skipping wavelet config transmission");
+				configDone(); // Start transform
+			}
 		} else if (config.getBoolean("stats")) {
 			new CompassMote(destCheck()).getStats();
 		} else if (config.getBoolean("ping")) {
@@ -150,12 +166,16 @@ public class CompassTools {
 				opt.rfChan(config.getInt("chan"));
 			opt.send();
 			System.exit(0);
+		} else if (config.contains("route") && config.contains("mote")) {
+			CompassMote cm = new CompassMote(config.getInt("dest"));
+			cm.sendRouterLink(config.getInt("mote"), config.getBoolean("route"));
+			System.exit(0);
 		} else if (config.getBoolean("load")) {
 			if (config.contains("file")) {
 				try {
 					File in = new File(config.getString("file"));
 					if (!in.isAbsolute())
-						in = new File(packagePath + config.getString("file"));
+						in = new File(workingDir + config.getString("file"));
 					FileInputStream fs = new FileInputStream(in);
 					MoteStats stats = (MoteStats) xs.fromXML(fs);
 					System.out.println("Stats from file:");
@@ -180,7 +200,7 @@ public class CompassTools {
 	}
 
 	public void configDone() {
-		wCont.runSets(config.getInt("sets"), config.getLong("setlength"));
+		wCont.runSets(config.getInt("sets"), setLength);
 	}
 
 	public void saveResult(Object data, String fileName) {
@@ -188,7 +208,7 @@ public class CompassTools {
 			fileName = config.getString("file");
 		File out = new File(fileName);
 		if (!out.isAbsolute())
-			out = new File(packagePath + fileName);
+			out = new File(workingDir + fileName);
 		try {
 			FileOutputStream fs = new FileOutputStream(fileName);
 			xs.toXML(data, fs);

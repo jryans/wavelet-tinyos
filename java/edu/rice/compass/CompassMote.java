@@ -19,7 +19,7 @@ public class CompassMote extends PackerMote {
 	public static final short BIGPACKHEADER = 2;
 	public static final short BIGPACKDATA = 3;
 	public static final short WAVELETSTATE = 4;
-	public static final short MOTESTATS = 5;
+	public static final short ROUTERDATA = 5;
 
 	/* Wavelet Mote States */
 	static final short S_IDLE = 0;
@@ -126,7 +126,30 @@ public class CompassMote extends PackerMote {
 			e.printStackTrace();
 		}
 	}
-	
+
+	public void sendRouterLink(int mote, boolean enable) {
+		UnicastPack pack = new UnicastPack();
+		pack.set_data_type(ROUTERDATA);
+		pack.set_data_data_rData_enable(b2Cs(enable));
+		pack.set_data_data_rData_mote(mote);
+		try {
+			sendPack(pack);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/* C Boolean */
+	private static final short C_FALSE = 0;
+	private static final short C_TRUE = 1;
+
+	/* C Type Helpers */
+	private static short b2Cs(boolean b) {
+		if (b)
+			return C_TRUE;
+		return C_FALSE;
+	}
+
 	public MoteOptions makeOptions() {
 		return new MoteOptions();
 	}
@@ -146,16 +169,6 @@ public class CompassMote extends PackerMote {
 		private static final short MO_RFCHAN = 0x40;
 
 		private UnicastPack pack = new UnicastPack();
-		
-		/* C Boolean */
-		private static final short C_FALSE = 0;
-		private static final short C_TRUE = 1;
-		
-		/* C Type Helpers */
-		private short b2Cs(boolean b) {
-			if (b) return C_TRUE;
-			return C_FALSE;
-		}
 
 		private MoteOptions() {
 			pack.set_data_type(MOTEOPTIONS);
@@ -184,17 +197,17 @@ public class CompassMote extends PackerMote {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RADIOOFFTIME));
 			pack.set_data_data_opt_radioOffTime(time);
 		}
-		
+
 		public void hplPM(boolean pm) {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_HPLPM));
 			pack.set_data_data_opt_hplPM(b2Cs(pm));
 		}
-		
+
 		public void rfChan(int chan) {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RFCHAN));
 			pack.set_data_data_opt_rfChan((short) chan);
 		}
-		
+
 		public void send() {
 			try {
 				sendPack(pack);
@@ -202,7 +215,7 @@ public class CompassMote extends PackerMote {
 				e.printStackTrace();
 			}
 		}
-		
+
 	}
 
 	// TODO: Change to use scale, not level!
@@ -278,13 +291,15 @@ public class CompassMote extends PackerMote {
 				neighbors[levelIdx] = new WaveletNeighbor[updInfo[levelIdx].size() + 1];
 				// First entry about ourselves
 				neighbors[levelIdx][0] = new WaveletNeighbor(id, S_UPDATING, 0);
-				for (int nb = 0; nb < updInfo[levelIdx].size(); nb++) {
-					UpdateNB curNb = (UpdateNB) updInfo[levelIdx].get(nb);
+				for (int nb = 1; nb < neighbors[levelIdx].length; nb++) {
+					// Choose neighbors randomly, to increase chances that other
+					// nodes won't have them in the same order.
+					UpdateNB curNb = (UpdateNB) updInfo[levelIdx].remove((int) (Math.random() * updInfo[levelIdx].size()));
 					// For nb of an update node, look up the coeff based on:
 					// Dim 1: ID of predict node, Dim 2: Index in predict nb
 					// list
 					double[] nbCoeff = (double[]) wc.mUpdCoeff[curNb.predID];
-					neighbors[levelIdx][nb + 1] = new WaveletNeighbor(curNb.predID + 1,
+					neighbors[levelIdx][nb] = new WaveletNeighbor(curNb.predID + 1,
 							S_UPDATING, (float) nbCoeff[curNb.coeffIndex]);
 				}
 				break;

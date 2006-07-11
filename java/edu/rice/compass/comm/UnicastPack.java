@@ -166,6 +166,12 @@ public class UnicastPack extends net.tinyos.message.Message {
       try {
         s += "  [data.data.wState.dataSetTime=0x"+Long.toHexString(get_data_data_wState_dataSetTime())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.rData.enable=0x"+Long.toHexString(get_data_data_rData_enable())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.rData.mote=0x"+Long.toHexString(get_data_data_rData_mote())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       return s;
     }
 
@@ -1836,6 +1842,132 @@ public class UnicastPack extends net.tinyos.message.Message {
      */
     public static int sizeBits_data_data_wState_dataSetTime() {
         return 32;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.rData.enable
+    //   Field type: short
+    //   Offset (bits): 48
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.rData.enable' is signed (false).
+     */
+    public static boolean isSigned_data_data_rData_enable() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.rData.enable' is an array (false).
+     */
+    public static boolean isArray_data_data_rData_enable() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.rData.enable'
+     */
+    public static int offset_data_data_rData_enable() {
+        return (48 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.rData.enable'
+     */
+    public static int offsetBits_data_data_rData_enable() {
+        return 48;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.rData.enable'
+     */
+    public short get_data_data_rData_enable() {
+        return (short)getUIntElement(offsetBits_data_data_rData_enable(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.rData.enable'
+     */
+    public void set_data_data_rData_enable(short value) {
+        setUIntElement(offsetBits_data_data_rData_enable(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.rData.enable'
+     */
+    public static int size_data_data_rData_enable() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.rData.enable'
+     */
+    public static int sizeBits_data_data_rData_enable() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.rData.mote
+    //   Field type: int
+    //   Offset (bits): 56
+    //   Size (bits): 16
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.rData.mote' is signed (false).
+     */
+    public static boolean isSigned_data_data_rData_mote() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.rData.mote' is an array (false).
+     */
+    public static boolean isArray_data_data_rData_mote() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.rData.mote'
+     */
+    public static int offset_data_data_rData_mote() {
+        return (56 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.rData.mote'
+     */
+    public static int offsetBits_data_data_rData_mote() {
+        return 56;
+    }
+
+    /**
+     * Return the value (as a int) of the field 'data.data.rData.mote'
+     */
+    public int get_data_data_rData_mote() {
+        return (int)getUIntElement(offsetBits_data_data_rData_mote(), 16);
+    }
+
+    /**
+     * Set the value of the field 'data.data.rData.mote'
+     */
+    public void set_data_data_rData_mote(int value) {
+        setUIntElement(offsetBits_data_data_rData_mote(), 16, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.rData.mote'
+     */
+    public static int size_data_data_rData_mote() {
+        return (16 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.rData.mote'
+     */
+    public static int sizeBits_data_data_rData_mote() {
+        return 16;
     }
 
 }
