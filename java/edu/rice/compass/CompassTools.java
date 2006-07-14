@@ -38,7 +38,7 @@ public class CompassTools {
 	}
 
 	public CompassTools(String[] args) throws JSAPException {
-		SimpleJSAP parser = new SimpleJSAP("WaveletConfigServer",
+		SimpleJSAP parser = new SimpleJSAP("CompassTools",
 				"Controls TinyOS motes running CompassC", new Parameter[] {
 						new FlaggedOption("diag", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "diag"),
