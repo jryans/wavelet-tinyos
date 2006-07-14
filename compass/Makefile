@@ -7,9 +7,6 @@ CFLAGS += -I%T/lib/State
 # Used by SortedArray
 #CFLAGS += -I../Blackbook5/media/AT45DB
 
-# Sets the max number of neighbors
-CFLAGS += -DMAX_WT_NBS=6
-
 # For now, use twice the max number of neighbors
 CFLAGS += -DMAX_TOS_MSGS=20
 

@@ -11,6 +11,6 @@ typedef struct
 {
   bool enable; // TRUE: enable link FALSE: disable link
   uint16_t mote; // ID of mote whose link will be altered
-} RouterData;
+} __attribute__ ((packed)) RouterData;
 
 #endif // _ROUTER_H
