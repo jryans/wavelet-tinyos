@@ -7,54 +7,37 @@ includes MessageData;
 
 module ArrayTestM {
   uses {
-    interface Timer;
-    interface SortedArray as SA1;
-    interface SortedArray as SA2;
-    interface Random;
+    interface StatsArray;
+    interface Message;
   }
-  provides interface StdControl;
 }
 implementation {
- 
-  command result_t StdControl.init() {
-    call Random.init();
+  
+  /**
+   * sendDone is signaled when the send has completed
+   */
+  event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
     return SUCCESS;
   }
-
-  command result_t StdControl.start() {
-    call SA1.setElemSize(sizeof(uint16_t));
-    call SA2.setElemSize(sizeof(uint16_t));
-    call Timer.start(TIMER_ONE_SHOT, 5000);
-    return SUCCESS;
-  }
-  
-  event result_t Timer.fired() {
-    uint16_t r1, r2;
-    r1 = call Random.rand();
-    call SA1.add(&r1);
-    r2 = call Random.rand();
-    call SA2.add(&r2);
-    return SUCCESS;
-  }
-
-  command result_t StdControl.stop() {
-    return SUCCESS;
-  }
-  
-  event void SA1.readDone(uint8_t *data, result_t result) {
     
-  }
-  
-  event void SA1.sortDone(result_t result) {
-    
-  }
-  
-  event void SA2.readDone(uint8_t *data, result_t result) {
-    
-  }
-  
-  event void SA2.sortDone(result_t result) {
-    
+  /**
+   * Receive is signaled when a new message arrives
+   */
+  event void Message.receive(msgData msg) {
+    if (msg.type == WAVELETDATA) {
+      if (msg.data.wData.value[0] > 0) {
+        call StatsArray.newData(msg.data.wData.value[0]);
+      } else {
+        float val = call StatsArray.min();
+        dbg(DBG_USR2, "ArrayTest: Min: %f\n", val);
+        val = call StatsArray.max();
+        dbg(DBG_USR2, "ArrayTest: Max: %f\n", val);
+        val = call StatsArray.mean();
+        dbg(DBG_USR2, "ArrayTest: Mean: %f\n", val);
+        val = call StatsArray.median();
+        dbg(DBG_USR2, "ArrayTest: Median: %f\n", val);
+      }
+    }
   }
  
 }

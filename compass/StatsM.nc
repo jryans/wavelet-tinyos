@@ -15,6 +15,8 @@ module StatsM {
     interface BigPackClient as WaveletPack;
     interface BigPackServer as StatsPack;
     interface SensorData;
+    interface StatsArray as RSSI;
+    interface StatsArray as LQI;
   }
   provides {
     interface Stats;
@@ -93,19 +95,8 @@ implementation {
       int16_t rssi = m->strength;
       if (rssi > 127) 
         rssi -= 256;
-      data.rssiSum += rssi;
-      data.lqiSum += m->lqi;
-      if (data.pRcvd == 0) {
-        data.rssiMin = rssi;
-        data.rssiMax = rssi;
-        data.lqiMin = m->lqi;
-        data.lqiMax = m->lqi;
-      } else {
-        if (rssi < data.rssiMin) data.rssiMin = rssi;
-        if (rssi > data.rssiMax) data.rssiMax = rssi;
-        if (m->lqi < data.lqiMin) data.lqiMin = m->lqi;
-        if (m->lqi > data.lqiMax) data.lqiMax = m->lqi;
-      }
+      //call RSSI.newData(rssi);
+      //call LQI.newData(m->lqi);
 #endif
       data.pRcvd++;
     }   
@@ -195,6 +186,17 @@ implementation {
   
   event void SensorData.readDone(float *newVals) {
     data.voltage = newVals[VOLT];
+    // Fill in RSSI
+    //data.rssiMin = (int8_t) call RSSI.min();
+    //data.rssiMax = (int8_t) call RSSI.max();
+    //data.rssiMean = call RSSI.mean();
+    //data.rssiMedian = call RSSI.median();
+    // Fill in LQI
+    data.lqiMin = (int8_t) call LQI.min();
+    data.lqiMax = (int8_t) call LQI.max();
+    data.lqiMean = call LQI.mean();
+    data.lqiMedian = call LQI.median();
+    // Build pack
     call StatsPack.packBuilt(populatePack());
   }
   
@@ -270,10 +272,12 @@ implementation {
     data.pRcvd = 0; // Packets received (2)
     data.rssiMin = 0; // Min RSSI over all packets (1)
     data.rssiMax = 0; // Max RSSI over all packets (1)
-    data.rssiSum = 0; // Sum of RSSI over all packets (4)
+    data.rssiMean = 0; // Mean of RSSI over all packets (4)
+    data.rssiMedian = 0; // Median of RSSI over all packets (4)
     data.lqiMin = 0; // Min LQI over all packets (1)
     data.lqiMax = 0; // Max LQI over all packets (1)
-    data.lqiSum = 0; // Sum of LQI over all packets (4)
+    data.lqiMean = 0; // Mean of LQI over all packets (4)
+    data.lqiMedian = 0; // Median of LQI over all packets (4)
     data.pSent = 0; // Packets sent (2)
     data.pAcked = 0; // Packets sent and were ACKed (2) 
     data.mRcvd = 0; // Messages received (2)

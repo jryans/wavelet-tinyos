@@ -6,11 +6,11 @@
  
 interface StatsArray {
   
-  command void newData(int16_t newVal);
+  command void newData(float newVal);
   
-  command int16_t min();
+  command float min();
   
-  command int16_t max();
+  command float max();
   
   command float mean();
   

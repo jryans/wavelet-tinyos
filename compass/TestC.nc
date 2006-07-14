@@ -15,9 +15,9 @@ implementation {
 //             ConfigTestM,
              StatsC,
              ArrayTestM,
-             RandomLFSR,
-             SortedArrayC,
-             MoteOptionsC,
+//             RandomLFSR,
+             StatsArrayM,
+//             MoteOptionsC,
 //             WaveletM, 
 //             LedsC;
 //             StateC, 
@@ -34,13 +34,12 @@ implementation {
   //Main.StdControl -> ConfigTestM;
   
   /*** ArrayTest: verifys operation of sorted arrays ***/
-  Main.StdControl -> ArrayTestM;
-  ArrayTestM.Random -> RandomLFSR;
-  ArrayTestM.SA1 -> SortedArrayC.SortedArray[unique("SortedArray")];
-  ArrayTestM.SA2 -> SortedArrayC.SortedArray[unique("SortedArray")];  
+  Main.StdControl -> StatsArrayM;
+  //ArrayTestM.Random -> RandomLFSR;
+  ArrayTestM.StatsArray  -> StatsArrayM.StatsArray[1];
   
   /*** Stats: sends packet and app stats when requested ***/
-  MoteOptionsC.Stats -> StatsC;
+  //MoteOptionsC.Stats -> StatsC;
             
   /*** Sample: tests sensor and messaging components ***/
   //Main.StdControl -> SampleM;
@@ -52,11 +51,12 @@ implementation {
   Main.StdControl -> DelugeC;
   
   /*** Network: provides broadcast and unicast I/O ***/
-  MoteOptionsC.Message -> NetworkC;
+  ArrayTestM.Message -> NetworkC;
+  //MoteOptionsC.Message -> NetworkC;
   //WaveletM.Message -> NetworkC;
   //WaveletM.Router -> NetworkC;
   BigPackM.Message -> NetworkC;
-  ConfigTestM.Message -> NetworkC;
+  //ConfigTestM.Message -> NetworkC;
   StatsC.Message -> NetworkC;
   
   /*** SensorControl: reads various sensor values ***/
@@ -73,7 +73,7 @@ implementation {
   StatsC.WaveletPack -> BigPackM.BigPackClient[BP_WAVELETCONF];
   StatsC.StatsPack -> BigPackM.BigPackServer[BP_STATS];
 #ifdef BEEP
-  BigPackM.Beep -> BeepC;
+  //BigPackM.Beep -> BeepC;
 #endif
   
   /*** Wavelet: main wavelet application ***/
@@ -83,7 +83,7 @@ implementation {
   
   /*** Timer: enforces time-based control ***/
   Main.StdControl -> TimerC;
-  ArrayTestM.Timer -> TimerC.Timer[unique("Timer")];
+  //ArrayTestM.Timer -> TimerC.Timer[unique("Timer")];
   //ConfigTestM.Timer -> TimerC.Timer[unique("Timer")];
   BigPackM.MsgRepeat -> TimerC.Timer[unique("Timer")];
   //WaveletM.DataSet -> TimerC.Timer[unique("Timer")];

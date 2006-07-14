@@ -1,11 +1,8 @@
-COMPONENT = CompassC
+COMPONENT = TestC
 
 # Used by Wavelet and Network
 CFLAGS += -I%T/lib/Transceiver 
 CFLAGS += -I%T/lib/State
-
-# Used by SortedArray
-#CFLAGS += -I../Blackbook5/media/AT45DB
 
 # For now, use twice the max number of neighbors
 CFLAGS += -DMAX_TOS_MSGS=20

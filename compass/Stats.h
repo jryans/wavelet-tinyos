@@ -49,10 +49,12 @@ typedef struct ms {
   uint16_t pRcvd; // Packets received (2)
   int8_t rssiMin; // Min RSSI over all packets (1)
   int8_t rssiMax; // Max RSSI over all packets (1)
-  float rssiSum; // Sum of RSSI over all packets (4)
+  float rssiMean; // Mean of RSSI over all packets (4)
+  float rssiMedian; // Median of RSSI over all packets (4)
   uint8_t lqiMin; // Min LQI over all packets (1)
   uint8_t lqiMax; // Max LQI over all packets (1)
-  float lqiSum; // Sum of LQI over all packets (4)
+  float lqiMean; // Mean of LQI over all packets (4)
+  float lqiMedian; // Median of LQI over all packets (4)
   uint16_t pSent; // Packets sent (2)
   uint16_t pAcked; // Packets sent and were ACKed (2) 
   uint16_t mRcvd; // Messages received (2)
@@ -61,10 +63,5 @@ typedef struct ms {
   float voltage; // Current voltage in mV (4)
   StatsWT wavelet; // Wavelet stats per level per neighbor
 } __attribute__ ((packed)) MoteStats;
-
-enum {
-  rssiBlock = unique("StorageManager"),
-  lqiBlock = unique("StorageManager")
-};
 
 #endif // _STATS_H

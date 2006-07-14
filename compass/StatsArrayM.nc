@@ -2,6 +2,12 @@
  * Computes various statistics on a data stream without
  * storing the data itself.
  * @author Ryan Stinnett
+ * 
+ * Median algorithm based on:
+ * R. Jain and I. Chlamtac. The P^2 algorithm for dynamic
+ * calculation of quantile and histograms without storing
+ * observations. <i>Communications of the ACM</i>,
+ * 28(10):1076-1085, October 1986.
  */
 
 module StatsArrayM {
@@ -17,15 +23,15 @@ implementation {
     numMarkers = 5
   };
   
-  const float p = 0.5; 
-  const float dnDes[numMarkers] = { 0, p / 2, p, (1 + p) / 2, 1 };
+  float p = 0.5; 
+  float dnDes[numMarkers];
   
   typedef struct { 
-  float q[numMarkers];
-  int16_t n[numMarkers];
-  float nDes[numMarkers];
-  uint16_t numSeen;
-  float dataSum;
+    float q[numMarkers];
+    int16_t n[numMarkers];
+    float nDes[numMarkers];
+    uint16_t numSeen;
+    float dataSum;
   } saInfo;
   
   uint8_t numArrays = uniqueCount("StatsArray");
@@ -35,6 +41,11 @@ implementation {
   
   command result_t StdControl.init() {
     uint8_t a, i;
+    dnDes[0] = 0;
+    dnDes[1] = p / 2;
+    dnDes[2] = p;
+    dnDes[3] = (1 + p) / 2;
+    dnDes[4] = 1;
     for (a = 0; a < numArrays; a++) {
       for (i = 0; i < numMarkers; i++)
         sa[a].n[i] = i + 1;
@@ -60,7 +71,7 @@ implementation {
   /*** Internal Functions ***/
 
   float parabolaAdj(saInfo *s, int8_t d, uint8_t i) {
-    // Break up formula for my own sanity
+    // Break up formula for readability
     uint16_t niminus = s->n[i] - s->n[i - 1];
     uint16_t niplus = s->n[i + 1] - s->n[i];
     float a = (float) d / (niplus + niminus);
@@ -96,13 +107,13 @@ implementation {
   
   /*** StatsArray ***/  
 
-  command void StatsArray.newData[uint8_t id](int16_t newVal) {
+  command void StatsArray.newData[uint8_t id](float newVal) {
     saInfo *s = &sa[id];
     if (s->numSeen < numMarkers) {
       // Store first five elements as marker heights and sort them
-      s->q[numSeen] = newVal;
-      if (numSeen == numMarkers - 1)
-        sort();
+      s->q[s->numSeen] = newVal;
+      if (s->numSeen == numMarkers - 1)
+        sort(s);
     } else {
       // Find markers that the new value fits between
       uint8_t k, i;
@@ -153,11 +164,11 @@ implementation {
     s->numSeen++; 
   }
   
-  command int16_t StatsArray.min[uint8_t id]() {
+  command float StatsArray.min[uint8_t id]() {
     return sa[id].q[0];
   }
   
-  command int16_t StatsArray.max[uint8_t id]() {
+  command float StatsArray.max[uint8_t id]() {
     return sa[id].q[numMarkers - 1];
   }
   
