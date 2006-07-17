@@ -1,101 +1,57 @@
 <edu.rice.compass.WaveletConfigData>
   <mScale>
     <double>0.0</double>
-    <double>3.0</double>
-    <double>3.0</double>
     <double>0.0</double>
-    <double>3.0</double>
-    <double>1.0</double>
+    <double>0.0</double>
     <double>2.0</double>
+    <double>1.0</double>
     <double>0.0</double>
   </mScale>
   <mPredNB>
     <null/>
-    <double-array>
-      <double>1.0</double>
-      <double>8.0</double>
-      <double>4.0</double>
-    </double-array>
-    <double-array>
-      <double>4.0</double>
-      <double>1.0</double>
-      <double>8.0</double>
-    </double-array>
+    <null/>
     <null/>
     <double-array>
-      <double>8.0</double>
-      <double>4.0</double>
-      <double>1.0</double>
-    </double-array>
-    <double-array>
-      <double>3.0</double>
-      <double>7.0</double>
-      <double>4.0</double>
-    </double-array>
-    <double-array>
-      <double>3.0</double>
       <double>1.0</double>
       <double>2.0</double>
+      <double>3.0</double>
+    </double-array>
+    <double-array>
+      <double>4.0</double>
+      <double>1.0</double>
+      <double>3.0</double>
     </double-array>
     <null/>
   </mPredNB>
   <mPredCoeff>
     <null/>
-    <double-array>
-      <double>0.4290966275184154</double>
-      <double>0.3581509905961073</double>
-      <double>0.2127523818854772</double>
-    </double-array>
-    <double-array>
-      <double>0.8553599416823426</double>
-      <double>0.6905971078194333</double>
-      <double>-0.5459570495017754</double>
-    </double-array>
+    <null/>
     <null/>
     <double-array>
-      <double>0.7474151094258867</double>
-      <double>0.6125187912913151</double>
-      <double>-0.359933900717202</double>
+      <double>0.18722858133519366</double>
+      <double>0.4383742954888314</double>
+      <double>0.37439712317597473</double>
     </double-array>
     <double-array>
-      <double>0.5636473048660504</double>
-      <double>0.23507127440355197</double>
-      <double>0.20128142073039756</double>
-    </double-array>
-    <double-array>
-      <double>0.661397713498768</double>
-      <double>0.2768646111582932</double>
-      <double>0.06173767534293878</double>
+      <double>0.37754518178476904</double>
+      <double>0.3500924530493447</double>
+      <double>0.27236236516588613</double>
     </double-array>
     <null/>
   </mPredCoeff>
   <mUpdCoeff>
     <null/>
-    <double-array>
-      <double>0.1236934903826101</double>
-      <double>0.03337739851928385</double>
-      <double>0.16339831576666233</double>
-    </double-array>
-    <double-array>
-      <double>0.3614150105136886</double>
-      <double>0.2735932981766194</double>
-      <double>0.07382629851578766</double>
-    </double-array>
+    <null/>
     <null/>
     <double-array>
-      <double>0.03101266917867053</double>
-      <double>0.15182183561417267</double>
-      <double>0.11493002651403937</double>
+      <double>0.26510841076110364</double>
+      <double>0.26442785647838385</double>
+      <double>0.29480155967803234</double>
     </double-array>
     <double-array>
-      <double>0.28884375759139136</double>
-      <double>0.2281477585653311</double>
-      <double>0.22190594925638765</double>
-    </double-array>
-    <double-array>
-      <double>0.34084245130742297</double>
-      <double>0.19213977011394545</double>
-      <double>0.15409731434855317</double>
+      <double>0.2580017425585154</double>
+      <double>0.25286009497745454</double>
+      <double>0.23830195315507455</double>
     </double-array>
     <null/>
   </mUpdCoeff>

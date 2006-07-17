@@ -7,8 +7,6 @@ package edu.rice.compass;
 
 import java.util.*;
 
-import edu.rice.compass.bigpack.*;
-
 public class WaveletController {
 
 	/* Variables */

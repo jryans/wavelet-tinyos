@@ -9,9 +9,9 @@ package edu.rice.compass.bigpack;
 import java.util.List;
 
 public class MoteStats extends BigPack {
-	
+
 	/** The default size of this message type in bytes. */
-	public static final int DEFAULT_MESSAGE_SIZE = 31;
+	public static final int DEFAULT_MESSAGE_SIZE = 39;
 
 	/**
 	 * Create a new MoteStats using the given byte array as backing store.
@@ -19,7 +19,7 @@ public class MoteStats extends BigPack {
 	public MoteStats(byte[] data, int numBlks, int numPtrs) {
 		super(data, DEFAULT_MESSAGE_SIZE, numBlks, numPtrs);
 	}
-	
+
 	public static short getType() {
 		return BP_STATS;
 	}
@@ -47,21 +47,21 @@ public class MoteStats extends BigPack {
 	protected int numChildTypes() {
 		return 1;
 	}
-	
+
 	public void printStats() {
 		System.out.println("  Voltage: " + (get_voltage() / 1000) + " V");
 		System.out.println("  *Unicast* Packets:");
 		System.out.println("    Received: " + get_pRcvd());
-		if (get_pRcvd() > 0) {
+		//if (get_pRcvd() > 0) {
 			System.out.println("      Min. RSSI: " + (get_rssiMin() - 45));
-			System.out.println("      Avg. RSSI: "
-					+ ((get_rssiSum() / get_pRcvd()) - 45));
 			System.out.println("      Max. RSSI: " + (get_rssiMax() - 45));
+			System.out.println("      Mean RSSI: " + (get_rssiMean() - 45));
+			System.out.println("      Median RSSI: " + (get_rssiMedian() - 45));
 			System.out.println("      Min. LQI:  " + get_lqiMin());
-			System.out.println("      Avg. LQI:  "
-					+ (get_lqiSum() / get_pRcvd()));
 			System.out.println("      Max. LQI:  " + get_lqiMax());
-		}
+			System.out.println("      Mean LQI:  " + get_lqiMean());
+			System.out.println("      Median LQI:  " + get_lqiMedian());
+		//}
 		System.out.println("    Sent: " + get_pSent());
 		if (get_pSent() > 0)
 			System.out.println("      ACKed: " + get_pAcked() + " ("
@@ -280,72 +280,135 @@ public class MoteStats extends BigPack {
 	}
 
 	// ///////////////////////////////////////////////////////
-	// Accessor methods for field: rssiSum
+	// Accessor methods for field: rssiMean
 	// Field type: float
 	// Offset (bits): 32
 	// Size (bits): 32
 	// ///////////////////////////////////////////////////////
 
 	/**
-	 * Return whether the field 'rssiSum' is signed (false).
+	 * Return whether the field 'rssiMean' is signed (false).
 	 */
-	public static boolean isSigned_rssiSum() {
+	public static boolean isSigned_rssiMean() {
 		return false;
 	}
 
 	/**
-	 * Return whether the field 'rssiSum' is an array (false).
+	 * Return whether the field 'rssiMean' is an array (false).
 	 */
-	public static boolean isArray_rssiSum() {
+	public static boolean isArray_rssiMean() {
 		return false;
 	}
 
 	/**
-	 * Return the offset (in bytes) of the field 'rssiSum'
+	 * Return the offset (in bytes) of the field 'rssiMean'
 	 */
-	public static int offset_rssiSum() {
+	public static int offset_rssiMean() {
 		return (32 / 8);
 	}
 
 	/**
-	 * Return the offset (in bits) of the field 'rssiSum'
+	 * Return the offset (in bits) of the field 'rssiMean'
 	 */
-	public static int offsetBits_rssiSum() {
+	public static int offsetBits_rssiMean() {
 		return 32;
 	}
 
 	/**
-	 * Return the value (as a float) of the field 'rssiSum'
+	 * Return the value (as a float) of the field 'rssiMean'
 	 */
-	public float get_rssiSum() {
-		return (float) getFloatElement(offsetBits_rssiSum(), 32);
+	public float get_rssiMean() {
+		return (float) getFloatElement(offsetBits_rssiMean(), 32);
 	}
 
 	/**
-	 * Set the value of the field 'rssiSum'
+	 * Set the value of the field 'rssiMean'
 	 */
-	public void set_rssiSum(float value) {
-		setFloatElement(offsetBits_rssiSum(), 32, value);
+	public void set_rssiMean(float value) {
+		setFloatElement(offsetBits_rssiMean(), 32, value);
 	}
 
 	/**
-	 * Return the size, in bytes, of the field 'rssiSum'
+	 * Return the size, in bytes, of the field 'rssiMean'
 	 */
-	public static int size_rssiSum() {
+	public static int size_rssiMean() {
 		return (32 / 8);
 	}
 
 	/**
-	 * Return the size, in bits, of the field 'rssiSum'
+	 * Return the size, in bits, of the field 'rssiMean'
 	 */
-	public static int sizeBits_rssiSum() {
+	public static int sizeBits_rssiMean() {
+		return 32;
+	}
+
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: rssiMedian
+	// Field type: float
+	// Offset (bits): 64
+	// Size (bits): 32
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'rssiMedian' is signed (false).
+	 */
+	public static boolean isSigned_rssiMedian() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'rssiMedian' is an array (false).
+	 */
+	public static boolean isArray_rssiMedian() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'rssiMedian'
+	 */
+	public static int offset_rssiMedian() {
+		return (64 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'rssiMedian'
+	 */
+	public static int offsetBits_rssiMedian() {
+		return 64;
+	}
+
+	/**
+	 * Return the value (as a float) of the field 'rssiMedian'
+	 */
+	public float get_rssiMedian() {
+		return (float) getFloatElement(offsetBits_rssiMedian(), 32);
+	}
+
+	/**
+	 * Set the value of the field 'rssiMedian'
+	 */
+	public void set_rssiMedian(float value) {
+		setFloatElement(offsetBits_rssiMedian(), 32, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'rssiMedian'
+	 */
+	public static int size_rssiMedian() {
+		return (32 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'rssiMedian'
+	 */
+	public static int sizeBits_rssiMedian() {
 		return 32;
 	}
 
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: lqiMin
 	// Field type: short
-	// Offset (bits): 64
+	// Offset (bits): 96
 	// Size (bits): 8
 	// ///////////////////////////////////////////////////////
 
@@ -367,14 +430,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'lqiMin'
 	 */
 	public static int offset_lqiMin() {
-		return (64 / 8);
+		return (96 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'lqiMin'
 	 */
 	public static int offsetBits_lqiMin() {
-		return 64;
+		return 96;
 	}
 
 	/**
@@ -408,7 +471,7 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: lqiMax
 	// Field type: short
-	// Offset (bits): 72
+	// Offset (bits): 104
 	// Size (bits): 8
 	// ///////////////////////////////////////////////////////
 
@@ -430,14 +493,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'lqiMax'
 	 */
 	public static int offset_lqiMax() {
-		return (72 / 8);
+		return (104 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'lqiMax'
 	 */
 	public static int offsetBits_lqiMax() {
-		return 72;
+		return 104;
 	}
 
 	/**
@@ -469,72 +532,135 @@ public class MoteStats extends BigPack {
 	}
 
 	// ///////////////////////////////////////////////////////
-	// Accessor methods for field: lqiSum
+	// Accessor methods for field: lqiMean
 	// Field type: float
-	// Offset (bits): 80
+	// Offset (bits): 112
 	// Size (bits): 32
 	// ///////////////////////////////////////////////////////
 
 	/**
-	 * Return whether the field 'lqiSum' is signed (false).
+	 * Return whether the field 'lqiMean' is signed (false).
 	 */
-	public static boolean isSigned_lqiSum() {
+	public static boolean isSigned_lqiMean() {
 		return false;
 	}
 
 	/**
-	 * Return whether the field 'lqiSum' is an array (false).
+	 * Return whether the field 'lqiMean' is an array (false).
 	 */
-	public static boolean isArray_lqiSum() {
+	public static boolean isArray_lqiMean() {
 		return false;
 	}
 
 	/**
-	 * Return the offset (in bytes) of the field 'lqiSum'
+	 * Return the offset (in bytes) of the field 'lqiMean'
 	 */
-	public static int offset_lqiSum() {
-		return (80 / 8);
+	public static int offset_lqiMean() {
+		return (112 / 8);
 	}
 
 	/**
-	 * Return the offset (in bits) of the field 'lqiSum'
+	 * Return the offset (in bits) of the field 'lqiMean'
 	 */
-	public static int offsetBits_lqiSum() {
-		return 80;
+	public static int offsetBits_lqiMean() {
+		return 112;
 	}
 
 	/**
-	 * Return the value (as a float) of the field 'lqiSum'
+	 * Return the value (as a float) of the field 'lqiMean'
 	 */
-	public float get_lqiSum() {
-		return (float) getFloatElement(offsetBits_lqiSum(), 32);
+	public float get_lqiMean() {
+		return (float) getFloatElement(offsetBits_lqiMean(), 32);
 	}
 
 	/**
-	 * Set the value of the field 'lqiSum'
+	 * Set the value of the field 'lqiMean'
 	 */
-	public void set_lqiSum(float value) {
-		setFloatElement(offsetBits_lqiSum(), 32, value);
+	public void set_lqiMean(float value) {
+		setFloatElement(offsetBits_lqiMean(), 32, value);
 	}
 
 	/**
-	 * Return the size, in bytes, of the field 'lqiSum'
+	 * Return the size, in bytes, of the field 'lqiMean'
 	 */
-	public static int size_lqiSum() {
+	public static int size_lqiMean() {
 		return (32 / 8);
 	}
 
 	/**
-	 * Return the size, in bits, of the field 'lqiSum'
+	 * Return the size, in bits, of the field 'lqiMean'
 	 */
-	public static int sizeBits_lqiSum() {
+	public static int sizeBits_lqiMean() {
+		return 32;
+	}
+
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: lqiMedian
+	// Field type: float
+	// Offset (bits): 144
+	// Size (bits): 32
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'lqiMedian' is signed (false).
+	 */
+	public static boolean isSigned_lqiMedian() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'lqiMedian' is an array (false).
+	 */
+	public static boolean isArray_lqiMedian() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'lqiMedian'
+	 */
+	public static int offset_lqiMedian() {
+		return (144 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'lqiMedian'
+	 */
+	public static int offsetBits_lqiMedian() {
+		return 144;
+	}
+
+	/**
+	 * Return the value (as a float) of the field 'lqiMedian'
+	 */
+	public float get_lqiMedian() {
+		return (float) getFloatElement(offsetBits_lqiMedian(), 32);
+	}
+
+	/**
+	 * Set the value of the field 'lqiMedian'
+	 */
+	public void set_lqiMedian(float value) {
+		setFloatElement(offsetBits_lqiMedian(), 32, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'lqiMedian'
+	 */
+	public static int size_lqiMedian() {
+		return (32 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'lqiMedian'
+	 */
+	public static int sizeBits_lqiMedian() {
 		return 32;
 	}
 
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: pSent
 	// Field type: int
-	// Offset (bits): 112
+	// Offset (bits): 176
 	// Size (bits): 16
 	// ///////////////////////////////////////////////////////
 
@@ -556,14 +682,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'pSent'
 	 */
 	public static int offset_pSent() {
-		return (112 / 8);
+		return (176 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'pSent'
 	 */
 	public static int offsetBits_pSent() {
-		return 112;
+		return 176;
 	}
 
 	/**
@@ -597,7 +723,7 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: pAcked
 	// Field type: int
-	// Offset (bits): 128
+	// Offset (bits): 192
 	// Size (bits): 16
 	// ///////////////////////////////////////////////////////
 
@@ -619,14 +745,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'pAcked'
 	 */
 	public static int offset_pAcked() {
-		return (128 / 8);
+		return (192 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'pAcked'
 	 */
 	public static int offsetBits_pAcked() {
-		return 128;
+		return 192;
 	}
 
 	/**
@@ -660,7 +786,7 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: mRcvd
 	// Field type: int
-	// Offset (bits): 144
+	// Offset (bits): 208
 	// Size (bits): 16
 	// ///////////////////////////////////////////////////////
 
@@ -682,14 +808,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'mRcvd'
 	 */
 	public static int offset_mRcvd() {
-		return (144 / 8);
+		return (208 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'mRcvd'
 	 */
 	public static int offsetBits_mRcvd() {
-		return 144;
+		return 208;
 	}
 
 	/**
@@ -723,7 +849,7 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: mSent
 	// Field type: int
-	// Offset (bits): 160
+	// Offset (bits): 224
 	// Size (bits): 16
 	// ///////////////////////////////////////////////////////
 
@@ -745,14 +871,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'mSent'
 	 */
 	public static int offset_mSent() {
-		return (160 / 8);
+		return (224 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'mSent'
 	 */
 	public static int offsetBits_mSent() {
-		return 160;
+		return 224;
 	}
 
 	/**
@@ -786,7 +912,7 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: mRetriesSum
 	// Field type: int
-	// Offset (bits): 176
+	// Offset (bits): 240
 	// Size (bits): 16
 	// ///////////////////////////////////////////////////////
 
@@ -808,14 +934,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'mRetriesSum'
 	 */
 	public static int offset_mRetriesSum() {
-		return (176 / 8);
+		return (240 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'mRetriesSum'
 	 */
 	public static int offsetBits_mRetriesSum() {
-		return 176;
+		return 240;
 	}
 
 	/**
@@ -849,7 +975,7 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: voltage
 	// Field type: float
-	// Offset (bits): 192
+	// Offset (bits): 256
 	// Size (bits): 32
 	// ///////////////////////////////////////////////////////
 
@@ -871,14 +997,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'voltage'
 	 */
 	public static int offset_voltage() {
-		return (192 / 8);
+		return (256 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'voltage'
 	 */
 	public static int offsetBits_voltage() {
-		return 192;
+		return 256;
 	}
 
 	/**
@@ -912,7 +1038,7 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: wavelet.numLevels
 	// Field type: short
-	// Offset (bits): 224
+	// Offset (bits): 288
 	// Size (bits): 8
 	// ///////////////////////////////////////////////////////
 
@@ -934,14 +1060,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'wavelet.numLevels'
 	 */
 	public static int offset_wavelet_numLevels() {
-		return (224 / 8);
+		return (288 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'wavelet.numLevels'
 	 */
 	public static int offsetBits_wavelet_numLevels() {
-		return 224;
+		return 288;
 	}
 
 	/**
@@ -975,7 +1101,7 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: wavelet.level
 	// Field type: array
-	// Offset (bits): 232
+	// Offset (bits): 296
 	// Size (bits): 16
 	// ///////////////////////////////////////////////////////
 
@@ -985,7 +1111,7 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the pointer to array 'wavelet.level'
 	 */
 	public static int offset_wavelet_level() {
-		return (232 / 8);
+		return (296 / 8);
 	}
 
 	/**

@@ -50,8 +50,3 @@ public class QuantMatlab {
 	}
 
 }
-
-class QuantData {
-	public double data[];
-	public double median;
-}
