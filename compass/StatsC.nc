@@ -16,13 +16,14 @@ configuration StatsC {
   provides interface Stats;
 }
 implementation {
-  components Main, StatsM, TransceiverC, StatsArrayM;
+  components Main, StatsM, TransceiverC, StatsArrayM, JDebugC;
   
   StatsM.Snoop -> TransceiverC.Transceiver[AM_UNICASTPACK];
   Main.StdControl -> StatsM;
   Main.StdControl -> StatsArrayM;
   StatsM.RSSI -> StatsArrayM.StatsArray[0];
   StatsM.LQI -> StatsArrayM.StatsArray[1];
+  StatsArrayM.JDebug -> JDebugC;
   
   SensorData = StatsM;
   WaveletPack = StatsM;

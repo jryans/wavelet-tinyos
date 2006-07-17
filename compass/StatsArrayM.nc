@@ -15,9 +15,16 @@ module StatsArrayM {
     interface StatsArray[uint8_t id];
     interface StdControl;
   }
+  uses {
+    interface JDebug;
+  }
 }
 
 implementation {
+  
+#if 0
+  typedef char msgData;
+#endif
  
   enum {
     numMarkers = 5
@@ -28,14 +35,16 @@ implementation {
   
   typedef struct { 
     float q[numMarkers];
-    int16_t n[numMarkers];
+    uint16_t n[numMarkers];
     float nDes[numMarkers];
     uint16_t numSeen;
     float dataSum;
   } saInfo;
   
-  uint8_t numArrays = uniqueCount("StatsArray");
-  saInfo sa[uniqueCount("StatsArray")];
+  //uint8_t numArrays = uniqueCount("StatsArray");
+  //saInfo sa[uniqueCount("StatsArray")];
+  uint8_t numArrays = 2;
+  saInfo sa[2];
   
   /*** StdControl ***/
   
@@ -69,8 +78,30 @@ implementation {
   }
   
   /*** Internal Functions ***/
+  
+  command msgData StatsArray.printq[uint8_t id](uint8_t i) {
+    msgData msg;
+    msg.src = TOS_LOCAL_ADDRESS;
+    msg.dest = NET_UART_ADDR;
+    msg.type = WAVELETDATA;
+    msg.data.wData.level = i;
+    msg.data.wData.value[0] = (float) sa[id].n[i];
+    msg.data.wData.value[1] = sa[id].q[i];
+    return msg;
+    /* call JDebug.jdbg("n0: %i", 0, sa[id].n[0], 0);
+    call JDebug.jdbg("n1: %i", 0, sa[id].n[1], 0);
+    call JDebug.jdbg("n2: %i", 0, sa[id].n[2], 0);
+    call JDebug.jdbg("n3: %i", 0, sa[id].n[3], 0);
+    call JDebug.jdbg("n4: %i", 0, sa[id].n[4], 0);
+    call JDebug.jdbg("q0: %i", 0, (uint16_t) sa[id].q[0], 0);
+    call JDebug.jdbg("q1: %i", 0, (uint16_t) sa[id].q[1], 0);
+    call JDebug.jdbg("q2: %i", 0, (uint16_t) sa[id].q[2], 0);
+    call JDebug.jdbg("q3: %i", 0, (uint16_t) sa[id].q[3], 0);
+    call JDebug.jdbg("q4: %i", 0, (uint16_t) sa[id].q[4], 0); */
+  }
 
-  float parabolaAdj(saInfo *s, int8_t d, uint8_t i) {
+  float parabolaAdj(uint8_t id, int8_t d, uint8_t i) {
+    saInfo *s = &sa[id];
     // Break up formula for readability
     uint16_t niminus = s->n[i] - s->n[i - 1];
     uint16_t niplus = s->n[i + 1] - s->n[i];
@@ -80,12 +111,14 @@ implementation {
     return s->q[i] + a * (((niminus + d) * c) + ((niplus - d) * f));
   }
 
-  float linearAdj(saInfo *s, int8_t d, uint8_t i) {
+  float linearAdj(uint8_t id, int8_t d, uint8_t i) {
+    saInfo *s = &sa[id];
     float a = (s->q[i + d] - s->q[i]) / (s->n[i + d] - s->n[i]);
     return s->q[i] + d * a;
   }
 
-  void sort(saInfo *s) {
+  void sort(uint8_t id) {
+    saInfo *s = &sa[id];
     uint8_t mi, i, j;
     float m;
     for (i = 0; i < numMarkers - 1; i++) {
@@ -113,7 +146,7 @@ implementation {
       // Store first five elements as marker heights and sort them
       s->q[s->numSeen] = newVal;
       if (s->numSeen == numMarkers - 1)
-        sort(s);
+        sort(id);
     } else {
       // Find markers that the new value fits between
       uint8_t k, i;
@@ -147,12 +180,12 @@ implementation {
           float qDes;
           (d > 0) ? (di = 1) : (di = -1); // Equiv: di <- sign(d)
           // Try using parabolic formula
-          qDes = parabolaAdj(s, di, i);
+          qDes = parabolaAdj(id, di, i);
           // If new value moves marker past another, use linear.
           if (s->q[i - 1] < qDes && qDes < s->q[i + 1]) {
             s->q[i] = qDes;
           } else {
-            s->q[i] = linearAdj(s, di, i);
+            s->q[i] = linearAdj(id, di, i);
           }
           // Adjust marker position
           s->n[i] += di;
@@ -173,10 +206,12 @@ implementation {
   }
   
   command float StatsArray.mean[uint8_t id]() {
+    //printq();
     return sa[id].dataSum / sa[id].numSeen;
   }
   
   command float StatsArray.median[uint8_t id]() {
+    //printq();
     return sa[id].q[numMarkers / 2];  
   }
 

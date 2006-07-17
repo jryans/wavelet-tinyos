@@ -4,6 +4,8 @@
  * @author Ryan Stinnett
  */
  
+includes MessageData;
+ 
 interface StatsArray {
   
   command void newData(float newVal);
@@ -15,5 +17,8 @@ interface StatsArray {
   command float mean();
   
   command float median();
+  
+  //testing
+  command msgData printq(uint8_t i);
   
 }

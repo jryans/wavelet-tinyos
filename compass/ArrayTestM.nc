@@ -26,8 +26,9 @@ implementation {
   event void Message.receive(msgData msg) {
     if (msg.type == WAVELETDATA) {
       if (msg.data.wData.value[0] > 0) {
-        call StatsArray.newData(msg.data.wData.value[0]);
+        call StatsArray.newData(msg.data.wData.value[0]);        
       } else {
+#ifdef PLATFORM_PC        
         float val = call StatsArray.min();
         dbg(DBG_USR2, "ArrayTest: Min: %f\n", val);
         val = call StatsArray.max();
@@ -36,6 +37,11 @@ implementation {
         dbg(DBG_USR2, "ArrayTest: Mean: %f\n", val);
         val = call StatsArray.median();
         dbg(DBG_USR2, "ArrayTest: Median: %f\n", val);
+#else
+        uint8_t i;
+        for (i = 0; i < 5; i++)
+          call Message.send(call StatsArray.printq(i));        
+#endif
       }
     }
   }

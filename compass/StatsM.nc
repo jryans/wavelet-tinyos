@@ -192,8 +192,8 @@ implementation {
     //data.rssiMean = call RSSI.mean();
     //data.rssiMedian = call RSSI.median();
     // Fill in LQI
-    data.lqiMin = (int8_t) call LQI.min();
-    data.lqiMax = (int8_t) call LQI.max();
+    //data.lqiMin = (int8_t) call LQI.min();
+    //data.lqiMax = (int8_t) call LQI.max();
     data.lqiMean = call LQI.mean();
     data.lqiMedian = call LQI.median();
     // Build pack
