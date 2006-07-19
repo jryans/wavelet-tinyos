@@ -5,52 +5,54 @@ package edu.rice.compass;
 
 import java.io.*;
 import java.net.*;
-
+import java.util.*;
 import com.thoughtworks.xstream.XStream;
 
 public class StatsMatlab {
 
 	private static XStream xs = new XStream();
-	
-	private StatsMatlab() {}
+	private static Vector vRes;
 
-	public static Object[][] loadStats(String subdir) {
-    // Get package path
+	private StatsMatlab() {
+	}
+	
+	public static void main(String[] args) {
+		loadStats("tests/dist");
+	}
+
+	public static Object[] loadStats(String subdir) {
+		// Get package path
 		Class pClass = StatsMatlab.class;
 		Package mPackage = pClass.getPackage();
 		URL pAddr = pClass.getResource("/" + mPackage.getName().replace('.', '/'));
 		// Add subdirectory
 		String path = pAddr.getPath() + "/" + subdir;
 		File dir = new File(path);
+		vRes = new Vector();
 		if (dir.exists()) {
-			File[] files = dir.listFiles(XmlFilter.filter);
-			Object[][] results = new Object[files.length][2];
-			for (int i = 0; i < files.length; i++) {
-				results[i][0] = files[i].getName();
+			moveDown(dir, "");
+			return vRes.toArray();
+		}
+		return null;
+	}
+	
+	private static void moveDown(File dir, String prefix) {
+		File[] child = dir.listFiles();
+		for (int i = 0; i < child.length; i++) {
+			if (child[i].isDirectory()) {
+				moveDown(child[i], prefix + child[i].getName() + "/");
+			} else if (child[i].isFile() && child[i].getName().endsWith(".xml")) {
+				Object[] fInfo = new Object[2];
+				fInfo[0] = prefix + child[i].getName();
 				try {
-					FileInputStream fs = new FileInputStream(files[i]);
-					results[i][1] = xs.fromXML(fs);
+					FileInputStream fs = new FileInputStream(child[i]);
+					fInfo[1] = xs.fromXML(fs);
 					fs.close();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				vRes.add(fInfo);
 			}
-			return results;
 		}
-		return null;
 	}
-}
-
-class XmlFilter implements FilenameFilter {
-	
-	public static XmlFilter filter = new XmlFilter();
-	
-	private XmlFilter() {}
-
-	public boolean accept(File file, String name) {
-		if (name.endsWith(".xml"))
-			return true;
-		return false;
-	}
-	
 }

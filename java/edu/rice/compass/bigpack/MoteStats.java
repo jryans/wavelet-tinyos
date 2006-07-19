@@ -53,13 +53,13 @@ public class MoteStats extends BigPack {
 		System.out.println("  *Unicast* Packets:");
 		System.out.println("    Received: " + get_pRcvd());
 		//if (get_pRcvd() > 0) {
-			System.out.println("      Min. RSSI: " + (get_rssiMin() - 45));
-			System.out.println("      Max. RSSI: " + (get_rssiMax() - 45));
-			System.out.println("      Mean RSSI: " + (get_rssiMean() - 45));
+			System.out.println("      Min. RSSI:   " + (get_rssiMin() - 45));
+			System.out.println("      Max. RSSI:   " + (get_rssiMax() - 45));
+			System.out.println("      Mean RSSI:   " + (get_rssiMean() - 45));
 			System.out.println("      Median RSSI: " + (get_rssiMedian() - 45));
-			System.out.println("      Min. LQI:  " + get_lqiMin());
-			System.out.println("      Max. LQI:  " + get_lqiMax());
-			System.out.println("      Mean LQI:  " + get_lqiMean());
+			System.out.println("      Min. LQI:    " + get_lqiMin());
+			System.out.println("      Max. LQI:    " + get_lqiMax());
+			System.out.println("      Mean LQI:    " + get_lqiMean());
 			System.out.println("      Median LQI:  " + get_lqiMedian());
 		//}
 		System.out.println("    Sent: " + get_pSent());
