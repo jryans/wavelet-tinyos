@@ -18,7 +18,6 @@ interface StatsArray {
   
   command float median();
   
-  //testing
-  command msgData printq(uint8_t i);
+  command void clear();
   
 }

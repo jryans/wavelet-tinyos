@@ -4,6 +4,8 @@
  * @author Ryan Stinnett
  */
  
+includes MessageData;
+ 
 interface Router {
   
   /**
@@ -14,7 +16,7 @@ interface Router {
   command uint8_t getStatus();
   
   /**
-   * Gives the address of the next hop for a given destination.
+   * Gives the address of the next hop for a given message.
    */
-  command int16_t getNextAddr(int16_t dest);
+  command uint16_t getNextAddr(msgData *msg);
 }

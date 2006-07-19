@@ -70,13 +70,9 @@ implementation {
   void fwdNextHop(uPack *pRcvPack, uint8_t retries) {
     uPack *pFwdPack;
     uint16_t nextHop;
-    if (pRcvPack->data.dest == NET_UART_ADDR) {
-      nextHop = call Router.getNextAddr(0);
-    } else {
-      nextHop = call Router.getNextAddr(pRcvPack->data.dest);
-    }
+    nextHop = call Router.getNextAddr(&pRcvPack->data);
     if (nextHop == NET_BAD_ROUTE) {
-      dbg(DBG_USR1, "Ucast: Route disabled intentionally\n");
+      dbg(DBG_USR1, "Ucast: Route disabled intentionally or is this mote\n");
       return;
     }
     if (newMsg() == SUCCESS) { 

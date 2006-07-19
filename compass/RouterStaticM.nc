@@ -62,8 +62,12 @@ implementation {
   /**
    * Gives the address of the next hop for a given destination.
    */
-  command int16_t Router.getNextAddr(int16_t dest) {
-    if (!moteEnable[dest])
+  command uint16_t Router.getNextAddr(msgData *msg) {
+    uint16_t dest = msg->dest;
+    if (dest == NET_UART_ADDR)
+      dest = 0;
+    if ((msg->type == WAVELETDATA && !moteEnable[dest]) ||
+        cleanTable[TOS_LOCAL_ADDRESS][dest] == -1)
       return NET_BAD_ROUTE;
     return cleanTable[TOS_LOCAL_ADDRESS][dest];
   }

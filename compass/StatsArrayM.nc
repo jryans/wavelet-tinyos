@@ -15,16 +15,9 @@ module StatsArrayM {
     interface StatsArray[uint8_t id];
     interface StdControl;
   }
-  uses {
-    interface JDebug;
-  }
 }
 
 implementation {
-  
-#if 0
-  typedef char msgData;
-#endif
  
   enum {
     numMarkers = 5
@@ -41,63 +34,25 @@ implementation {
     float dataSum;
   } saInfo;
   
-  //uint8_t numArrays = uniqueCount("StatsArray");
-  //saInfo sa[uniqueCount("StatsArray")];
-  uint8_t numArrays = 2;
-  saInfo sa[2];
-  
-  /*** StdControl ***/
-  
-  command result_t StdControl.init() {
-    uint8_t a, i;
-    dnDes[0] = 0;
-    dnDes[1] = p / 2;
-    dnDes[2] = p;
-    dnDes[3] = (1 + p) / 2;
-    dnDes[4] = 1;
-    for (a = 0; a < numArrays; a++) {
-      for (i = 0; i < numMarkers; i++)
-        sa[a].n[i] = i + 1;
-      sa[a].nDes[0] = 1;
-      sa[a].nDes[1] = 1 + 2 * p;
-      sa[a].nDes[2] = 1 + 4 * p;
-      sa[a].nDes[3] = 3 + 2 * p;
-      sa[a].nDes[4] = 5;
-      sa[a].dataSum = 0;
-      sa[a].numSeen = 0;
-    }
-    return SUCCESS;
-  }
-
-  command result_t StdControl.start() {
-    return SUCCESS;
-  }
-
-  command result_t StdControl.stop() {
-    return SUCCESS;
-  }
+  uint8_t numArrays = uniqueCount("StatsArray");
+  saInfo sa[uniqueCount("StatsArray")];
   
   /*** Internal Functions ***/
   
-  command msgData StatsArray.printq[uint8_t id](uint8_t i) {
-    msgData msg;
-    msg.src = TOS_LOCAL_ADDRESS;
-    msg.dest = NET_UART_ADDR;
-    msg.type = WAVELETDATA;
-    msg.data.wData.level = i;
-    msg.data.wData.value[0] = (float) sa[id].n[i];
-    msg.data.wData.value[1] = sa[id].q[i];
-    return msg;
-    /* call JDebug.jdbg("n0: %i", 0, sa[id].n[0], 0);
-    call JDebug.jdbg("n1: %i", 0, sa[id].n[1], 0);
-    call JDebug.jdbg("n2: %i", 0, sa[id].n[2], 0);
-    call JDebug.jdbg("n3: %i", 0, sa[id].n[3], 0);
-    call JDebug.jdbg("n4: %i", 0, sa[id].n[4], 0);
-    call JDebug.jdbg("q0: %i", 0, (uint16_t) sa[id].q[0], 0);
-    call JDebug.jdbg("q1: %i", 0, (uint16_t) sa[id].q[1], 0);
-    call JDebug.jdbg("q2: %i", 0, (uint16_t) sa[id].q[2], 0);
-    call JDebug.jdbg("q3: %i", 0, (uint16_t) sa[id].q[3], 0);
-    call JDebug.jdbg("q4: %i", 0, (uint16_t) sa[id].q[4], 0); */
+  void clearInfo(uint8_t id) {
+    uint8_t i;
+    saInfo *s = &sa[id];
+    for (i = 0; i < numMarkers; i++) {
+      s->n[i] = i + 1;
+      s->q[i] = 0;
+    }
+    s->nDes[0] = 1;
+    s->nDes[1] = 1 + 2 * p;
+    s->nDes[2] = 1 + 4 * p;
+    s->nDes[3] = 3 + 2 * p;
+    s->nDes[4] = 5;
+    s->dataSum = 0;
+    s->numSeen = 0;
   }
 
   float parabolaAdj(uint8_t id, int8_t d, uint8_t i) {
@@ -138,6 +93,28 @@ implementation {
     }
   }
   
+  /*** StdControl ***/
+  
+  command result_t StdControl.init() {
+    uint8_t a;
+    dnDes[0] = 0;
+    dnDes[1] = p / 2;
+    dnDes[2] = p;
+    dnDes[3] = (1 + p) / 2;
+    dnDes[4] = 1;
+    for (a = 0; a < numArrays; a++)
+      clearInfo(a);
+    return SUCCESS;
+  }
+
+  command result_t StdControl.start() {
+    return SUCCESS;
+  }
+
+  command result_t StdControl.stop() {
+    return SUCCESS;
+  }
+  
   /*** StatsArray ***/  
 
   command void StatsArray.newData[uint8_t id](float newVal) {
@@ -149,7 +126,8 @@ implementation {
         sort(id);
     } else {
       // Find markers that the new value fits between
-      uint8_t k, i;
+      uint8_t k = 5;
+      uint8_t i;
       if (newVal < s->q[0]) {
         s->q[0] = newVal;
         k = 1;
@@ -206,13 +184,17 @@ implementation {
   }
   
   command float StatsArray.mean[uint8_t id]() {
-    //printq();
+    if (sa[id].numSeen == 0)
+      return 0;
     return sa[id].dataSum / sa[id].numSeen;
   }
   
   command float StatsArray.median[uint8_t id]() {
-    //printq();
     return sa[id].q[numMarkers / 2];  
+  }
+  
+  command void StatsArray.clear[uint8_t id]() {
+    clearInfo(id);
   }
 
 }
