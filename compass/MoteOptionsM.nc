@@ -15,8 +15,10 @@ module MoteOptionsM {
 #endif
   	interface Stats;
     interface Message;
-    interface Timer as RadioDelay;
+    interface Timer as Wake;
+    interface Timer as Sleep;
     interface PowerManagement as PM;
+    interface Leds;
   }
   provides {
     interface MoteOptions;
@@ -27,12 +29,17 @@ implementation {
 #if 0 // TinyOS Plugin Workaround
   typedef char msgData;
   typedef char MoteOptData;
+  typedef char PwrControl;
 #endif
+
+  PwrControl pCntl;
+  bool sleeping;
 
   /*** Message ***/
     
   event void Message.receive(msgData msg) {
-    if (msg.type == MOTEOPTIONS) {
+    switch (msg.type) {
+    case MOTEOPTIONS: {
       MoteOptData *o = &msg.data.opt;
       dbg(DBG_USR2, "MoteOptions: Rcvd new options data\n");
       if ((o->mask & MO_DIAGMODE) != 0) {
@@ -72,10 +79,14 @@ implementation {
       }
       if ((o->mask & MO_RADIOOFFTIME) != 0) {
         dbg(DBG_USR2, "MoteOptions: Turning radio off for %i seconds\n", o->radioOffTime);
-        call RadioDelay.start(TIMER_ONE_SHOT, o->radioOffTime * 1024);
-        call TransControl.stop();
+        call Wake.start(TIMER_ONE_SHOT, o->radioOffTime * 1024);
+        signal Sleep.fired();
       }
 #endif
+      break; }
+    case PWRCONTROL: {
+      pCntl = msg.data.pCntl;
+      break; }
     }
   }
  
@@ -90,18 +101,51 @@ implementation {
    */
   default event void MoteOptions.receive(uint8_t optMask, uint8_t optValue) {}
   
+  /**
+   * Reset sleep countdown.
+   */
+  command void MoteOptions.resetSleep() {
+    if (TOS_LOCAL_ADDRESS != 0) {
+      dbg(DBG_USR1, "MoteOptions: Resetting sleep timer, will sleep in %i ms\n", pCntl.sleepIfIdleFor);
+      call Sleep.stop();
+      call Sleep.start(TIMER_ONE_SHOT, pCntl.sleepIfIdleFor);
+    }
+  }
+  
   /*** Timer ***/
   
-  event result_t RadioDelay.fired() {
+  event result_t Wake.fired() {
+    dbg(DBG_USR1, "MoteOptions: Reached next wake up interval");
+    call Wake.start(TIMER_ONE_SHOT, pCntl.wakeUpInterval);
+    if (sleeping) {
+      sleeping = FALSE;
+      call MoteOptions.resetSleep();
+#ifdef PLATFORM_MICAZ      
+      call TransControl.start();    
+#endif      
+    }
+    call Leds.redOn();
+    return SUCCESS;
+  }
+  
+  event result_t Sleep.fired() {
+    dbg(DBG_USR1, "MoteOptions: Going to sleep until next wake up interval");
+    sleeping = TRUE;
+    call Leds.redOff();
 #ifdef PLATFORM_MICAZ
-    call TransControl.start();
+    call TransControl.stop();
 #endif
+    call PM.adjustPower();
     return SUCCESS;
   }
   
   /*** StdControl ***/
   
   command result_t StdControl.init() {
+    pCntl.sleepIfIdleFor = MO_DEF_SLEEP;
+    pCntl.wakeUpInterval = MO_DEF_WAKE;
+    sleeping = TRUE;
+    //call Leds.init();
 #ifdef PLATFORM_MICAZ
     call TransControl.init();
 #endif
@@ -109,10 +153,17 @@ implementation {
   }
 
   command result_t StdControl.start() {
-    // Set options to default values
+    call PM.enable();
+    if (TOS_LOCAL_ADDRESS == 0) {
 #ifdef PLATFORM_MICAZ
-    call TransControl.start();
+      call TransControl.start();
+      call Leds.redOn();
+    } else {
+      call Wake.start(TIMER_ONE_SHOT, 512);
+    }
+#ifdef PLATFORM_MICAZ
     call MacControl.enableAck();
+    call CC2420Control.TunePreset(MO_DEF_CC2420_CHAN);
 #endif
     return SUCCESS;
   }

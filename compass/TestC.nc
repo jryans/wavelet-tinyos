@@ -8,21 +8,21 @@ includes BigPack;
 configuration TestC {}
 implementation {
   components Main, 
-             DelugeC, 
-             NetworkC,
+//             DelugeC, 
+//             NetworkC,
              TimerC, 
-             BigPackM,
+//             BigPackM,
 //             ConfigTestM,
-             StatsC,
-             ArrayTestM,
+//             StatsC,
+//             ArrayTestM,
 //             RandomLFSR,
-             StatsArrayM,
-//             MoteOptionsC,
+//             StatsArrayM,
+             MoteOptionsC;
 //             WaveletM, 
 //             LedsC;
 //             StateC, 
 //             SampleM, 
-             SensorControlC;
+//            SensorControlC;
 #ifdef BEEP
   components BeepC;
 #endif

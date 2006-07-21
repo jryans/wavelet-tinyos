@@ -10,4 +10,9 @@ interface MoteOptions {
    */
   event void receive(uint8_t optMask, uint8_t optValue);
   
+  /**
+   * Reset sleep countdown.
+   */
+  command void resetSleep();
+  
 }
