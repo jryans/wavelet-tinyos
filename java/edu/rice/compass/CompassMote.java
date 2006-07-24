@@ -20,6 +20,7 @@ public class CompassMote extends PackerMote {
 	public static final short BIGPACKDATA = 3;
 	public static final short WAVELETSTATE = 4;
 	public static final short ROUTERDATA = 5;
+	public static final short PWRCONTROL = 6;
 
 	/* Wavelet Mote States */
 	static final short S_IDLE = 0;
@@ -212,6 +213,61 @@ public class CompassMote extends PackerMote {
 		public void rfChan(int chan) {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RFCHAN));
 			pack.set_data_data_opt_rfChan((short) chan);
+		}
+
+		public void send() {
+			try {
+				sendPack(pack);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+	
+	public PwrControl makePwrControl() {
+		return new PwrControl();
+	}
+	
+	/**
+	 * Controls mote power cycle settings
+	 */
+	public class PwrControl {
+		
+		/* PM Modes */
+		private static final short PM_SLEEP_ON_SILENCE = 0;
+		private static final short PM_CHECK_SINK = 1;
+		
+		/* Defaults */
+		private static final int MO_DEF_SLEEP = 2 * 1024;
+		private static final int MO_DEF_WAKE = 60 * 1024;
+		
+		private UnicastPack pack = new UnicastPack();
+
+		private PwrControl() {
+			pack.set_data_type(PWRCONTROL);
+			pack.set_data_data_pCntl_sleepInterval(MO_DEF_SLEEP);
+			pack.set_data_data_pCntl_wakeUpInterval(MO_DEF_WAKE);
+		}
+
+		public void pmMode(String mode) {
+			if (mode.equals("SOS")) {
+				pack.set_data_data_pCntl_pmMode(PM_SLEEP_ON_SILENCE);
+			} else if (mode.equals("CS")) {
+				pack.set_data_data_pCntl_pmMode(PM_CHECK_SINK);
+			}
+		}
+
+		public void awake(boolean awake) {
+			pack.set_data_data_pCntl_stayAwake(b2Cs(awake));
+		}
+		
+		public void sleepInterval(int sleep) {
+			pack.set_data_data_pCntl_sleepInterval(sleep);
+		}
+		
+		public void wakeInterval(int wake) {
+			pack.set_data_data_pCntl_wakeUpInterval(wake);
 		}
 
 		public void send() {

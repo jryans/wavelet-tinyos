@@ -76,6 +76,15 @@ public class CompassTools {
 						new Switch("clear", 'c', "clear"),
 						new Switch("force", JSAP.NO_SHORTFLAG, "force"),
 						new Switch("stats", JSAP.NO_SHORTFLAG, "stats"),
+						new Switch("pwrcntl", 'p', "pwrcntl"),
+						new FlaggedOption("awake", JSAP.BOOLEAN_PARSER, "yes",
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "awake"),
+						new FlaggedOption("mode", JSAP.STRING_PARSER, "CS",
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "mode"),
+						new FlaggedOption("sleepInt", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "sleepInt"),
+						new FlaggedOption("wakeInt", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "wakeInt"),
 						new FlaggedOption("dest", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, 'd', "dest") });
 
@@ -169,6 +178,17 @@ public class CompassTools {
 			if (config.contains("retries"))
 				opt.radioRetries(config.getInt("retries"));
 			opt.send();
+			System.exit(0);
+		} else if (config.getBoolean("pwrcntl")) {
+			CompassMote cm = new CompassMote(destCheck());
+			CompassMote.PwrControl pm = cm.makePwrControl();
+			pm.pmMode(config.getString("mode"));
+			pm.awake(config.getBoolean("awake"));
+			if (config.contains("sleepInt"))
+				pm.sleepInterval(config.getInt("sleepInt") * 1024 / 1000);
+			if (config.contains("wakeInt"))
+				pm.wakeInterval(config.getInt("wakeInt") * 1024 / 1000);
+			pm.send();
 			System.exit(0);
 		} else if (config.contains("route") && config.contains("mote")) {
 			CompassMote cm = new CompassMote(destCheck());
