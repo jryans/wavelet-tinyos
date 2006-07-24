@@ -303,6 +303,9 @@ implementation {
     case MOTEOPTIONS: {
       return FALSE;
       break; }
+    case PWRCONTROL: {
+      return FALSE;
+      break; }
     }
     return TRUE;
   }
