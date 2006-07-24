@@ -55,6 +55,7 @@ module BroadcastM {
     interface Transceiver as IO;
     interface Leds;
     interface Timer as Repeat;
+    interface MoteOptions;
 #ifdef BEEP
     interface Beep;
 #endif
@@ -186,6 +187,7 @@ implementation {
    *     event.
    */
   event TOS_MsgPtr IO.receiveRadio(TOS_MsgPtr m) {
+    call MoteOptions.resetSleep();
     return receive(m);	
   }
   
@@ -197,5 +199,10 @@ implementation {
   event TOS_MsgPtr IO.receiveUart(TOS_MsgPtr m) {
     return receive(m);	
   }
+  
+  /**
+   * Signaled when an option affecting other applications is received.
+   */
+  event void MoteOptions.receive(uint8_t optMask, uint8_t optValue) {}
 }
 

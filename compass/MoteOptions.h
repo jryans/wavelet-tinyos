@@ -11,7 +11,7 @@ typedef struct {
   bool diagMode; // Controls diagnostic mode for testing (d: off)
   uint8_t txPower; // (MICAZ) Sets the TX power level (valid: 1 - 31, d: 31)
   bool rfAck; // (MICAZ) Toggles ACK support (d: on)
-  uint16_t radioOffTime; // (MICAZ) Number of seconds to disable radio
+  uint16_t radioOffTime; // Number of seconds to disable radio
   bool hplPM; // Toggles HPLPowerManagement (d: on)
   uint8_t rfChan; // (MICAZ) Sets the RF channel (valid: 11 - 26, d: 23)
   uint8_t radioRetries; // Sets number of attempts for unicast packets (d: 5)
@@ -30,13 +30,20 @@ enum { // Bitmasks
 
 enum { // Defaults
   MO_DEF_CC2420_CHAN = 23,
-  MO_DEF_SLEEP = 10 * 1024,
+  MO_DEF_SLEEP = 2 * 1024,
   MO_DEF_WAKE = (uint32_t) 60 * 1024
 };
 
 typedef struct {
-  uint32_t sleepIfIdleFor; // Time to wait before sleeping after last message received (bms)
+  uint32_t sleepInterval; // Time to wait before sleeping after last message received (bms)
   uint32_t wakeUpInterval; // Time between wake up events (bms)
+  bool stayAwake; // In PM_CHECK_SINK mode, this control whether the mote stays awake.
+  uint8_t pmMode;
 } PwrControl;
+
+enum { // PM Modes
+  PM_SLEEP_ON_SILENCE = 0,
+  PM_CHECK_SINK = 1
+};
 
 #endif // _MOTEOPTIONS_H

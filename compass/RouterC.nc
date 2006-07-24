@@ -15,9 +15,6 @@ implementation {
   components Main, RouterStaticM, 
              TransceiverC, NetworkC;
   
-  /*** Services ***/
-  Main.StdControl -> TransceiverC;
-  
   /*** Routing ***/
   Main.StdControl -> RouterStaticM;
   RouterStaticM.IO -> TransceiverC.Transceiver[AM_ROUTER];

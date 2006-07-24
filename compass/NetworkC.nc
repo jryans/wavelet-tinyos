@@ -10,21 +10,27 @@ configuration NetworkC {
   provides {
     interface Message;
     interface Router;
+    interface StdControl;
+    interface StdControl as TransControl;
+  }
+  uses {
+    interface MoteOptions;
   }
 }
 implementation {
-  components Main, BroadcastM, UnicastM, RouterC, 
-             TransceiverC, LedsC, TimerC, MoteOptionsC;
+  components BroadcastM, UnicastM, RouterC, 
+             TransceiverC, LedsC, TimerC;
 #ifdef BEEP
   components BeepC;
 #endif
   
   /*** Services ***/
-  Main.StdControl -> TransceiverC;
-  Main.StdControl -> TimerC;
+  TransControl = TransceiverC;
+  StdControl = TimerC;
   
   /*** Broadcast ***/
   BroadcastM.IO -> TransceiverC.Transceiver[AM_BROADCASTPACK];
+  MoteOptions = BroadcastM;
   BroadcastM.Leds -> LedsC;
   BroadcastM.Repeat -> TimerC.Timer[unique("Timer")];
 #ifdef BEEP
@@ -34,7 +40,7 @@ implementation {
   
   /*** Unicast ***/
   UnicastM.IO -> TransceiverC.Transceiver[AM_UNICASTPACK];
-  UnicastM.MoteOptions -> MoteOptionsC;
+  MoteOptions = UnicastM;
   UnicastM.Router -> RouterC;
   UnicastM.Leds -> LedsC;
 #ifdef BEEP

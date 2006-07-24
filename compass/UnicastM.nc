@@ -190,6 +190,7 @@ implementation {
    *     event.
    */
   event TOS_MsgPtr IO.receiveRadio(TOS_MsgPtr m) {
+    call MoteOptions.resetSleep();
     return deliver(m);
   }
   

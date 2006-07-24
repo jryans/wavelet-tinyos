@@ -16,14 +16,17 @@ implementation {
 #endif
 
   /*** Deluge: allows for wireless mote reprogramming ***/
-  Main.StdControl -> DelugeC;
+  MoteOptionsC.DelugeControl -> DelugeC;
   
   /*** Network: provides broadcast and unicast I/O ***/
+  Main.StdControl -> NetworkC.StdControl;
   MoteOptionsC.Message -> NetworkC;
+  MoteOptionsC.TransControl -> NetworkC.TransControl;
   WaveletM.Message -> NetworkC;
   WaveletM.Router -> NetworkC;
   BigPackM.Message -> NetworkC;
   StatsC.Message -> NetworkC;
+  NetworkC.MoteOptions -> MoteOptionsC;
   
   /*** Stats: sends packet and app stats when requested ***/
   MoteOptionsC.Stats -> StatsC;

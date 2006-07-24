@@ -10,13 +10,15 @@ module MoteOptionsM {
   uses {
 #ifdef PLATFORM_MICAZ
   	interface CC2420Control;
-    interface StdControl as TransControl;
     interface MacControl;
 #endif
+    interface StdControl as TransControl;
+    interface StdControl as DelugeControl;
   	interface Stats;
     interface Message;
     interface Timer as Wake;
     interface Timer as Sleep;
+    interface Timer as Deluge;
     interface PowerManagement as PM;
     interface Leds;
   }
@@ -34,6 +36,8 @@ implementation {
 
   PwrControl pCntl;
   bool sleeping;
+  bool startup;
+  bool stayAwake;
 
   /*** Message ***/
     
@@ -77,15 +81,22 @@ implementation {
         (o->rfAck) ? call MacControl.enableAck()
                    : call MacControl.disableAck();
       }
+#endif
       if ((o->mask & MO_RADIOOFFTIME) != 0) {
         dbg(DBG_USR2, "MoteOptions: Turning radio off for %i seconds\n", o->radioOffTime);
         call Wake.start(TIMER_ONE_SHOT, o->radioOffTime * 1024);
         signal Sleep.fired();
       }
-#endif
       break; }
     case PWRCONTROL: {
-      pCntl = msg.data.pCntl;
+      if (TOS_LOCAL_ADDRESS == 0 && msg.src != NET_UART_ADDR) {
+        msg.dest = msg.src;
+        msg.src = 0;
+        msg.data.pCntl = pCntl;
+        call Message.send(msg);
+      } else {
+        pCntl = msg.data.pCntl;
+      }
       break; }
     }
   }
@@ -105,73 +116,105 @@ implementation {
    * Reset sleep countdown.
    */
   command void MoteOptions.resetSleep() {
-    if (TOS_LOCAL_ADDRESS != 0) {
-      dbg(DBG_USR1, "MoteOptions: Resetting sleep timer, will sleep in %i ms\n", pCntl.sleepIfIdleFor);
+    if (pCntl.pmMode == PM_SLEEP_ON_SILENCE) {
+      dbg(DBG_USR1, "MoteOptions: Resetting sleep timer, will sleep in %i ms\n", pCntl.sleepInterval);
       call Sleep.stop();
-      call Sleep.start(TIMER_ONE_SHOT, pCntl.sleepIfIdleFor);
+      call Sleep.start(TIMER_ONE_SHOT, pCntl.sleepInterval);
     }
   }
   
   /*** Timer ***/
   
+  void checkSink() {
+    msgData msg;
+    msg.src = TOS_LOCAL_ADDRESS;
+    msg.dest = 0;
+    msg.type = PWRCONTROL;
+    call Message.send(msg);
+    dbg(DBG_USR1, "MoteOptions: Waiting %i ms to hear from sink\n", pCntl.sleepInterval);
+    call Sleep.start(TIMER_ONE_SHOT, pCntl.sleepInterval);
+  }
+  
   event result_t Wake.fired() {
     dbg(DBG_USR1, "MoteOptions: Reached next wake up interval");
     call Wake.start(TIMER_ONE_SHOT, pCntl.wakeUpInterval);
-    if (sleeping) {
-      sleeping = FALSE;
-      call MoteOptions.resetSleep();
-#ifdef PLATFORM_MICAZ      
-      call TransControl.start();    
-#endif      
+    if (sleeping) { 
+      call TransControl.start();
     }
-    call Leds.redOn();
+    call Deluge.start(TIMER_ONE_SHOT, 10);    
     return SUCCESS;
   }
   
-  event result_t Sleep.fired() {
+  void goToSleep() {
     dbg(DBG_USR1, "MoteOptions: Going to sleep until next wake up interval");
     sleeping = TRUE;
     call Leds.redOff();
-#ifdef PLATFORM_MICAZ
+    call DelugeControl.stop();
     call TransControl.stop();
-#endif
-    call PM.adjustPower();
+  }
+  
+  event result_t Sleep.fired() {
+    switch (pCntl.pmMode) {
+    case PM_CHECK_SINK: {
+      call Wake.stop();
+      call Wake.start(TIMER_ONE_SHOT, pCntl.wakeUpInterval - pCntl.sleepInterval);
+      if (pCntl.stayAwake)
+        return SUCCESS; }
+    case PM_SLEEP_ON_SILENCE: {
+      goToSleep();
+      break; }
+    }
+    return SUCCESS;
+  }
+  
+  event result_t Deluge.fired() {
+    if (startup && TOS_LOCAL_ADDRESS != 0) {
+      startup = FALSE;
+      call PM.enable();
+    }
+    if (sleeping) {
+      sleeping = FALSE;
+      call DelugeControl.start();
+      call Leds.redOn();
+      if (TOS_LOCAL_ADDRESS != 0 && pCntl.pmMode == PM_SLEEP_ON_SILENCE) 
+        call MoteOptions.resetSleep();
+    }
+    if (TOS_LOCAL_ADDRESS != 0 && pCntl.pmMode == PM_CHECK_SINK)
+      checkSink();    
     return SUCCESS;
   }
   
   /*** StdControl ***/
   
   command result_t StdControl.init() {
-    pCntl.sleepIfIdleFor = MO_DEF_SLEEP;
+    pCntl.sleepInterval = MO_DEF_SLEEP;
     pCntl.wakeUpInterval = MO_DEF_WAKE;
+    pCntl.stayAwake = FALSE;
+    pCntl.pmMode = PM_CHECK_SINK;
     sleeping = TRUE;
-    //call Leds.init();
-#ifdef PLATFORM_MICAZ
+    startup = TRUE;
+    call Leds.init();
     call TransControl.init();
-#endif
+    call DelugeControl.init();
     return SUCCESS;
   }
 
   command result_t StdControl.start() {
-    call PM.enable();
-    if (TOS_LOCAL_ADDRESS == 0) {
-#ifdef PLATFORM_MICAZ
-      call TransControl.start();
-      call Leds.redOn();
-    } else {
-      call Wake.start(TIMER_ONE_SHOT, 512);
-    }
 #ifdef PLATFORM_MICAZ
     call MacControl.enableAck();
-    call CC2420Control.TunePreset(MO_DEF_CC2420_CHAN);
 #endif
+    if (TOS_LOCAL_ADDRESS != 0) {
+      signal Wake.fired();
+    } else {
+      call TransControl.start();
+      call Deluge.start(TIMER_ONE_SHOT, 10);
+    }
     return SUCCESS;
   }
 
   command result_t StdControl.stop() {
-#ifdef PLATFORM_MICAZ
+    call DelugeControl.stop();
     call TransControl.stop();
-#endif
     return SUCCESS;
   }
   
