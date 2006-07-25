@@ -237,8 +237,13 @@ implementation {
       (curLevel + 1 == numLevels) 
         ? (nextState = S_DONE)
         : (nextState = level[curLevel + 1].nb[0].state);
-      (nextState == S_UPDATING) ? (delay = 4500)
-                                : (delay = 4000);
+      if (nextState == S_UPDATING) {
+        delay = 4500;
+      } else if (nextState == S_DONE) {
+        delay = 2500;
+      } else {
+        delay = 4000;
+      }
       break; }
     }
     call StateTimer.start(TIMER_ONE_SHOT, delay);
