@@ -149,6 +149,9 @@ public class CompassTools {
 					setLength = minSetLen;
 				}
 			}
+			// Inputs are good, stop the motes to make sure they aren't
+			// doing anything first.
+			CompassMote.forceStop();
 			if (config.getBoolean("prog")) {
 				wCont.configMotes(); // Send config to each mote
 			} else {
@@ -157,7 +160,7 @@ public class CompassTools {
 			}
 		} else if (config.getBoolean("stats")) {
 			new CompassMote(destCheck()).getStats();
-		} else if (config.getInt("ping", 0) != 0) {
+		} else if (config.getInt("ping", 0) != 0 && !config.getBoolean("opt")) {
 			new Timer().scheduleAtFixedRate(new Ping(config.getInt("ping"),
 					new CompassMote(destCheck())), 100, 30);
 		} else if (config.getBoolean("opt")) {
@@ -167,8 +170,8 @@ public class CompassTools {
 				opt.txPower(config.getInt("power"));
 			if (config.getBoolean("clear"))
 				opt.clearStats();
-			if (config.contains("diag"))
-				opt.diagMode(config.getBoolean("diag"));
+			if (config.contains("ping"))
+				opt.pingNum(config.getInt("ping"));
 			if (config.contains("rofftime"))
 				opt.radioOffTime(config.getInt("rofftime"));
 			if (config.contains("pm"))

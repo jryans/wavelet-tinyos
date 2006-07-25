@@ -161,7 +161,7 @@ public class CompassMote extends PackerMote {
 	public class MoteOptions {
 
 		/* Bitmasks */
-		private static final short MO_DIAGMODE = 0x01;
+		private static final short MO_PINGNUM = 0x01;
 		private static final short MO_TXPOWER = 0x02;
 		private static final short MO_CLEARSTATS = 0x04;
 		private static final short MO_RFACK = 0x08;
@@ -176,9 +176,9 @@ public class CompassMote extends PackerMote {
 			pack.set_data_type(MOTEOPTIONS);
 		}
 
-		public void diagMode(boolean diag) {
-			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_DIAGMODE));
-			pack.set_data_data_opt_diagMode(b2Cs(diag));
+		public void pingNum(int num) {
+			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_PINGNUM));
+			pack.set_data_data_opt_pingNum(num);
 		}
 
 		public void txPower(int power) {
@@ -192,14 +192,14 @@ public class CompassMote extends PackerMote {
 
 		public void rfAck(boolean ack) {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RFACK));
-			pack.set_data_data_opt_diagMode(b2Cs(ack));
+			pack.set_data_data_opt_rfAck(b2Cs(ack));
 		}
 
 		public void radioOffTime(int time) {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RADIOOFFTIME));
 			pack.set_data_data_opt_radioOffTime(time);
 		}
-		
+
 		public void radioRetries(int retries) {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RADIORETRIES));
 			pack.set_data_data_opt_radioRetries((short) retries);
@@ -224,24 +224,24 @@ public class CompassMote extends PackerMote {
 		}
 
 	}
-	
+
 	public PwrControl makePwrControl() {
 		return new PwrControl();
 	}
-	
+
 	/**
 	 * Controls mote power cycle settings
 	 */
 	public class PwrControl {
-		
+
 		/* PM Modes */
 		private static final short PM_SLEEP_ON_SILENCE = 0;
 		private static final short PM_CHECK_SINK = 1;
-		
+
 		/* Defaults */
 		private static final int MO_DEF_SLEEP = 2 * 1024;
 		private static final int MO_DEF_WAKE = 60 * 1024;
-		
+
 		private UnicastPack pack = new UnicastPack();
 
 		private PwrControl() {
@@ -261,11 +261,11 @@ public class CompassMote extends PackerMote {
 		public void awake(boolean awake) {
 			pack.set_data_data_pCntl_stayAwake(b2Cs(awake));
 		}
-		
+
 		public void sleepInterval(int sleep) {
 			pack.set_data_data_pCntl_sleepInterval(sleep);
 		}
-		
+
 		public void wakeInterval(int wake) {
 			pack.set_data_data_pCntl_wakeUpInterval(wake);
 		}
@@ -304,9 +304,11 @@ public class CompassMote extends PackerMote {
 		for (int mote = 0; mote < wc.mScale.length; mote++) {
 			if (wc.mScale[mote] != 0) {
 				double curNbs[] = (double[]) wc.mPredNB[mote];
-				for (int nb = 0; nb < curNbs.length; nb++) {
-					if (curNbs[nb] == id)
-						updInfo[(int) wc.mScale[mote] - 1].add(new UpdateNB(mote, nb));
+				if (curNbs != null) {
+					for (int nb = 0; nb < curNbs.length; nb++) {
+						if (curNbs[nb] == id)
+							updInfo[(int) wc.mScale[mote] - 1].add(new UpdateNB(mote, nb));
+					}
 				}
 			}
 		}
@@ -314,7 +316,12 @@ public class CompassMote extends PackerMote {
 		// its last level. Otherwise, we find the last level it updates.
 		if (predLevel != 0) {
 			state = new short[predLevel];
-			state[predLevel - 1] = S_PREDICTING;
+			// If it has no neighbors at predLevel, then it should really skip.
+			if (wc.mPredNB[id - 1] != null) {
+				state[predLevel - 1] = S_PREDICTING;
+			} else {
+				state[predLevel - 1] = S_SKIPLEVEL;
+			}
 		} else {
 			for (lastUpdLevel = maxLevel - 1; lastUpdLevel >= 0; lastUpdLevel--) {
 				if (updInfo[lastUpdLevel].size() != 0)
@@ -371,9 +378,9 @@ public class CompassMote extends PackerMote {
 				neighbors[levelIdx] = new WaveletNeighbor[predNb.length + 1];
 				// First entry about ourselves
 				neighbors[levelIdx][0] = new WaveletNeighbor(id, S_PREDICTING, 0);
-				for (int nb = 0; nb < predNb.length; nb++)
-					neighbors[levelIdx][nb + 1] = new WaveletNeighbor((int) predNb[nb],
-							S_PREDICTING, (float) predCoeff[nb]);
+				for (int nb = 1; nb < neighbors[levelIdx].length; nb++)
+					neighbors[levelIdx][nb] = new WaveletNeighbor((int) predNb[nb - 1],
+							S_PREDICTING, (float) predCoeff[nb - 1]);
 				break;
 			}
 		}

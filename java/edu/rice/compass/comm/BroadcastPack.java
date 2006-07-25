@@ -102,7 +102,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
         s += "  [data.data.opt.mask=0x"+Long.toHexString(get_data_data_opt_mask())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.opt.diagMode=0x"+Long.toHexString(get_data_data_opt_diagMode())+"]\n";
+        s += "  [data.data.opt.pingNum=0x"+Long.toHexString(get_data_data_opt_pingNum())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [data.data.opt.txPower=0x"+Long.toHexString(get_data_data_opt_txPower())+"]\n";
@@ -508,72 +508,72 @@ public class BroadcastPack extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.opt.diagMode
-    //   Field type: short
+    // Accessor methods for field: data.data.opt.pingNum
+    //   Field type: int
     //   Offset (bits): 64
-    //   Size (bits): 8
+    //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.opt.diagMode' is signed (false).
+     * Return whether the field 'data.data.opt.pingNum' is signed (false).
      */
-    public static boolean isSigned_data_data_opt_diagMode() {
+    public static boolean isSigned_data_data_opt_pingNum() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.opt.diagMode' is an array (false).
+     * Return whether the field 'data.data.opt.pingNum' is an array (false).
      */
-    public static boolean isArray_data_data_opt_diagMode() {
+    public static boolean isArray_data_data_opt_pingNum() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.opt.diagMode'
+     * Return the offset (in bytes) of the field 'data.data.opt.pingNum'
      */
-    public static int offset_data_data_opt_diagMode() {
+    public static int offset_data_data_opt_pingNum() {
         return (64 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.opt.diagMode'
+     * Return the offset (in bits) of the field 'data.data.opt.pingNum'
      */
-    public static int offsetBits_data_data_opt_diagMode() {
+    public static int offsetBits_data_data_opt_pingNum() {
         return 64;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.opt.diagMode'
+     * Return the value (as a int) of the field 'data.data.opt.pingNum'
      */
-    public short get_data_data_opt_diagMode() {
-        return (short)getUIntElement(offsetBits_data_data_opt_diagMode(), 8);
+    public int get_data_data_opt_pingNum() {
+        return (int)getUIntElement(offsetBits_data_data_opt_pingNum(), 16);
     }
 
     /**
-     * Set the value of the field 'data.data.opt.diagMode'
+     * Set the value of the field 'data.data.opt.pingNum'
      */
-    public void set_data_data_opt_diagMode(short value) {
-        setUIntElement(offsetBits_data_data_opt_diagMode(), 8, value);
+    public void set_data_data_opt_pingNum(int value) {
+        setUIntElement(offsetBits_data_data_opt_pingNum(), 16, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.opt.diagMode'
+     * Return the size, in bytes, of the field 'data.data.opt.pingNum'
      */
-    public static int size_data_data_opt_diagMode() {
-        return (8 / 8);
+    public static int size_data_data_opt_pingNum() {
+        return (16 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.opt.diagMode'
+     * Return the size, in bits, of the field 'data.data.opt.pingNum'
      */
-    public static int sizeBits_data_data_opt_diagMode() {
-        return 8;
+    public static int sizeBits_data_data_opt_pingNum() {
+        return 16;
     }
 
     /////////////////////////////////////////////////////////
     // Accessor methods for field: data.data.opt.txPower
     //   Field type: short
-    //   Offset (bits): 72
+    //   Offset (bits): 80
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
@@ -595,14 +595,14 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'data.data.opt.txPower'
      */
     public static int offset_data_data_opt_txPower() {
-        return (72 / 8);
+        return (80 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'data.data.opt.txPower'
      */
     public static int offsetBits_data_data_opt_txPower() {
-        return 72;
+        return 80;
     }
 
     /**
@@ -636,7 +636,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: data.data.opt.rfAck
     //   Field type: short
-    //   Offset (bits): 80
+    //   Offset (bits): 88
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
@@ -658,14 +658,14 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'data.data.opt.rfAck'
      */
     public static int offset_data_data_opt_rfAck() {
-        return (80 / 8);
+        return (88 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'data.data.opt.rfAck'
      */
     public static int offsetBits_data_data_opt_rfAck() {
-        return 80;
+        return 88;
     }
 
     /**
@@ -699,7 +699,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: data.data.opt.radioOffTime
     //   Field type: int
-    //   Offset (bits): 88
+    //   Offset (bits): 96
     //   Size (bits): 16
     /////////////////////////////////////////////////////////
 
@@ -721,14 +721,14 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'data.data.opt.radioOffTime'
      */
     public static int offset_data_data_opt_radioOffTime() {
-        return (88 / 8);
+        return (96 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'data.data.opt.radioOffTime'
      */
     public static int offsetBits_data_data_opt_radioOffTime() {
-        return 88;
+        return 96;
     }
 
     /**
@@ -762,7 +762,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: data.data.opt.hplPM
     //   Field type: short
-    //   Offset (bits): 104
+    //   Offset (bits): 112
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
@@ -784,14 +784,14 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'data.data.opt.hplPM'
      */
     public static int offset_data_data_opt_hplPM() {
-        return (104 / 8);
+        return (112 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'data.data.opt.hplPM'
      */
     public static int offsetBits_data_data_opt_hplPM() {
-        return 104;
+        return 112;
     }
 
     /**
@@ -825,7 +825,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: data.data.opt.rfChan
     //   Field type: short
-    //   Offset (bits): 112
+    //   Offset (bits): 120
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
@@ -847,14 +847,14 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'data.data.opt.rfChan'
      */
     public static int offset_data_data_opt_rfChan() {
-        return (112 / 8);
+        return (120 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'data.data.opt.rfChan'
      */
     public static int offsetBits_data_data_opt_rfChan() {
-        return 112;
+        return 120;
     }
 
     /**
@@ -888,7 +888,7 @@ public class BroadcastPack extends net.tinyos.message.Message {
     /////////////////////////////////////////////////////////
     // Accessor methods for field: data.data.opt.radioRetries
     //   Field type: short
-    //   Offset (bits): 120
+    //   Offset (bits): 128
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
@@ -910,14 +910,14 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'data.data.opt.radioRetries'
      */
     public static int offset_data_data_opt_radioRetries() {
-        return (120 / 8);
+        return (128 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'data.data.opt.radioRetries'
      */
     public static int offsetBits_data_data_opt_radioRetries() {
-        return 120;
+        return 128;
     }
 
     /**
