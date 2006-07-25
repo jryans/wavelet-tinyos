@@ -21,6 +21,7 @@ module MoteOptionsM {
     interface Timer as Deluge;
     interface PowerManagement as PM;
     interface Leds;
+    interface PingB;
   }
   provides {
     interface MoteOptions;
@@ -46,9 +47,9 @@ implementation {
     case MOTEOPTIONS: {
       MoteOptData *o = &msg.data.opt;
       dbg(DBG_USR2, "MoteOptions: Rcvd new options data\n");
-      if ((o->mask & MO_DIAGMODE) != 0) {
-        dbg(DBG_USR2, "MoteOptions: Setting diagnostics mode to %i\n", o->diagMode);
-        signal MoteOptions.receive(MO_DIAGMODE, o->diagMode);
+      if ((o->mask & MO_PINGNUM) != 0) {
+        dbg(DBG_USR2, "MoteOptions: Sending %i broadcast pings\n", o->pingNum);
+        call PingB.send(o->pingNum);
       }
       if ((o->mask & MO_CLEARSTATS) != 0) {
         dbg(DBG_USR2, "MoteOptions: Clearing stats data\n");

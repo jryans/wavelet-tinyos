@@ -7,10 +7,11 @@
  
 includes MessageData;
 includes Sensors;
+includes Ping;
 
 module StatsM {
   uses {
-    interface Transceiver as Snoop;
+    interface Transceiver as Snoop[uint8_t id];
     interface Message;
     interface BigPackClient as WaveletPack;
     interface BigPackServer as StatsPack;
@@ -68,9 +69,13 @@ implementation {
   /**
    * Stores details for each packet sent.
    */
-  event result_t Snoop.radioSendDone(TOS_MsgPtr m, result_t result) {
-    uPack *pPack = (uPack *)m->data;
-    if (checkMsg(pPack->data)) {
+  event result_t Snoop.radioSendDone[uint8_t id](TOS_MsgPtr m, result_t result) {
+    if (id == AM_UNICASTPACK || id == AM_PINGMSG) {
+      if (id == AM_UNICASTPACK) {
+        uPack *pPack = (uPack *)m->data;
+        if (!checkMsg(pPack->data))
+          return SUCCESS;
+      }
       data.pSent++;
       if (m->ack == 1)
         data.pAcked++;
@@ -81,32 +86,39 @@ implementation {
   /**
    * Stats doesn't track UART packets.
    */
-  event result_t Snoop.uartSendDone(TOS_MsgPtr m, result_t result) {
+  event result_t Snoop.uartSendDone[uint8_t id](TOS_MsgPtr m, result_t result) {
     return SUCCESS;
   }
   
   /**
    * Stores details for each packet received.
    */
-  event TOS_MsgPtr Snoop.receiveRadio(TOS_MsgPtr m) {
-    uPack *pPack = (uPack *)m->data;
-    if (checkMsg(pPack->data)) {
+  event TOS_MsgPtr Snoop.receiveRadio[uint8_t id](TOS_MsgPtr m) {
+    if (id == AM_UNICASTPACK || id == AM_PINGMSG) {
 #ifdef PLATFORM_MICAZ
-      int16_t rssi = m->strength;
+      int16_t rssi;
+#endif
+      if (id == AM_UNICASTPACK) {
+        uPack *pPack = (uPack *)m->data;
+        if (!checkMsg(pPack->data))
+          return m;
+      }
+#ifdef PLATFORM_MICAZ
+      rssi = m->strength;
       if (rssi > 127) 
         rssi -= 256;
       call RSSI.newData(rssi);
       call LQI.newData(m->lqi);
 #endif
       data.pRcvd++;
-    }   
+    }
     return m;
   }
   
   /**
    * Stats doesn't track UART packets.
    */
-  event TOS_MsgPtr Snoop.receiveUart(TOS_MsgPtr m) {
+  event TOS_MsgPtr Snoop.receiveUart[uint8_t id](TOS_MsgPtr m) {
     return m;
   }
   

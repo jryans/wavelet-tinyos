@@ -18,7 +18,7 @@ configuration StatsC {
 implementation {
   components Main, StatsM, TransceiverC, StatsArrayM;
   
-  StatsM.Snoop -> TransceiverC.Transceiver[AM_UNICASTPACK];
+  StatsM.Snoop -> TransceiverC.Transceiver;
   Main.StdControl -> StatsM;
   Main.StdControl -> StatsArrayM;
   StatsM.RSSI -> StatsArrayM.StatsArray[unique("StatsArray")];

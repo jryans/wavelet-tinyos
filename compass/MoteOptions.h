@@ -8,17 +8,17 @@
 
 typedef struct {
   uint8_t mask; // Bit mask to mark what settings should be read
-  bool diagMode; // Controls diagnostic mode for testing (d: off)
+  uint16_t pingNum; // Number of broadcast pings to send
   uint8_t txPower; // (MICAZ) Sets the TX power level (valid: 1 - 31, d: 31)
   bool rfAck; // (MICAZ) Toggles ACK support (d: on)
   uint16_t radioOffTime; // Number of seconds to disable radio
   bool hplPM; // Toggles HPLPowerManagement (d: on)
   uint8_t rfChan; // (MICAZ) Sets the RF channel (valid: 11 - 26, d: 23)
   uint8_t radioRetries; // Sets number of attempts for unicast packets (d: 5)
-} MoteOptData;
+} __attribute__ ((packed)) MoteOptData;
 
 enum { // Bitmasks
-  MO_DIAGMODE = 0x01,
+  MO_PINGNUM = 0x01,
   MO_TXPOWER = 0x02,
   MO_CLEARSTATS = 0x04,
   MO_RFACK = 0x08,
@@ -39,7 +39,7 @@ typedef struct {
   uint32_t wakeUpInterval; // Time between wake up events (bms)
   bool stayAwake; // In PM_CHECK_SINK mode, this control whether the mote stays awake.
   uint8_t pmMode;
-} PwrControl;
+} __attribute__ ((packed)) PwrControl;
 
 enum { // PM Modes
   PM_SLEEP_ON_SILENCE = 0,
