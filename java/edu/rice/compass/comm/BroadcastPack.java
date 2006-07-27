@@ -187,6 +187,9 @@ public class BroadcastPack extends net.tinyos.message.Message {
       try {
         s += "  [data.data.pCntl.pmMode=0x"+Long.toHexString(get_data_data_pCntl_pmMode())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.cTime=0x"+Long.toHexString(get_data_data_cTime())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       return s;
     }
 
@@ -2298,6 +2301,69 @@ public class BroadcastPack extends net.tinyos.message.Message {
      */
     public static int sizeBits_data_data_pCntl_pmMode() {
         return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.cTime
+    //   Field type: long
+    //   Offset (bits): 56
+    //   Size (bits): 32
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.cTime' is signed (false).
+     */
+    public static boolean isSigned_data_data_cTime() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.cTime' is an array (false).
+     */
+    public static boolean isArray_data_data_cTime() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.cTime'
+     */
+    public static int offset_data_data_cTime() {
+        return (56 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.cTime'
+     */
+    public static int offsetBits_data_data_cTime() {
+        return 56;
+    }
+
+    /**
+     * Return the value (as a long) of the field 'data.data.cTime'
+     */
+    public long get_data_data_cTime() {
+        return (long)getUIntElement(offsetBits_data_data_cTime(), 32);
+    }
+
+    /**
+     * Set the value of the field 'data.data.cTime'
+     */
+    public void set_data_data_cTime(long value) {
+        setUIntElement(offsetBits_data_data_cTime(), 32, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.cTime'
+     */
+    public static int size_data_data_cTime() {
+        return (32 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.cTime'
+     */
+    public static int sizeBits_data_data_cTime() {
+        return 32;
     }
 
 }

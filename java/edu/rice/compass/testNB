@@ -1,19 +1,21 @@
 #!/bin/bash
 ct="java edu.rice.compass.CompassTools"
-for dest in `seq $1 $2`;
-do
-  $ct -o -d $dest -c
-done
+stime=$(echo "scale (2); 0.03 * $6 * $7" | bc)
 for src in `seq $1 $2`;
 do
   [ ! -e "src$src" ] && mkdir src$src
-  $ct -o -d $src --power $3
-  $ct -o -d $src --ping 250
-  sleep 10
-  $ct -o -d $src --power 31
-  for dest in `seq $1 $2`;
+  $ct -o -d $src -c
+  for dest in `seq $3 $4`;
   do
-    $ct --stats -d $dest `cygpath -w $PWD/src$src/$dest.xml`
-    $ct -o -d $dest -c
+    if [ "$src" -eq "$dest" ]
+    then
+      continue
+    fi
+    $ct -o -d $src --power $5 --radioretries $6
+    $ct -o -d $src --ping $7 --radioofftime $dest
+    sleep $stime
+    $ct -o -d $src --power 31 --radioretries 5
+    $ct --stats -d $src `cygpath -w $PWD/src$src/$dest.xml`
+    $ct -o -d $src -c
   done
 done

@@ -8,10 +8,11 @@ package edu.rice.compass;
 
 import java.io.*;
 import java.util.*;
+import net.tinyos.message.*;
 import edu.rice.compass.bigpack.*;
 import edu.rice.compass.comm.*;
 
-public class CompassMote extends PackerMote {
+public class CompassMote extends PackerMote implements MessageListener {
 
 	/* Message Types */
 	public static final short MOTEOPTIONS = 0;
@@ -21,7 +22,8 @@ public class CompassMote extends PackerMote {
 	public static final short WAVELETSTATE = 4;
 	public static final short ROUTERDATA = 5;
 	public static final short PWRCONTROL = 6;
-
+	public static final short COMPTIME = 7;
+	
 	/* Wavelet Mote States */
 	static final short S_IDLE = 0;
 	static final short S_STARTUP = 1;
@@ -139,6 +141,25 @@ public class CompassMote extends PackerMote {
 			e.printStackTrace();
 		}
 	}
+	
+	public void getCompileTime() {
+		MoteCom.singleton.registerListener(new UnicastPack(), this);
+		UnicastPack pack = new UnicastPack();
+		pack.set_data_type(COMPTIME);
+		try {
+			sendPack(pack);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void messageReceived(int to, Message m) {
+		UnicastPack pack = (UnicastPack) m;
+		if (pack.get_data_type() == COMPTIME && pack.get_data_src() == id) {
+			System.out.println("Compiled On: " + new Date(pack.get_data_data_cTime() * 1000));
+			System.exit(0);
+		}
+	}
 
 	/* C Boolean */
 	private static final short C_FALSE = 0;
@@ -176,9 +197,10 @@ public class CompassMote extends PackerMote {
 			pack.set_data_type(MOTEOPTIONS);
 		}
 
-		public void pingNum(int num) {
+		public void pingNum(int num, int dest) {
 			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_PINGNUM));
 			pack.set_data_data_opt_pingNum(num);
+			pack.set_data_data_opt_radioOffTime(dest);
 		}
 
 		public void txPower(int power) {

@@ -65,6 +65,8 @@ public class CompassTools {
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "radioretries"),
 						new Switch("opt", 'o', "options"),
 						new Switch("load", JSAP.NO_SHORTFLAG, "load"),
+						new Switch("summary", JSAP.NO_SHORTFLAG, "summary"),
+						new Switch("ver", JSAP.NO_SHORTFLAG, "ver"),
 						new UnflaggedOption("file"),
 						new FlaggedOption("setlength", JSAP.LONG_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, 'l', "length"),
@@ -170,10 +172,13 @@ public class CompassTools {
 				opt.txPower(config.getInt("power"));
 			if (config.getBoolean("clear"))
 				opt.clearStats();
-			if (config.contains("ping"))
-				opt.pingNum(config.getInt("ping"));
-			if (config.contains("rofftime"))
-				opt.radioOffTime(config.getInt("rofftime"));
+			if (config.contains("rofftime")) {
+				if (config.contains("ping")) {
+					opt.pingNum(config.getInt("ping"), config.getInt("rofftime"));
+				} else {
+					opt.radioOffTime(config.getInt("rofftime"));
+				}
+			}
 			if (config.contains("pm"))
 				opt.hplPM(config.getBoolean("pm"));
 			if (config.contains("chan"))
@@ -215,7 +220,70 @@ public class CompassTools {
 				System.out.println("No input file was given!");
 			}
 			System.exit(0);
+		} else if (config.getBoolean("ver")) {
+			CompassMote cm = new CompassMote(destCheck());
+			cm.getCompileTime();
+		} else if (config.getBoolean("summary")) {
+			if (config.contains("file")) {
+				try {
+					File in = new File(config.getString("file"));
+					if (!in.isAbsolute())
+						in = new File(workingDir + config.getString("file"));
+					File dFiles[] = in.listFiles();
+					if (dFiles == null) {
+						System.out.println("No files in that directory!");
+						System.exit(0);
+					}
+					System.out.println("Dest ID  P ACK %  M DEL %  AVG RET");
+					System.out.println("-------  -------  -------  -------");
+					TreeSet motes = new TreeSet(new Comparator() {
+						public int compare(Object o0, Object o1) {
+							File f0 = (File) o0;
+							File f1 = (File) o1;
+							int id0 = Integer.parseInt(f0.getName().substring(0,
+									f0.getName().indexOf('.')));
+							int id1 = Integer.parseInt(f1.getName().substring(0,
+									f1.getName().indexOf('.')));
+							return id0 - id1;
+						}
+					});
+					for (int f = 0; f < dFiles.length; f++) {
+						if (dFiles[f].getName().endsWith(".xml")) {
+							motes.add(dFiles[f]);
+						}
+					}
+					Iterator m = motes.iterator();
+					while (m.hasNext()) {
+						File aFile = (File) m.next();
+						FileInputStream fs = new FileInputStream(aFile);
+						MoteStats stats = (MoteStats) xs.fromXML(fs);
+						String entry = aFile.getName().substring(0, aFile.getName().indexOf('.'));
+						//int idLen = aFile.getName().indexOf('.');
+						//System.out.print(aFile.getName().substring(0, idLen));
+						entry = strExpand(entry, 9);
+						entry += (stats.get_pAcked() * 100 / stats.get_pSent());
+						entry = strExpand(entry, 18);
+						entry += (stats.get_mDelivered() * 100 / stats.get_mSent());
+						entry = strExpand(entry, 27);
+						entry += ((float) stats.get_mRetriesSum() / stats.get_mSent());
+						System.out.println(entry);
+						fs.close();
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			} else {
+				System.out.println("No input directory was given!");
+			}
+			System.exit(0);
 		}
+	}
+	
+	private String strExpand(String src, int fLen) {
+		int iLen = src.length();
+		for (int sp = 0; sp < fLen - iLen; sp++)
+			src += " ";
+		return src;
 	}
 
 	private int destCheck() {

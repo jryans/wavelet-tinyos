@@ -11,7 +11,7 @@ import java.util.List;
 public class MoteStats extends BigPack {
 
 	/** The default size of this message type in bytes. */
-	public static final int DEFAULT_MESSAGE_SIZE = 39;
+	public static final int DEFAULT_MESSAGE_SIZE = 41;
 
 	/**
 	 * Create a new MoteStats using the given byte array as backing store.
@@ -50,9 +50,9 @@ public class MoteStats extends BigPack {
 
 	public void printStats() {
 		System.out.println("  Voltage: " + (get_voltage() / 1000) + " V");
-		System.out.println("  *Unicast* Packets:");
+		System.out.println("  Packets:");
 		System.out.println("    Received: " + get_pRcvd());
-		//if (get_pRcvd() > 0) {
+		if (get_pRcvd() > 0) {
 			System.out.println("      Min. RSSI:   " + (get_rssiMin() - 45));
 			System.out.println("      Max. RSSI:   " + (get_rssiMax() - 45));
 			System.out.println("      Mean RSSI:   " + (get_rssiMean() - 45));
@@ -61,7 +61,7 @@ public class MoteStats extends BigPack {
 			System.out.println("      Max. LQI:    " + get_lqiMax());
 			System.out.println("      Mean LQI:    " + get_lqiMean());
 			System.out.println("      Median LQI:  " + get_lqiMedian());
-		//}
+		}
 		System.out.println("    Sent: " + get_pSent());
 		if (get_pSent() > 0)
 			System.out.println("      ACKed: " + get_pAcked() + " ("
@@ -69,9 +69,12 @@ public class MoteStats extends BigPack {
 		System.out.println("  Messages:");
 		System.out.println("    Received: " + get_mRcvd());
 		System.out.println("    Sent:     " + get_mSent());
-		if (get_mSent() > 0)
+		if (get_mSent() > 0) {
+			System.out.println("      Delivered: " + get_mDelivered() + " ("
+					+ (get_mDelivered() * 100 / get_mSent()) + "%)");
 			System.out.println("      Avg. Retries: "
 					+ ((float) get_mRetriesSum() / get_mSent()));
+		}
 		StatsWTL level[] = get_wavelet_level();
 		if (level.length > 0) {
 			System.out.println("  Wavelet:");
@@ -910,9 +913,72 @@ public class MoteStats extends BigPack {
 	}
 
 	// ///////////////////////////////////////////////////////
-	// Accessor methods for field: mRetriesSum
+	// Accessor methods for field: mDelivered
 	// Field type: int
 	// Offset (bits): 240
+	// Size (bits): 16
+	// ///////////////////////////////////////////////////////
+
+	/**
+	 * Return whether the field 'mDelivered' is signed (false).
+	 */
+	public static boolean isSigned_mDelivered() {
+		return false;
+	}
+
+	/**
+	 * Return whether the field 'mDelivered' is an array (false).
+	 */
+	public static boolean isArray_mDelivered() {
+		return false;
+	}
+
+	/**
+	 * Return the offset (in bytes) of the field 'mDelivered'
+	 */
+	public static int offset_mDelivered() {
+		return (240 / 8);
+	}
+
+	/**
+	 * Return the offset (in bits) of the field 'mDelivered'
+	 */
+	public static int offsetBits_mDelivered() {
+		return 240;
+	}
+
+	/**
+	 * Return the value (as a int) of the field 'mDelivered'
+	 */
+	public int get_mDelivered() {
+		return (int) getUIntElement(offsetBits_mDelivered(), 16);
+	}
+
+	/**
+	 * Set the value of the field 'mDelivered'
+	 */
+	public void set_mDelivered(int value) {
+		setUIntElement(offsetBits_mDelivered(), 16, value);
+	}
+
+	/**
+	 * Return the size, in bytes, of the field 'mDelivered'
+	 */
+	public static int size_mDelivered() {
+		return (16 / 8);
+	}
+
+	/**
+	 * Return the size, in bits, of the field 'mDelivered'
+	 */
+	public static int sizeBits_mDelivered() {
+		return 16;
+	}
+
+	// ///////////////////////////////////////////////////////
+	// Accessor methods for field: mRetriesSum
+	// Field type: int
+	// Offset (bits): 256
 	// Size (bits): 16
 	// ///////////////////////////////////////////////////////
 
@@ -934,14 +1000,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'mRetriesSum'
 	 */
 	public static int offset_mRetriesSum() {
-		return (240 / 8);
+		return (256 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'mRetriesSum'
 	 */
 	public static int offsetBits_mRetriesSum() {
-		return 240;
+		return 256;
 	}
 
 	/**
@@ -975,7 +1041,7 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: voltage
 	// Field type: float
-	// Offset (bits): 256
+	// Offset (bits): 272
 	// Size (bits): 32
 	// ///////////////////////////////////////////////////////
 
@@ -997,14 +1063,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'voltage'
 	 */
 	public static int offset_voltage() {
-		return (256 / 8);
+		return (272 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'voltage'
 	 */
 	public static int offsetBits_voltage() {
-		return 256;
+		return 272;
 	}
 
 	/**
@@ -1038,7 +1104,7 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: wavelet.numLevels
 	// Field type: short
-	// Offset (bits): 288
+	// Offset (bits): 304
 	// Size (bits): 8
 	// ///////////////////////////////////////////////////////
 
@@ -1060,14 +1126,14 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the field 'wavelet.numLevels'
 	 */
 	public static int offset_wavelet_numLevels() {
-		return (288 / 8);
+		return (304 / 8);
 	}
 
 	/**
 	 * Return the offset (in bits) of the field 'wavelet.numLevels'
 	 */
 	public static int offsetBits_wavelet_numLevels() {
-		return 288;
+		return 304;
 	}
 
 	/**
@@ -1101,7 +1167,7 @@ public class MoteStats extends BigPack {
 	// ///////////////////////////////////////////////////////
 	// Accessor methods for field: wavelet.level
 	// Field type: array
-	// Offset (bits): 296
+	// Offset (bits): 312
 	// Size (bits): 16
 	// ///////////////////////////////////////////////////////
 
@@ -1111,7 +1177,7 @@ public class MoteStats extends BigPack {
 	 * Return the offset (in bytes) of the pointer to array 'wavelet.level'
 	 */
 	public static int offset_wavelet_level() {
-		return (296 / 8);
+		return (312 / 8);
 	}
 
 	/**
