@@ -101,6 +101,16 @@ implementation {
         pCntl = msg.data.pCntl;
       }
       break; }
+    case COMPTIME: {
+      msg.dest = msg.src;
+      msg.src = TOS_LOCAL_ADDRESS;
+#ifdef IDENT_UNIX_TIME
+      msg.data.cTime = IDENT_UNIX_TIME;
+#else
+      msg.data.cTime = 0;
+#endif
+      call Message.send(msg);
+      break; }
     }
   }
  

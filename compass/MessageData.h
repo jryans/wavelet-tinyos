@@ -22,6 +22,7 @@ struct MessageData {
     WaveletState wState;
     RouterData rData;
     PwrControl pCntl;
+    uint32_t cTime;
 	} data;
 } __attribute__ ((packed));
 
@@ -34,7 +35,8 @@ enum { // Identifies the type of data stored
 	BIGPACKDATA = 3,
 	WAVELETSTATE = 4,
 	ROUTERDATA = 5,
-	PWRCONTROL = 6
+	PWRCONTROL = 6,
+	COMPTIME = 7
 };
 
 #endif // _MESSAGEDATA_H
