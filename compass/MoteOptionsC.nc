@@ -32,8 +32,9 @@ implementation {
   DelugeControl = MoteOptionsM.DelugeControl;
   
   /*** Ping ***/
-  PingM.Ping -> TransceiverC.Transceiver[AM_PINGMSG];
+  PingM.PingTrans -> TransceiverC.Transceiver[AM_PINGMSG];
   PingM.Timer -> TimerC.Timer[unique("Timer")];
+  Message = PingM;
   MoteOptionsM.PingB -> PingM;
   
   Stats = MoteOptionsM;

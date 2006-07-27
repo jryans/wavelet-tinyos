@@ -35,6 +35,7 @@ implementation {
   typedef char PwrControl;
 #endif
 
+  uint8_t rRet;
   PwrControl pCntl;
   bool sleeping;
   bool startup;
@@ -48,8 +49,8 @@ implementation {
       MoteOptData *o = &msg.data.opt;
       dbg(DBG_USR2, "MoteOptions: Rcvd new options data\n");
       if ((o->mask & MO_PINGNUM) != 0) {
-        dbg(DBG_USR2, "MoteOptions: Sending %i broadcast pings\n", o->pingNum);
-        call PingB.send(o->pingNum);
+        dbg(DBG_USR2, "MoteOptions: Sending %i pings to %i\n", o->pingNum, o->radioOffTime);
+        call PingB.sendTo(o->pingNum, o->radioOffTime, rRet);
       }
       if ((o->mask & MO_CLEARSTATS) != 0) {
         dbg(DBG_USR2, "MoteOptions: Clearing stats data\n");
@@ -63,6 +64,7 @@ implementation {
       if ((o->mask & MO_RADIORETRIES) != 0) {
         dbg(DBG_USR2, "MoteOptions: Setting radio retries to %i\n", o->radioRetries);
         signal MoteOptions.receive(MO_RADIORETRIES, o->radioRetries);
+        rRet = o->radioRetries;
       }
 #ifdef PLATFORM_MICAZ
       if ((o->mask & MO_TXPOWER) != 0) {
@@ -188,6 +190,7 @@ implementation {
   /*** StdControl ***/
   
   command result_t StdControl.init() {
+    rRet = 5;
     pCntl.sleepInterval = MO_DEF_SLEEP;
     pCntl.wakeUpInterval = MO_DEF_WAKE;
     pCntl.stayAwake = FALSE;

@@ -8,7 +8,7 @@
 
 typedef struct { // Broadcast Ping Msg
   uint16_t seqNum; // Current sequence number
-} __attribute__ ((packed)) PingMsg;
+} __attribute__ ((packed)) PingData;
 
 enum {
   AM_PINGMSG = 100,

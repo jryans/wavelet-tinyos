@@ -127,6 +127,8 @@ implementation {
   event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
     if (checkMsg(msg)) {
       data.mSent++;
+      if (result == SUCCESS)
+        data.mDelivered++;
       data.mRetriesSum += retries;
       if (msg.type == WAVELETDATA) {
         if (msg.data.wData.level < data.wavelet.numLevels) {
@@ -296,6 +298,7 @@ implementation {
     data.pAcked = 0; // Packets sent and were ACKed (2) 
     data.mRcvd = 0; // Messages received (2)
     data.mSent = 0; // Messages sent (2)
+    data.mDelivered = 0; // Messages sent and successfully delivered (2)
     data.mRetriesSum = 0; // Sum of retries over all messages (2)
   }
   
