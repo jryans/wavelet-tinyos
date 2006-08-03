@@ -6,7 +6,7 @@
 
 package edu.rice.compass.comm;
 
-public class BroadcastPack extends net.tinyos.message.Message {
+public class BroadcastPack extends net.tinyos.message.Message implements OptionsPack {
 
     /** The default size of this message type in bytes. */
     public static final int DEFAULT_MESSAGE_SIZE = 30;
@@ -183,6 +183,9 @@ public class BroadcastPack extends net.tinyos.message.Message {
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [data.data.pCntl.stayAwake=0x"+Long.toHexString(get_data_data_pCntl_stayAwake())+"]\n";
+      } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
+      try {
+        s += "  [data.data.pCntl.reboot=0x"+Long.toHexString(get_data_data_pCntl_reboot())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
         s += "  [data.data.pCntl.pmMode=0x"+Long.toHexString(get_data_data_pCntl_pmMode())+"]\n";
@@ -2241,9 +2244,72 @@ public class BroadcastPack extends net.tinyos.message.Message {
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.pCntl.pmMode
+    // Accessor methods for field: data.data.pCntl.reboot
     //   Field type: short
     //   Offset (bits): 128
+    //   Size (bits): 8
+    /////////////////////////////////////////////////////////
+
+    /**
+     * Return whether the field 'data.data.pCntl.reboot' is signed (false).
+     */
+    public static boolean isSigned_data_data_pCntl_reboot() {
+        return false;
+    }
+
+    /**
+     * Return whether the field 'data.data.pCntl.reboot' is an array (false).
+     */
+    public static boolean isArray_data_data_pCntl_reboot() {
+        return false;
+    }
+
+    /**
+     * Return the offset (in bytes) of the field 'data.data.pCntl.reboot'
+     */
+    public static int offset_data_data_pCntl_reboot() {
+        return (128 / 8);
+    }
+
+    /**
+     * Return the offset (in bits) of the field 'data.data.pCntl.reboot'
+     */
+    public static int offsetBits_data_data_pCntl_reboot() {
+        return 128;
+    }
+
+    /**
+     * Return the value (as a short) of the field 'data.data.pCntl.reboot'
+     */
+    public short get_data_data_pCntl_reboot() {
+        return (short)getUIntElement(offsetBits_data_data_pCntl_reboot(), 8);
+    }
+
+    /**
+     * Set the value of the field 'data.data.pCntl.reboot'
+     */
+    public void set_data_data_pCntl_reboot(short value) {
+        setUIntElement(offsetBits_data_data_pCntl_reboot(), 8, value);
+    }
+
+    /**
+     * Return the size, in bytes, of the field 'data.data.pCntl.reboot'
+     */
+    public static int size_data_data_pCntl_reboot() {
+        return (8 / 8);
+    }
+
+    /**
+     * Return the size, in bits, of the field 'data.data.pCntl.reboot'
+     */
+    public static int sizeBits_data_data_pCntl_reboot() {
+        return 8;
+    }
+
+    /////////////////////////////////////////////////////////
+    // Accessor methods for field: data.data.pCntl.pmMode
+    //   Field type: short
+    //   Offset (bits): 136
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
@@ -2265,14 +2331,14 @@ public class BroadcastPack extends net.tinyos.message.Message {
      * Return the offset (in bytes) of the field 'data.data.pCntl.pmMode'
      */
     public static int offset_data_data_pCntl_pmMode() {
-        return (128 / 8);
+        return (136 / 8);
     }
 
     /**
      * Return the offset (in bits) of the field 'data.data.pCntl.pmMode'
      */
     public static int offsetBits_data_data_pCntl_pmMode() {
-        return 128;
+        return 136;
     }
 
     /**

@@ -74,11 +74,13 @@ public class CompassTools {
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "config"),
 						new FlaggedOption("sets", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, 's', "sets"),
-						new Switch("loadseqno", JSAP.NO_SHORTFLAG, "loadseqno"),
+						new Switch("ignoreseqno", JSAP.NO_SHORTFLAG, "ignoreseqno"),
 						new Switch("clear", 'c', "clear"),
 						new Switch("force", JSAP.NO_SHORTFLAG, "force"),
 						new Switch("stats", JSAP.NO_SHORTFLAG, "stats"),
 						new Switch("pwrcntl", 'p', "pwrcntl"),
+						new Switch("broadcast", 'b', "broadcast"),
+						new Switch("reboot", JSAP.NO_SHORTFLAG, "reboot"),
 						new FlaggedOption("awake", JSAP.BOOLEAN_PARSER, "yes",
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "awake"),
 						new FlaggedOption("mode", JSAP.STRING_PARSER, "CS",
@@ -106,7 +108,7 @@ public class CompassTools {
 		workingDir = System.getProperty("user.dir") + "/";
 
 		// Load broadcast sequence number
-		if (config.getBoolean("loadseqno"))
+		if (!config.getBoolean("ignoreseqno"))
 			MoteCom.loadSeqNo();
 
 		if (config.getBoolean("transform")) {
@@ -144,10 +146,12 @@ public class CompassTools {
 			if (!config.getBoolean("force")) {
 				long minSetLen = 6000 + 4000 * (wCont.getMaxScale() - 1);
 				if (setLength < minSetLen) {
-					System.out.println("Set length is smaller than "
-							+ minSetLen
-							+ ", the minimum time required for the motes to process this data set.");
-					System.out.println("Using minimum time, run with --force if you want to ignore this.");
+					if (setLength == 0) {
+						System.out.println("Set length is smaller than "
+								+ minSetLen
+								+ ", the minimum time required for the motes to process this data set.");
+						System.out.println("Using minimum time, run with --force if you want to ignore this.");
+					}
 					setLength = minSetLen;
 				}
 			}
@@ -162,12 +166,20 @@ public class CompassTools {
 			}
 		} else if (config.getBoolean("stats")) {
 			new CompassMote(destCheck()).getStats();
+			new Timer().schedule(new Timeout(), 5000);
 		} else if (config.getInt("ping", 0) != 0 && !config.getBoolean("opt")) {
 			new Timer().scheduleAtFixedRate(new Ping(config.getInt("ping"),
 					new CompassMote(destCheck())), 100, 30);
 		} else if (config.getBoolean("opt")) {
-			CompassMote cm = new CompassMote(destCheck());
-			CompassMote.MoteOptions opt = cm.makeOptions();
+			CompassMote cm;
+			CompassMote.MoteOptions opt;
+			if (config.getBoolean("broadcast")) {
+				cm = new CompassMote(0);
+				opt = cm.makeOptions(true);
+			} else {
+				cm = new CompassMote(destCheck());
+				opt = cm.makeOptions(false);
+			}
 			if (config.contains("power"))
 				opt.txPower(config.getInt("power"));
 			if (config.getBoolean("clear"))
@@ -196,6 +208,7 @@ public class CompassTools {
 				pm.sleepInterval(config.getInt("sleepInt") * 1024 / 1000);
 			if (config.contains("wakeInt"))
 				pm.wakeInterval(config.getInt("wakeInt") * 1024 / 1000);
+			pm.reboot(config.getBoolean("reboot"));
 			pm.send();
 			System.exit(0);
 		} else if (config.contains("route") && config.contains("mote")) {
@@ -257,9 +270,10 @@ public class CompassTools {
 						File aFile = (File) m.next();
 						FileInputStream fs = new FileInputStream(aFile);
 						MoteStats stats = (MoteStats) xs.fromXML(fs);
-						String entry = aFile.getName().substring(0, aFile.getName().indexOf('.'));
-						//int idLen = aFile.getName().indexOf('.');
-						//System.out.print(aFile.getName().substring(0, idLen));
+						String entry = aFile.getName().substring(0,
+								aFile.getName().indexOf('.'));
+						// int idLen = aFile.getName().indexOf('.');
+						// System.out.print(aFile.getName().substring(0, idLen));
 						entry = strExpand(entry, 9);
 						entry += (stats.get_pAcked() * 100 / stats.get_pSent());
 						entry = strExpand(entry, 18);
@@ -278,7 +292,7 @@ public class CompassTools {
 			System.exit(0);
 		}
 	}
-	
+
 	private String strExpand(String src, int fLen) {
 		int iLen = src.length();
 		for (int sp = 0; sp < fLen - iLen; sp++)
@@ -331,6 +345,15 @@ public class CompassTools {
 			System.out.println();
 	}
 
+}
+
+class Timeout extends TimerTask {
+
+	public void run() {
+		System.out.println("Timeout reached!");
+		System.exit(1);
+	}
+	
 }
 
 class Ping extends TimerTask {

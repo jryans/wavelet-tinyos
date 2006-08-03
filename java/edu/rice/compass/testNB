@@ -11,11 +11,25 @@ do
     then
       continue
     fi
-    $ct -o -d $src --power $5 --radioretries $6
-    $ct -o -d $src --ping $7 --radioofftime $dest
+    $ct -o -d $src --power $5 --radioretries $6 --ping $7 --radioofftime $dest
     sleep $stime
-    $ct -o -d $src --power 31 --radioretries 5
-    $ct --stats -d $src `cygpath -w $PWD/src$src/$dest.xml`
+    vari=1
+    while [ "$vari" -lt 4 ]
+    do
+      echo "Stats read attempt #$vari"
+      $ct -o -d $src --power 31 --radioretries 5
+      $ct --stats -d $src `cygpath -w $PWD/src$src/$dest.xml`
+      if [ "$?" -eq 0 ]
+      then
+        break
+      fi
+      ((vari += 1))
+    done
+    if [ "$vari" -eq 4 ]
+    then
+      echo "Can't read stats from mote $src!"
+      exit 1
+    fi
     $ct -o -d $src -c
   done
 done

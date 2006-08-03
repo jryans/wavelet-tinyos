@@ -23,7 +23,7 @@ public class CompassMote extends PackerMote implements MessageListener {
 	public static final short ROUTERDATA = 5;
 	public static final short PWRCONTROL = 6;
 	public static final short COMPTIME = 7;
-	
+
 	/* Wavelet Mote States */
 	static final short S_IDLE = 0;
 	static final short S_STARTUP = 1;
@@ -141,7 +141,7 @@ public class CompassMote extends PackerMote implements MessageListener {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void getCompileTime() {
 		MoteCom.singleton.registerListener(new UnicastPack(), this);
 		UnicastPack pack = new UnicastPack();
@@ -152,11 +152,12 @@ public class CompassMote extends PackerMote implements MessageListener {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void messageReceived(int to, Message m) {
 		UnicastPack pack = (UnicastPack) m;
 		if (pack.get_data_type() == COMPTIME && pack.get_data_src() == id) {
-			System.out.println("Compiled On: " + new Date(pack.get_data_data_cTime() * 1000));
+			System.out.println("Compiled On: "
+					+ new Date(pack.get_data_data_cTime() * 1000));
 			System.exit(0);
 		}
 	}
@@ -172,8 +173,8 @@ public class CompassMote extends PackerMote implements MessageListener {
 		return C_FALSE;
 	}
 
-	public MoteOptions makeOptions() {
-		return new MoteOptions();
+	public MoteOptions makeOptions(boolean broadcast) {
+		return new MoteOptions(broadcast);
 	}
 
 	/**
@@ -191,9 +192,16 @@ public class CompassMote extends PackerMote implements MessageListener {
 		private static final short MO_RFCHAN = 0x40;
 		private static final short MO_RADIORETRIES = 0x80;
 
-		private UnicastPack pack = new UnicastPack();
+		private OptionsPack pack;
+		boolean bcast;
 
-		private MoteOptions() {
+		private MoteOptions(boolean broadcast) {
+			bcast = broadcast;
+			if (bcast) {
+				pack = new BroadcastPack();
+			} else {
+				pack = new UnicastPack();
+			}
 			pack.set_data_type(MOTEOPTIONS);
 		}
 
@@ -239,7 +247,11 @@ public class CompassMote extends PackerMote implements MessageListener {
 
 		public void send() {
 			try {
-				sendPack(pack);
+				if (bcast) {
+					sendPack((BroadcastPack) pack);
+				} else {
+					sendPack((UnicastPack) pack);
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -290,6 +302,10 @@ public class CompassMote extends PackerMote implements MessageListener {
 
 		public void wakeInterval(int wake) {
 			pack.set_data_data_pCntl_wakeUpInterval(wake);
+		}
+		
+		public void reboot(boolean reboot) {
+			pack.set_data_data_pCntl_reboot(b2Cs(reboot));
 		}
 
 		public void send() {
