@@ -1,4 +1,4 @@
-function [tranvals,scales,predneighbs,predfilts,upneighbs,upfilts,tranmat]=itlift_meshless(coords,vals,numup,condtarg)
+function [tranvals,scales,predneighbs,predfilts,upneighbs,upfilts,tranmat,stepvals]=itlift_meshless(coords,vals,numup,condtarg)
 
 % usage:    [tranvals,scales,predneighbs,predfilts,upneighbs,upfilts,tranmat]=itlift_meshless(coords,vals,numup,condtarg)
 %
@@ -69,6 +69,7 @@ coarsej=[];
 % as dirac deltas at the sample points...
 ints=ones(numsens,1);
 
+stepvals(1,:) = vals;
 for j=startj:-1:0    
     if printmsg
         disp(['scale ' num2str(j) '....']);
@@ -98,9 +99,19 @@ for j=startj:-1:0
     end
     
     [newdec, newgrid, diffsj, newintsj, predneighbsj, predfiltsj]=predstep(dec, gridj, vals, ints, coords, condtarg);
-
+    stepvals((startj - j + 1) * 2, :) = diffsj;
+    nanvals = find(isnan(diffsj));
+    for nc=1:size(nanvals)
+        stepvals((startj - j + 1) * 2, nanvals(nc)) = stepvals((startj - j + 1) * 2 - 1, nanvals(nc));
+    end
+    
     unsmoothed=NaN*ones(size(vals)); unsmoothed(newgrid)=vals(newgrid);
     [smoothed,upneighbsj,upfiltsj]=upstep(numup,newdec,unsmoothed,diffsj,ints,newintsj,predneighbsj,coords);
+    stepvals((startj - j + 1) * 2 + 1, :) = smoothed;
+    nanvals = find(isnan(smoothed));
+    for nc=1:size(nanvals)
+        stepvals((startj - j + 1) * 2 + 1, nanvals(nc)) = stepvals((startj - j + 1) * 2, nanvals(nc));
+    end
     
     % for now, store everything as variables for debug
     eval(['ints' num2str(j) '=newintsj;']);
