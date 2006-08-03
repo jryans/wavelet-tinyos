@@ -37,7 +37,8 @@ enum { // Defaults
 typedef struct {
   uint32_t sleepInterval; // Time to wait before sleeping after last message received (bms)
   uint32_t wakeUpInterval; // Time between wake up events (bms)
-  bool stayAwake; // In PM_CHECK_SINK mode, this control whether the mote stays awake.
+  bool stayAwake; // In PM_CHECK_SINK mode, this control whether the mote stays awake
+  bool reboot; // Reboots the mote if true
   uint8_t pmMode;
 } __attribute__ ((packed)) PwrControl;
 

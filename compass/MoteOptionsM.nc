@@ -22,6 +22,7 @@ module MoteOptionsM {
     interface PowerManagement as PM;
     interface Leds;
     interface PingB;
+    interface NetProg;
   }
   provides {
     interface MoteOptions;
@@ -48,10 +49,6 @@ implementation {
     case MOTEOPTIONS: {
       MoteOptData *o = &msg.data.opt;
       dbg(DBG_USR2, "MoteOptions: Rcvd new options data\n");
-      if ((o->mask & MO_PINGNUM) != 0) {
-        dbg(DBG_USR2, "MoteOptions: Sending %i pings to %i\n", o->pingNum, o->radioOffTime);
-        call PingB.sendTo(o->pingNum, o->radioOffTime, rRet);
-      }
       if ((o->mask & MO_CLEARSTATS) != 0) {
         dbg(DBG_USR2, "MoteOptions: Clearing stats data\n");
         call Stats.clear();
@@ -90,20 +87,24 @@ implementation {
         call Wake.start(TIMER_ONE_SHOT, o->radioOffTime * 1024);
         signal Sleep.fired();
       }
+      if ((o->mask & MO_PINGNUM) != 0) {
+        dbg(DBG_USR2, "MoteOptions: Sending %i pings to %i\n", o->pingNum, o->radioOffTime);
+        call PingB.sendTo(o->pingNum, o->radioOffTime, rRet);
+      }
       break; }
     case PWRCONTROL: {
       if (TOS_LOCAL_ADDRESS == 0 && msg.src != NET_UART_ADDR) {
         msg.dest = msg.src;
-        msg.src = 0;
         msg.data.pCntl = pCntl;
         call Message.send(msg);
       } else {
         pCntl = msg.data.pCntl;
+        if (pCntl.reboot)
+          call NetProg.reboot();
       }
       break; }
     case COMPTIME: {
       msg.dest = msg.src;
-      msg.src = TOS_LOCAL_ADDRESS;
 #ifdef IDENT_UNIX_TIME
       msg.data.cTime = IDENT_UNIX_TIME;
 #else
@@ -140,7 +141,6 @@ implementation {
   
   void checkSink() {
     msgData msg;
-    msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = 0;
     msg.type = PWRCONTROL;
     call Message.send(msg);

@@ -15,7 +15,7 @@ configuration MoteOptionsC {
   provides interface MoteOptions;
 }
 implementation {
-  components MoteOptionsM, Main, TimerC, HPLPowerManagementM, LedsC, TransceiverC, PingM;
+  components MoteOptionsM, Main, TimerC, HPLPowerManagementM, LedsC, TransceiverC, PingM, NetProgC;
 #ifdef PLATFORM_MICAZ
   components CC2420RadioC;
   MoteOptionsM.MacControl -> CC2420RadioC;
@@ -28,6 +28,7 @@ implementation {
   MoteOptionsM.Deluge -> TimerC.Timer[unique("Timer")];
   MoteOptionsM.Leds -> LedsC;
   MoteOptionsM.PM -> HPLPowerManagementM;
+  MoteOptionsM.NetProg -> NetProgC;
   TransControl = MoteOptionsM.TransControl;
   DelugeControl = MoteOptionsM.DelugeControl;
   

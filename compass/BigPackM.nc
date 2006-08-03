@@ -8,7 +8,7 @@ includes MessageData;
 module BigPackM {
   uses {
     interface Message;
-    interface Timer as MsgRepeat;
+    interface Timer as Timeout;
 #ifdef BEEP
     interface Beep;
 #endif
@@ -45,7 +45,7 @@ implementation {
   
   uint8_t curType;
   bool activeRequest = FALSE; // True if a request is in progress
-  msgData repeatMsg; // Message to repeat
+  //msgData repeatMsg; // Message to repeat
   
   int8_t **blockAddr[BP_MAX_REQUESTS];
   int8_t *mainBlock[BP_MAX_REQUESTS];
@@ -58,6 +58,7 @@ implementation {
   void freeInc();
   result_t allocEnv();
   void freeEnv();
+  void freeOut();
   void requestData(uint8_t type);
   void sendAck(msgData msg);
   void repeatSend(msgData msg, uint16_t bms);
@@ -72,19 +73,28 @@ implementation {
   /*** Timers ***/
   
   /**
-   * Helper function for repeating a message until we get a response
+   * Helper function for stopping BigPack after a timeout
    */ 
-  void repeatSend(msgData msg, uint16_t bms) {
-    repeatMsg = msg;
+  void timeoutSend(msgData msg) {
+    //repeatMsg = msg;
     call Message.send(msg);
-    call MsgRepeat.start(TIMER_REPEAT, bms);
+    call Timeout.start(TIMER_ONE_SHOT, BP_TIMEOUT);
   }
   
   /**
-   * Sends the saved message again
+   * Stops BigPack when timeout is reached
    */
-  event result_t MsgRepeat.fired() {
-    call Message.send(repeatMsg);
+  event result_t Timeout.fired() {
+    if (activeRequest) {
+      dbg(DBG_USR2, "BigPack: Timeout reached\n");
+      if (transState == BP_RECEIVING) {
+        freeInc();
+        mainBlock[curType] = NULL;
+      } else if (transState == BP_SENDING) {
+        freeOut();
+      } 
+      activeRequest = FALSE;
+    }
     return SUCCESS;
   }  
   
@@ -134,14 +144,13 @@ implementation {
       msgData msg;
       curType = type;
       mainBlock[type] = (int8_t *) 1122; // Just so it's not NULL
-      msg.src = TOS_LOCAL_ADDRESS;
       msg.dest = NET_UART_ADDR;
       msg.type = BIGPACKHEADER;
       msg.data.bpHeader.requestType = type;
       msg.data.bpHeader.packTotal = 0;
       activeRequest = TRUE;
       transState = BP_RECEIVING;
-      repeatSend(msg, 5000);
+      timeoutSend(msg);
     } else {
       return FAIL;
     }
@@ -224,7 +233,6 @@ implementation {
   void sendNextPack() {
     if (curPackNum < numPacks) {
       msgData msg;
-      msg.src = TOS_LOCAL_ADDRESS;
       msg.dest = NET_UART_ADDR;
       if (curPackNum == -1) {
 		msg.type = BIGPACKHEADER;
@@ -246,7 +254,8 @@ implementation {
 		  msg.data.bpData.data[i] = bigData[firstByte + i];
 		dbg(DBG_USR2, "Sent BP data (%i/%i) to sink\n", curPackNum + 1, numPacks);
 	  }
-	  call Message.send(msg);
+	  //call Message.send(msg);
+	  timeoutSend(msg);
 	}
   }
   
@@ -254,10 +263,9 @@ implementation {
    * Sends standard ACK by returning the message that was sent
    */
   void sendAck(msgData msg) {
-    msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = NET_UART_ADDR;
-    //repeatSend(msg, 3000); 
-    call Message.send(msg);
+    timeoutSend(msg); 
+    //call Message.send(msg);
   }
   
   /**
@@ -502,8 +510,8 @@ implementation {
       if (!bdAlloc && !bpbAlloc && !bppAlloc && transState == BP_RECEIVING &&
           activeRequest && h->packTotal != 0 && h->requestType == curType) {
         // Received a new header in response to our request
-        // Turn off message repeat
-        call MsgRepeat.stop();
+        // Turn off timeout check
+        call Timeout.stop();
         // Store header data
         numPacks = h->packTotal;
         numBytes = h->byteTotal;
@@ -530,6 +538,8 @@ implementation {
         signal BigPackServer.buildPack[h->requestType]();
       } else if (activeRequest && h->packTotal == numPacks && 
                  transState == BP_SENDING && h->requestType == curType) {
+        // Turn off timeout check
+        call Timeout.stop();
         // Received a BP header ACK
         dbg(DBG_USR2, "Got BP header ack from the sink\n");
         curPackNum++;
@@ -544,8 +554,8 @@ implementation {
         // Byte level access to block and data
         int8_t *tmpBlk = (int8_t *)block; 
         int8_t *tmpPtr = (int8_t *)ptr;
-        // Turn off message repeat
-        call MsgRepeat.stop();
+        // Turn off timeout check
+        call Timeout.stop();
         dbg(DBG_USR2, "BigPack: Rcvd BP data (%i/%i)\n", curPackNum + 1, numPacks);
         // Calculate offsets
         base_offset = curPackNum * BP_DATA_LEN;
@@ -573,6 +583,8 @@ implementation {
         // Send an ACK
         sendAck(msg);
       } else if (curPackNum == d->curPack && activeRequest && transState == BP_SENDING) {
+        // Turn off timeout check
+        call Timeout.stop();
         // Received a BP data ACK
         dbg(DBG_USR2, "Got BP data ack from the sink\n");
         if (++curPackNum < numPacks) {

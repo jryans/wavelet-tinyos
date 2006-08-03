@@ -45,7 +45,6 @@ implementation {
   event void SensorData.readDone(RawData data) {
     msgData msg;
     uint8_t i;
-    msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = NET_UART_ADDR;
     msg.type = WAVELETDATA;
     msg.data.wData.state = 13;

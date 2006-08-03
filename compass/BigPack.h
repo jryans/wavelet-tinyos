@@ -54,7 +54,8 @@ enum {
 };
 
 enum {
-  BP_MAX_REQUESTS = 3
+  BP_MAX_REQUESTS = 3,
+  BP_TIMEOUT = 5120
 };
 
 #endif // _BIGPACK_H

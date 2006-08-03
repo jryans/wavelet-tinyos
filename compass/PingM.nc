@@ -45,7 +45,6 @@ implementation {
   
   command void PingB.sendTo(uint16_t num, uint16_t mDest, uint8_t rRet) {
     numLeft = num;
-    md.src = TOS_LOCAL_ADDRESS;
     md.dest = mDest;
     md.type = 20;
     trans = FALSE;

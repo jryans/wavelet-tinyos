@@ -273,7 +273,6 @@ implementation {
   void sendResultsToBase() {
     msgData msg;
     uint8_t i;
-    msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = NET_UART_ADDR;
     msg.type = WAVELETDATA;
     msg.data.wData.dataSet = dataSet;
@@ -293,7 +292,6 @@ implementation {
   void sendRawToBase() {
     msgData msg;
     uint8_t i;
-    msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = NET_UART_ADDR;
     msg.type = WAVELETDATA;
     msg.data.wData.dataSet = dataSet;
@@ -315,7 +313,6 @@ implementation {
   void sendValuesToNeighbors() {
     msgData msg;
     uint8_t mote, i;
-    msg.src = TOS_LOCAL_ADDRESS;
     msg.type = WAVELETDATA;
     msg.data.wData.dataSet = dataSet;
     msg.data.wData.level = curLevel;
@@ -535,6 +532,8 @@ implementation {
       }
       break; }
     case WAVELETSTATE: {
+      if (TOS_LOCAL_ADDRESS == 0)
+        return;
       if (msg.data.wState.state == S_START_DATASET) {
         newDataSet();
         call DataSet.start(TIMER_REPEAT, msg.data.wState.dataSetTime);

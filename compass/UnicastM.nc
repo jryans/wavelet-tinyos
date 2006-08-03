@@ -128,6 +128,7 @@ implementation {
       return FAIL; // Don't send messages to yourself!
     if (call Router.getStatus() != RO_READY)
       return FAIL; // Router isn't ready, this should be checked before sending
+    msg.src = TOS_LOCAL_ADDRESS; // Set source mote ID
     newPack.data = msg;
     if (TOS_LOCAL_ADDRESS == 0 && msg.dest == NET_UART_ADDR) {
       fwdUart(&newPack); // From UART bridge to the sink

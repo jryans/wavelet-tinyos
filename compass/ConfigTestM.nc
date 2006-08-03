@@ -27,7 +27,6 @@ implementation {
   
   event result_t Timer.fired() {
     msgData msg;
-    msg.src = TOS_LOCAL_ADDRESS;
     msg.dest = 2;
     msg.type = 20;
     //while (go) {

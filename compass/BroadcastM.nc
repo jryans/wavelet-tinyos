@@ -128,8 +128,7 @@ implementation {
       sendData = *pBCMsg;
       curRepsLeft = BCAST_REPEATS;
       fwdBcast();
-      if (TOS_LOCAL_ADDRESS != 0)
-        signal Message.receive(pBCMsg->data);
+      signal Message.receive(pBCMsg->data);
     }
     return pMsg;
   }
