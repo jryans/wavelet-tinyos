@@ -4,7 +4,7 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.util.*;
 
-public class Mote implements IPaint {
+public class Mote implements Paintable {
 
 	private static final int MOTE_RADIUS = 8;
 	private int id;
@@ -12,7 +12,7 @@ public class Mote implements IPaint {
 	private Ellipse2D.Double ell;
 	private MoteSelectState selState;
 	private Vector nbLine;
-	static float maxValue = 0;
+	public static float maxValue = 0;
 
 	public Mote(int mID, Point2D.Double aPos) {
 		id = mID;
@@ -94,13 +94,13 @@ public class Mote implements IPaint {
 
 }
 
-abstract class MoteSelectState implements IPaint {
+abstract class MoteSelectState implements Paintable {
 
 	abstract public boolean isSelected();
 
 }
 
-class StatsLine implements IPaint {
+class StatsLine implements Paintable {
 
 	private Line2D.Double line;
 	private float value;

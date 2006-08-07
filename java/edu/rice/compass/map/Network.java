@@ -10,7 +10,7 @@ import com.thoughtworks.xstream.*;
 import edu.rice.compass.*;
 import edu.rice.compass.bigpack.*;
 
-public class Network implements IMoteNetwork, IPaint {
+public class Network implements NetworkAdapter, Paintable {
 
 	IStatus status;
 
@@ -118,6 +118,44 @@ public class Network implements IMoteNetwork, IPaint {
 			selectedMote.deselect();
 		moteHit.select();
 		selectedMote = moteHit;
+	}
+
+	public void saveMap(File map) {
+		try {
+			FileWriter fs = new FileWriter(map);
+			ObjectOutputStream os = xs.createObjectOutputStream(fs);
+			os.writeObject(mote);
+			os.writeFloat(Mote.maxValue);
+			os.close();
+			fs.close();
+			status.setStatusText("Network map saved");
+		} catch (Exception ex) {
+			status.setStatusText("Error saving network map!");
+		}
+	}
+
+	public void loadMap(File map) {
+		try {
+			FileReader fs = new FileReader(map);
+			ObjectInputStream os = xs.createObjectInputStream(fs);
+			mote = (Vector) os.readObject();
+			// Find selected mote
+			Enumeration e = mote.elements();
+			selectedMote = null;
+			while (e.hasMoreElements()) {
+				Mote m = (Mote) e.nextElement();
+				if (m.isSelected()) {
+					selectedMote = m;
+					break;
+				}
+			}
+			Mote.maxValue = os.readFloat();
+			os.close();
+			fs.close();
+			status.setStatusText("Network map loaded");
+		} catch (Exception ex) {
+			status.setStatusText("Error loading network map!");
+		}
 	}
 
 }

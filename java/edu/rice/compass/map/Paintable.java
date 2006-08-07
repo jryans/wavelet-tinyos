@@ -2,7 +2,7 @@ package edu.rice.compass.map;
 
 import java.awt.*;
 
-public interface IPaint {
+public interface Paintable {
 	
 	public void paint(Graphics2D g);
 

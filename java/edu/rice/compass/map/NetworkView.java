@@ -1,40 +1,9 @@
 package edu.rice.compass.map;
 
-import java.awt.event.KeyEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 import java.awt.*;
-
-import javax.swing.SwingConstants;
-import javax.swing.KeyStroke;
-import java.awt.Point;
-
+import java.awt.event.*;
 import javax.swing.*;
-import java.awt.Color;
-import java.awt.Dimension;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import com.thoughtworks.xstream.*;
-
-import edu.rice.compass.*;
-
-import java.awt.GridLayout;
-import java.awt.GridBagLayout;
 import java.io.*;
-import java.awt.Event;
-import javax.swing.JSeparator;
-import javax.swing.BorderFactory;
-import javax.swing.JMenuItem;
-import javax.swing.JButton;
-import java.awt.FlowLayout;
-import javax.swing.BoxLayout;
-import javax.swing.JToggleButton;
-import javax.swing.plaf.basic.BasicButtonUI;
-import javax.swing.plaf.metal.MetalButtonUI;
-import com.sun.java.swing.plaf.motif.MotifButtonUI;
-import javax.swing.plaf.multi.MultiButtonUI;
-import java.awt.Insets;
 
 public class NetworkView {
 
@@ -42,17 +11,12 @@ public class NetworkView {
 	private JPanel jContentPane = null;
 	private JMenuBar menuBar = null;
 	private JMenu fileMenu = null;
-	private JMenu helpMenu = null;
 	private JMenuItem exitMenuItem = null;
-	private JMenuItem aboutMenuItem = null;
-	private JDialog aboutDialog = null;  //  @jve:decl-index=0:visual-constraint="733,87"
-	private JPanel aboutContentPane = null;
-	private JLabel aboutVersionLabel = null;
 	private JMenuItem loadStatsMenuItem = null;
 	private JMenuItem loadNetworkMenuItem = null;
 
-	private IMoteNetwork MoteNet;
-	private IPaint Paint;
+	private NetworkAdapter MoteNet;
+	private Paintable Paint;
 	private JPanel statusPanel = null;
 	public JLabel statusLabel = null;
 	private JSeparator fileSepExit = null;
@@ -67,10 +31,12 @@ public class NetworkView {
 	private JToggleButton netButton = null;
 	private JToggleButton backgroundButton = null;
 	private JToggleButton compositeButton = null;
-	public NetworkView(IMoteNetwork aMoteNet, IPaint aPaint) {
+	public NetworkView(NetworkAdapter aMoteNet, Paintable aPaint) {
 		MoteNet = aMoteNet;
 		Paint = aPaint;
 	}
+	
+	private JFileChooser fc = new JFileChooser();
 
 	/**
 	 * This method initializes loadStatsMenuItem
@@ -85,8 +51,6 @@ public class NetworkView {
 					Event.CTRL_MASK, false));
 			loadStatsMenuItem.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
-					JFileChooser fc = new JFileChooser();
-					fc.setCurrentDirectory(new File(System.getProperty("user.dir")));
 					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 					if (fc.showOpenDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
 						File statsDir = fc.getSelectedFile();
@@ -112,6 +76,7 @@ public class NetworkView {
 			mainFrame.setSize(700, 700);
 			mainFrame.setContentPane(getJContentPane());
 			mainFrame.setTitle("Compass Mote Map");
+      fc.setCurrentDirectory(new File(System.getProperty("user.dir")));
 		}
 		return mainFrame;
 	}
@@ -124,12 +89,12 @@ public class NetworkView {
 	private JPanel getJContentPane() {
 		if (jContentPane == null) {
 			BorderLayout borderLayout = new BorderLayout();
-			jContentPane = new JPanel()/* {
+			jContentPane = new JPanel() {
 				public void paintComponent(Graphics g) {
 					super.paintComponent(g);
 					Paint.paint((Graphics2D) g);
 				}
-			}*/;
+			};
 			jContentPane.setLayout(borderLayout);
 			jContentPane.setBackground(Color.white);
 			jContentPane.add(getStatusPanel(), BorderLayout.SOUTH);
@@ -152,7 +117,6 @@ public class NetworkView {
 		if (menuBar == null) {
 			menuBar = new JMenuBar();
 			menuBar.add(getFileMenu());
-			menuBar.add(getHelpMenu());
 		}
 		return menuBar;
 	}
@@ -178,20 +142,6 @@ public class NetworkView {
 	}
 
 	/**
-	 * This method initializes jMenu
-	 * 
-	 * @return javax.swing.JMenu
-	 */
-	private JMenu getHelpMenu() {
-		if (helpMenu == null) {
-			helpMenu = new JMenu();
-			helpMenu.setText("Help");
-			helpMenu.add(getAboutMenuItem());
-		}
-		return helpMenu;
-	}
-
-	/**
 	 * This method initializes jMenuItem
 	 * 
 	 * @return javax.swing.JMenuItem
@@ -211,71 +161,6 @@ public class NetworkView {
 	}
 
 	/**
-	 * This method initializes jMenuItem
-	 * 
-	 * @return javax.swing.JMenuItem
-	 */
-	private JMenuItem getAboutMenuItem() {
-		if (aboutMenuItem == null) {
-			aboutMenuItem = new JMenuItem();
-			aboutMenuItem.setText("About");
-			aboutMenuItem.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					JDialog aboutDialog = getAboutDialog();
-					aboutDialog.pack();
-					Point loc = getMainFrame().getLocation();
-					loc.translate(20, 20);
-					aboutDialog.setLocation(loc);
-					aboutDialog.setVisible(true);
-				}
-			});
-		}
-		return aboutMenuItem;
-	}
-
-	/**
-	 * This method initializes aboutDialog
-	 * 
-	 * @return javax.swing.JDialog
-	 */
-	private JDialog getAboutDialog() {
-		if (aboutDialog == null) {
-			aboutDialog = new JDialog(getMainFrame(), true);
-			aboutDialog.setTitle("About");
-			aboutDialog.setContentPane(getAboutContentPane());
-		}
-		return aboutDialog;
-	}
-
-	/**
-	 * This method initializes aboutContentPane
-	 * 
-	 * @return javax.swing.JPanel
-	 */
-	private JPanel getAboutContentPane() {
-		if (aboutContentPane == null) {
-			aboutContentPane = new JPanel();
-			aboutContentPane.setLayout(new BorderLayout());
-			aboutContentPane.add(getAboutVersionLabel(), BorderLayout.CENTER);
-		}
-		return aboutContentPane;
-	}
-
-	/**
-	 * This method initializes aboutVersionLabel
-	 * 
-	 * @return javax.swing.JLabel
-	 */
-	private JLabel getAboutVersionLabel() {
-		if (aboutVersionLabel == null) {
-			aboutVersionLabel = new JLabel();
-			aboutVersionLabel.setText("Version 1.0");
-			aboutVersionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		}
-		return aboutVersionLabel;
-	}
-
-	/**
 	 * This method initializes loadNetworkMenuItem
 	 * 
 	 * @return javax.swing.JMenuItem
@@ -288,8 +173,7 @@ public class NetworkView {
 					Event.CTRL_MASK, false));
 			loadNetworkMenuItem.addActionListener(new java.awt.event.ActionListener() {
 				public void actionPerformed(java.awt.event.ActionEvent e) {
-					JFileChooser fc = new JFileChooser();
-					fc.setCurrentDirectory(new File(System.getProperty("user.dir")));
+					fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					if (fc.showOpenDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
 						File netData = fc.getSelectedFile();
 						if (netData.getName().endsWith(".xml")) {
@@ -323,11 +207,14 @@ public class NetworkView {
 			statusPanel.add(Box.createHorizontalGlue());
 			statusPanel.add(Box.createHorizontalStrut(5));
 			statusPanel.add(getViewButtonSep(), null);
-			statusPanel.add(getNetButton(), null);
-			statusPanel.add(getBackgroundButton(), null);
-			statusPanel.add(getCompositeButton(), null);
-			statusPanel.add(getModeButtonSep(), null);
 			statusPanel.add(Box.createHorizontalStrut(5));
+			statusPanel.add(getNetButton(), null);
+			statusPanel.add(Box.createHorizontalStrut(5));
+			statusPanel.add(getBackgroundButton(), null);
+			statusPanel.add(Box.createHorizontalStrut(5));
+			statusPanel.add(getCompositeButton(), null);
+			statusPanel.add(Box.createHorizontalStrut(5));
+			statusPanel.add(getModeButtonSep(), null);
 			statusPanel.add(Box.createHorizontalStrut(5));
 			statusPanel.add(getMoveButton(), null);
 			statusPanel.add(Box.createHorizontalStrut(5));
@@ -361,6 +248,18 @@ public class NetworkView {
 			openMapMenuItem = new JMenuItem();
 			openMapMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Event.CTRL_MASK, false));
 			openMapMenuItem.setText("Open Map...");
+			openMapMenuItem.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+					if (fc.showOpenDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
+						File mapData = fc.getSelectedFile();
+						if (mapData.getName().endsWith(".xml")) {
+							MoteNet.loadMap(mapData);
+							jContentPane.repaint();
+						}
+					}
+				}
+			});
 		}
 		return openMapMenuItem;
 	}
@@ -375,6 +274,16 @@ public class NetworkView {
 			saveMapMenuItem = new JMenuItem();
 			saveMapMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, Event.CTRL_MASK, false));
 			saveMapMenuItem.setText("Save Map...");
+			saveMapMenuItem.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {		
+					fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+					if (fc.showSaveDialog(mainFrame) == JFileChooser.APPROVE_OPTION) {
+						File mapData = fc.getSelectedFile();
+						if (mapData.getName().endsWith(".xml"))
+							MoteNet.saveMap(mapData);
+					}
+				}
+			});
 		}
 		return saveMapMenuItem;
 	}
