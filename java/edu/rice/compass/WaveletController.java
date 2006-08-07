@@ -41,7 +41,7 @@ public class WaveletController {
 	public void runSets(int numSets, long setLength) {
 		new WaveletData(numSets, mote.size());
 		CompassMote.startDataSet(setLength);
-		System.out.println("Send start command!");
+		System.out.println("Sent start command!");
 	}
 
 }
