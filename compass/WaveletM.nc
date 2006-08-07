@@ -26,6 +26,8 @@ module WaveletM {
     interface State;
     interface Timer as DataSet;
     interface Timer as StateTimer;
+    interface Timer as DelayedSend;
+    interface Random;
     
     /*** Wavelet Config ***/
     interface BigPackClient;
@@ -74,6 +76,11 @@ implementation {
   
   uint8_t nextState;
   bool forceNextState;
+
+#ifdef RAW  
+  msgData raw;
+#endif
+  msgData res;
     
   /*** Functions Declarations ***/
   task void runState();
@@ -89,6 +96,7 @@ implementation {
   void clearNeighborState();
   void checkData();
   void waveletFree();
+  void sendDelayedMsg();
   
   /*** State Management ***/
   
@@ -161,6 +169,7 @@ implementation {
         call Leds.redOn();
         dbg(DBG_USR2, "Done: DS: %i, Sending final values to base...\n", dataSet);
         sendResultsToBase();
+        sendDelayedMsg();
         call State.toIdle();
         break; }
       case S_SKIPLEVEL: {
@@ -280,7 +289,8 @@ implementation {
     msg.data.wData.state = S_DONE;
     for (i = 0; i < WT_SENSORS; i++)
       msg.data.wData.value[i] = level[curLevel].nb[0].value[i];
-    call Message.send(msg);
+    res = msg;
+    //call Message.send(msg);
   }
   
 #ifdef RAW
@@ -299,7 +309,8 @@ implementation {
     msg.data.wData.state = S_RAW;
     for (i = 0; i < WT_SENSORS; i++)
       msg.data.wData.value[i] = rawVals[i];
-    call Message.send(msg);
+    raw = msg;
+    //call Message.send(msg);
   }
 #endif
   
@@ -389,11 +400,16 @@ implementation {
       } 
     }
   }
+  
+  void sendDelayedMsg() {
+    call DelayedSend.start(TIMER_ONE_SHOT, (call Random.rand() & 0x7) * 50);
+  }
 
   /*** Commands and Events ***/
   
   command result_t StdControl.init() {
     wlAlloc = FALSE;
+    call Random.init();
     return SUCCESS;
   }
   
@@ -577,6 +593,14 @@ implementation {
       dbg(DBG_USR2, "Wavelet: Moved to state %i\n", nextState);
       post runState();      
     }
+    return SUCCESS;
+  }
+  
+  event result_t DelayedSend.fired() {
+#ifdef RAW    
+    call Message.send(raw);
+#endif    
+    call Message.send(res);
     return SUCCESS;
   }
   

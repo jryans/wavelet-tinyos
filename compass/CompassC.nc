@@ -10,7 +10,7 @@ configuration CompassC {}
 implementation {
   components Main, DelugeC, NetworkC, TimerC, BigPackM,
              WaveletM, LedsC, StateC, SensorControlC, StatsC,
-             MoteOptionsC;
+             MoteOptionsC, RandomLFSR;
 #ifdef BEEP
   components BeepC;
 #endif
@@ -54,11 +54,13 @@ implementation {
   WaveletM.Leds -> LedsC;
 #ifdef BEEP
   WaveletM.Beep -> BeepC;
-#endif  
+#endif
+  WaveletM.Random -> RandomLFSR;  
   
   /*** Timer: enforces time-based control ***/
   Main.StdControl -> TimerC;
   BigPackM.Timeout -> TimerC.Timer[unique("Timer")];
   WaveletM.DataSet -> TimerC.Timer[unique("Timer")];
   WaveletM.StateTimer -> TimerC.Timer[unique("Timer")];
+  WaveletM.DelayedSend -> TimerC.Timer[unique("Timer")];
 }

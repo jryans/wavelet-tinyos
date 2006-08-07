@@ -180,7 +180,8 @@ implementation {
         } 
         for (i = 0; i < w->level[l].nbCount; i++) {
           dbg(DBG_USR2, "Stats:   Neighbor #%i\n", i + 1);
-          w->level[l].nb[i].id = lvl[l]->nb[i].id;
+          (i != 0) ? (w->level[l].nb[i].id = lvl[l]->nb[i].id)
+                   : (w->level[l].nb[i].id = 0);
           dbg(DBG_USR2, "Stats:     ID:    %i\n", w->level[l].nb[i].id);
           w->level[l].nb[i].retries = 0;
           w->level[l].nb[i].cacheHits = 0;
