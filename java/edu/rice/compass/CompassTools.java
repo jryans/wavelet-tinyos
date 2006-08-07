@@ -279,7 +279,7 @@ public class CompassTools {
 						entry = strExpand(entry, 18);
 						entry += (stats.get_mDelivered() * 100 / stats.get_mSent());
 						entry = strExpand(entry, 27);
-						entry += ((float) stats.get_mRetriesSum() / stats.get_mSent());
+						entry += (stats.get_avgRetries());
 						System.out.println(entry);
 						fs.close();
 					}

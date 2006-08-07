@@ -72,8 +72,7 @@ public class MoteStats extends BigPack {
 		if (get_mSent() > 0) {
 			System.out.println("      Delivered: " + get_mDelivered() + " ("
 					+ (get_mDelivered() * 100 / get_mSent()) + "%)");
-			System.out.println("      Avg. Retries: "
-					+ ((float) get_mRetriesSum() / get_mSent()));
+			System.out.println("      Avg. Retries: " + get_avgRetries());
 		}
 		StatsWTL level[] = get_wavelet_level();
 		if (level.length > 0) {
@@ -89,6 +88,13 @@ public class MoteStats extends BigPack {
 				}
 			}
 		}
+	}
+
+	public float get_avgRetries() {
+		float r = get_mRetriesSum();
+		// Add one more for undelivered messages
+		r += get_mSent() - get_mDelivered();
+		return r / get_mSent();
 	}
 
 	// Message-type-specific access methods appear below.

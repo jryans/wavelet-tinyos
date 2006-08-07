@@ -20,9 +20,9 @@ public class WaveletMatlab {
 	 * Stores the parameters in a WaveletConfig and writes that out to an XML
 	 * file.
 	 */
-	public static void saveConfig(double[] scales, Object[] predNB,
+	public static void saveConfig(double[][] coords, double[] scales, Object[] predNB,
 			Object[] predCoeff, Object[] updCoeff) {
-		WaveletConfigData conf = new WaveletConfigData(scales, predNB, predCoeff,
+		WaveletConfigData conf = new WaveletConfigData(coords, scales, predNB, predCoeff,
 				updCoeff);
 		// Get package path
 		Class pClass = WaveletMatlab.class;
