@@ -53,10 +53,34 @@ typedef struct wc {
 
 /*** State Control ***/
 
-// Used by the PC to query and set state
 typedef struct { 
-  uint8_t state; // One the states from WaveletM
+  uint8_t mask; // Bit mask to mark what settings should be read
+  uint8_t state; // One of the states from WaveletM
   uint32_t dataSetTime; // Length of time between data sets (and samples) 
+  uint8_t transformType; // One of various transform types
+  uint8_t resultType; // Controls data sent back to base
+  uint8_t timeDomainLength; // Number of data points collected for TD transform
 } __attribute__ ((packed)) WaveletState;
+
+enum { // Bitmasks
+  WS_STATE = 0x01,
+  WS_DATASETTIME = 0x02,
+  WS_TRANSFORMTYPE = 0x04,
+  WS_RESULTTYPE = 0x08,
+  WS_TIMEDOMAINLENGTH = 0x10
+};
+
+enum { // Transform Types
+  WS_TT_2DRWAGNER = 0, // 2D spatial R. Wagner
+  WS_TT_1DHAAR_2DRWAGNER = 1, // 1D time Haar -> 2D spatial R. Wagner
+  WS_TT_1DLINEAR_2DRWAGNER = 2 // 1D time linear -> 2D spatial R. Wagner
+};
+
+enum { // Result Masks
+#ifdef RAW
+  WS_RT_RAW = 0x01, // Raw values (off|on)
+#endif
+  WS_RT_COMP = 0x02 // Compression (off|on)
+};
 
 #endif // _WAVELETDATA_H

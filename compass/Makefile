@@ -10,7 +10,8 @@ CFLAGS += -DMAX_TOS_MSGS=20
 # Adds (annoying) beeps to indicate various errors
 # CFLAGS += -DBEEP
 
-# Transmits raw values back to base for comparison
+# Enables storage of raw data values
+# Transmission still needs to be enabled at runtime
 CFLAGS += -DRAW
 
 include $(TOSROOT)/apps/Makerules

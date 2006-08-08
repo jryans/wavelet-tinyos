@@ -54,6 +54,11 @@ implementation {
 #ifdef RAW
   float rawVals[WT_SENSORS];
 #endif
+
+  /*** Transform Options ***/
+  uint8_t transformType; // One of various transform types
+  uint8_t resultType; // Controls data sent back to base
+  uint8_t timeDomainLength; // Number of data points collected for TD transform
   
   /*** State Management ***/
   // Defines all possible mote states
@@ -163,8 +168,10 @@ implementation {
         break; }
       case S_DONE: {
 #ifdef RAW
-        dbg(DBG_USR2, "Diag: DS: %i, Sending raw values to base...\n", dataSet);
-        sendRawToBase();
+        if ((resultType & WS_RT_RAW) != 0) {
+          dbg(DBG_USR2, "Diag: DS: %i, Sending raw values to base...\n", dataSet);
+          sendRawToBase();
+        }
 #endif   
         call Leds.redOn();
         dbg(DBG_USR2, "Done: DS: %i, Sending final values to base...\n", dataSet);
@@ -290,7 +297,6 @@ implementation {
     for (i = 0; i < WT_SENSORS; i++)
       msg.data.wData.value[i] = level[curLevel].nb[0].value[i];
     res = msg;
-    //call Message.send(msg);
   }
   
 #ifdef RAW
@@ -310,7 +316,6 @@ implementation {
     for (i = 0; i < WT_SENSORS; i++)
       msg.data.wData.value[i] = rawVals[i];
     raw = msg;
-    //call Message.send(msg);
   }
 #endif
   
@@ -548,16 +553,33 @@ implementation {
       }
       break; }
     case WAVELETSTATE: {
+      WaveletState *s = &msg.data.wState;
       if (TOS_LOCAL_ADDRESS == 0)
         return;
-      if (msg.data.wState.state == S_START_DATASET) {
-        newDataSet();
-        call DataSet.start(TIMER_REPEAT, msg.data.wState.dataSetTime);
-      } else { // Allows stoping and restarting on demand
-        call DataSet.stop();
-        call StateTimer.stop();
-        call State.forceState(msg.data.wState.state);
-        post runState();
+      dbg(DBG_USR2, "Wavelet: Rcvd new state data\n");
+      if ((s->mask & WS_TRANSFORMTYPE) != 0) {
+        dbg(DBG_USR2, "Wavelet: Setting transform type to %i\n", s->transformType);
+        transformType = s->transformType;
+      }
+      if ((s->mask & WS_RESULTTYPE) != 0) {
+        dbg(DBG_USR2, "Wavelet: Setting result type to %i\n", s->resultType);
+        resultType = s->resultType;
+      }
+      if ((s->mask & WS_TIMEDOMAINLENGTH) != 0) {
+        dbg(DBG_USR2, "Wavelet: Setting time domain length to %i\n", s->timeDomainLength);
+        timeDomainLength = s->timeDomainLength;
+      }
+      if ((s->mask & WS_STATE) != 0) {
+        if (msg.data.wState.state == S_START_DATASET &&
+            (s->mask & WS_DATASETTIME) != 0) {
+          newDataSet();
+          call DataSet.start(TIMER_REPEAT, msg.data.wState.dataSetTime);
+        } else { // Allows stoping and restarting on demand
+          call DataSet.stop();
+          call StateTimer.stop();
+          call State.forceState(msg.data.wState.state);
+          post runState();
+        }
       }
       break; }
     }
@@ -598,7 +620,8 @@ implementation {
   
   event result_t DelayedSend.fired() {
 #ifdef RAW    
-    call Message.send(raw);
+    if ((resultType & WS_RT_RAW) != 0)
+      call Message.send(raw);
 #endif    
     call Message.send(res);
     return SUCCESS;
