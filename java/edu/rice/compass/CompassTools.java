@@ -94,7 +94,7 @@ public class CompassTools {
 
 		config = parser.parse(args);
 		if (parser.messagePrinted())
-			System.exit(0);
+			System.exit(1);
 	}
 
 	private void execute() {
@@ -124,7 +124,7 @@ public class CompassTools {
 			if (!wcFile.exists()) {
 				System.out.println("Wavelet config file at " + wcFile.getPath()
 						+ "does not exist!");
-				System.exit(0);
+				System.exit(1);
 			}
 			// Try reading the config data
 			try {
@@ -139,7 +139,7 @@ public class CompassTools {
 			} catch (Exception e) {
 				System.out.println("Error reading wavelet config!");
 				e.printStackTrace();
-				System.exit(0);
+				System.exit(1);
 			}
 			// Check for valid set length
 			setLength = config.getLong("setlength", 0);
@@ -228,11 +228,13 @@ public class CompassTools {
 					fs.close();
 				} catch (Exception e) {
 					e.printStackTrace();
+					System.exit(1);
 				}
+				System.exit(0);
 			} else {
 				System.out.println("No input file was given!");
+				System.exit(1);
 			}
-			System.exit(0);
 		} else if (config.getBoolean("ver")) {
 			CompassMote cm = new CompassMote(destCheck());
 			cm.getCompileTime();
@@ -245,7 +247,7 @@ public class CompassTools {
 					File dFiles[] = in.listFiles();
 					if (dFiles == null) {
 						System.out.println("No files in that directory!");
-						System.exit(0);
+						System.exit(1);
 					}
 					System.out.println("Dest ID  P ACK %  M DEL %  AVG RET");
 					System.out.println("-------  -------  -------  -------");
@@ -272,8 +274,6 @@ public class CompassTools {
 						MoteStats stats = (MoteStats) xs.fromXML(fs);
 						String entry = aFile.getName().substring(0,
 								aFile.getName().indexOf('.'));
-						// int idLen = aFile.getName().indexOf('.');
-						// System.out.print(aFile.getName().substring(0, idLen));
 						entry = strExpand(entry, 9);
 						entry += (stats.get_pAcked() * 100 / stats.get_pSent());
 						entry = strExpand(entry, 18);
@@ -285,11 +285,16 @@ public class CompassTools {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
+					System.exit(1);
 				}
+				System.exit(0);
 			} else {
 				System.out.println("No input directory was given!");
+				System.exit(1);
 			}
-			System.exit(0);
+		} else {
+			System.out.println("Invalid command line options!");
+			System.exit(1);
 		}
 	}
 
@@ -303,7 +308,7 @@ public class CompassTools {
 	private int destCheck() {
 		if (!config.contains("dest") || (config.getInt("dest") < 0)) {
 			System.out.println("No valid destination mote supplied!");
-			System.exit(0);
+			System.exit(1);
 		}
 		return config.getInt("dest");
 	}
@@ -326,6 +331,7 @@ public class CompassTools {
 		} catch (Exception e) {
 			System.out.println("Couldn't write data!");
 			e.printStackTrace();
+			System.exit(1);
 		}
 		System.exit(0);
 	}

@@ -33,7 +33,7 @@ public class PSSim {
 
 		config = parser.parse(args);
 		if (parser.messagePrinted())
-			System.exit(0);
+			System.exit(1);
 
 		if (config.getBoolean("test"))
 			sendTest();
@@ -131,7 +131,7 @@ public class PSSim {
 			}
 			if (k == 6) {
 				System.out.println("Can't find k for new data element!");
-				System.exit(0);
+				System.exit(1);
 			}
 			// Increment markers from k + 1 to 5
 			for (int i = k; i < 5; i++)

@@ -349,8 +349,9 @@ public abstract class BigPack extends Message {
 					}
 				} catch (NoSuchMethodException e) {
 				} catch (Exception e) {
+					System.out.println("Unable to build class translation tables!");
 					e.printStackTrace();
-					System.exit(0);
+					System.exit(1);
 				}
 			}
 		}
