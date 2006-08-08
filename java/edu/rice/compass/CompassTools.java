@@ -10,11 +10,11 @@ package edu.rice.compass;
 import java.util.*;
 import java.io.*;
 import java.net.*;
-
 import com.martiansoftware.jsap.*;
 import com.thoughtworks.xstream.*;
 import edu.rice.compass.bigpack.*;
 import edu.rice.compass.comm.*;
+import edu.rice.compass.CompassMote.WaveletState;
 
 public class CompassTools {
 
@@ -24,7 +24,6 @@ public class CompassTools {
 	private JSAPResult config;
 	private XStream xs = new XStream();
 	private WaveletController wCont;
-	private long setLength;
 	public String packagePath;
 	public String workingDir;
 
@@ -51,6 +50,14 @@ public class CompassTools {
 						new FlaggedOption("prog", JSAP.BOOLEAN_PARSER, "yes",
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "prog"),
 						new Switch("transform", 't', "transform"),
+						new FlaggedOption("raw", JSAP.BOOLEAN_PARSER, "yes",
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "raw"),
+						new FlaggedOption("comp", JSAP.BOOLEAN_PARSER, "no",
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "comp"),
+						new FlaggedOption("transType", JSAP.STRING_PARSER, "2DRWAGNER",
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "transType"),
+						new FlaggedOption("tdLength", JSAP.SHORT_PARSER, "8",
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "timeDomainLength"),
 						new FlaggedOption("ping", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "ping"),
 						new FlaggedOption("pm", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,
@@ -142,7 +149,7 @@ public class CompassTools {
 				System.exit(1);
 			}
 			// Check for valid set length
-			setLength = config.getLong("setlength", 0);
+			long setLength = config.getLong("setlength", 0);
 			if (!config.getBoolean("force")) {
 				long minSetLen = 6000 + 4000 * (wCont.getMaxScale() - 1);
 				if (setLength < minSetLen) {
@@ -155,9 +162,28 @@ public class CompassTools {
 					setLength = minSetLen;
 				}
 			}
+			// Set transform options - there should be a better way...
+			CompassMote.dataSetTime = setLength;
+			if (config.getString("transType").equals("2DRWAGNER")) {
+				CompassMote.transformType = WaveletState.WS_TT_2DRWAGNER;
+			} else if (config.getString("transType").equals("1DHAAR_2DRWAGNER")) {
+				CompassMote.transformType = WaveletState.WS_TT_1DHAAR_2DRWAGNER;
+			} else if (config.getString("transType").equals("1DLINEAR_2DRWAGNER")) {
+				CompassMote.transformType = WaveletState.WS_TT_1DLINEAR_2DRWAGNER;
+			} else {
+				System.out.println("Unknown transform type!");
+				System.exit(1);
+			}
+			short resultType = 0;
+			if (config.getBoolean("raw"))
+				resultType |= WaveletState.WS_RT_RAW;
+			if (config.getBoolean("comp"))
+				resultType |= WaveletState.WS_RT_COMP;
+			CompassMote.resultType = resultType;
+			CompassMote.timeDomainLength = config.getShort("tdLength");
 			// Inputs are good, stop the motes to make sure they aren't
 			// doing anything first.
-			CompassMote.forceStop();
+			CompassMote.broadcast.forceStop();
 			if (config.getBoolean("prog")) {
 				wCont.configMotes(); // Send config to each mote
 			} else {
@@ -174,11 +200,10 @@ public class CompassTools {
 			CompassMote cm;
 			CompassMote.MoteOptions opt;
 			if (config.getBoolean("broadcast")) {
-				cm = new CompassMote(0);
-				opt = cm.makeOptions(true);
+				opt = CompassMote.broadcast.makeOptions();
 			} else {
 				cm = new CompassMote(destCheck());
-				opt = cm.makeOptions(false);
+				opt = cm.makeOptions();
 			}
 			if (config.contains("power"))
 				opt.txPower(config.getInt("power"));
@@ -314,7 +339,7 @@ public class CompassTools {
 	}
 
 	public void configDone() {
-		wCont.runSets(config.getInt("sets"), setLength);
+		wCont.runSets(config.getInt("sets"));
 	}
 
 	public void saveResult(Object data, String fileName) {
@@ -359,7 +384,7 @@ class Timeout extends TimerTask {
 		System.out.println("Timeout reached!");
 		System.exit(1);
 	}
-	
+
 }
 
 class Ping extends TimerTask {

@@ -39,8 +39,24 @@ public class CompassMote extends PackerMote implements MessageListener {
 	static final short S_ERROR = 12;
 	static final short S_RAW = 13;
 
+	/* Transform Options */
+	static long dataSetTime; // Length of time between data sets (and samples)
+	static short transformType; // One of various transform types
+	static short resultType; // Controls data sent back to base
+	// Number of data points collected for TD transform
+	static short timeDomainLength;
+
 	private WaveletConf wConf;
 	private boolean configDone = false;
+
+	public static CompassMote broadcast = new CompassMote(0) {
+		public MoteOptions makeOptions() {
+			return new MoteOptions(true);
+		}
+		public WaveletState makeState() {
+			return new WaveletState(true);
+		}
+	};
 
 	public CompassMote(int mID, WaveletConfigData wc) {
 		this(mID);
@@ -81,48 +97,31 @@ public class CompassMote extends PackerMote implements MessageListener {
 		return requestPack(MoteStats.getType());
 	}
 
-	private UnicastPack makeStatePack(short newState) {
-		UnicastPack pack = new UnicastPack();
-		pack.set_data_type(WAVELETSTATE);
-		pack.set_data_data_wState_state(newState);
-		return pack;
-	}
-
 	public void sendStartup() {
-		UnicastPack pack = makeStatePack(S_STARTUP);
-		try {
-			sendPack(pack);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		WaveletState ws = makeState();
+		ws.state(S_STARTUP);
+		ws.send();
 	}
 
-	public static void forceStop() {
-		BroadcastPack pack = new BroadcastPack();
-		pack.set_data_type(WAVELETSTATE);
-		pack.set_data_data_wState_state(S_OFFLINE);
-		try {
-			sendPack(pack);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void forceStop() {
+		WaveletState ws = makeState();
+		ws.state(S_OFFLINE);
+		ws.send();
+	}
+
+	public void startDataSet() {
+		WaveletState ws = makeState();
+		ws.state(S_START_DATASET);
+		ws.dataSetTime(dataSetTime);
+		ws.transformType(transformType);
+		ws.resultType(resultType);
+		ws.timeDomainLength(timeDomainLength);
+		ws.send();
 	}
 
 	public void sendPing() {
 		UnicastPack pack = new UnicastPack();
 		pack.set_data_type((short) 20);
-		try {
-			sendPack(pack);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public static void startDataSet(long setLength) {
-		BroadcastPack pack = new BroadcastPack();
-		pack.set_data_type(WAVELETSTATE);
-		pack.set_data_data_wState_state(S_START_DATASET);
-		pack.set_data_data_wState_dataSetTime(setLength);
 		try {
 			sendPack(pack);
 		} catch (IOException e) {
@@ -173,8 +172,8 @@ public class CompassMote extends PackerMote implements MessageListener {
 		return C_FALSE;
 	}
 
-	public MoteOptions makeOptions(boolean broadcast) {
-		return new MoteOptions(broadcast);
+	public MoteOptions makeOptions() {
+		return new MoteOptions(false);
 	}
 
 	/**
@@ -303,7 +302,7 @@ public class CompassMote extends PackerMote implements MessageListener {
 		public void wakeInterval(int wake) {
 			pack.set_data_data_pCntl_wakeUpInterval(wake);
 		}
-		
+
 		public void reboot(boolean reboot) {
 			pack.set_data_data_pCntl_reboot(b2Cs(reboot));
 		}
@@ -311,6 +310,86 @@ public class CompassMote extends PackerMote implements MessageListener {
 		public void send() {
 			try {
 				sendPack(pack);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	public WaveletState makeState() {
+		return new WaveletState(false);
+	}
+
+	/**
+	 * Controls wavelet transform state and options
+	 */
+	public class WaveletState {
+
+		/* Bitmasks */
+		private static final short WS_STATE = 0x01;
+		private static final short WS_DATASETTIME = 0x02;
+		private static final short WS_TRANSFORMTYPE = 0x04;
+		private static final short WS_RESULTTYPE = 0x08;
+		private static final short WS_TIMEDOMAINLENGTH = 0x10;
+
+		/* Transform Types */
+		// 2D spatial R. Wagner
+		public static final short WS_TT_2DRWAGNER = 0;
+		// 1D time Haar -> 2D spatial R. Wagner
+		public static final short WS_TT_1DHAAR_2DRWAGNER = 1;
+		// 1D time linear -> 2D spatial R. Wagner
+		public static final short WS_TT_1DLINEAR_2DRWAGNER = 2;
+
+		/* Result Masks */
+		public static final short WS_RT_RAW = 0x01; // Raw values (off|on)
+		public static final short WS_RT_COMP = 0x02; // Compression (off|on)
+
+		private OptionsPack pack;
+		private boolean bcast;
+
+		private WaveletState(boolean broadcast) {
+			bcast = broadcast;
+			if (bcast) {
+				pack = new BroadcastPack();
+			} else {
+				pack = new UnicastPack();
+			}
+			pack.set_data_type(WAVELETSTATE);
+		}
+
+		public void state(short state) {
+			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_STATE));
+			pack.set_data_data_wState_state(state);
+		}
+
+		public void dataSetTime(long dataSetTime) {
+			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_DATASETTIME));
+			pack.set_data_data_wState_dataSetTime(dataSetTime);
+		}
+
+		public void transformType(short transformType) {
+			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_TRANSFORMTYPE));
+			pack.set_data_data_wState_transformType(transformType);
+		}
+
+		public void resultType(short resultType) {
+			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_RESULTTYPE));
+			pack.set_data_data_wState_resultType(resultType);
+		}
+
+		public void timeDomainLength(short timeDomainLength) {
+			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_TIMEDOMAINLENGTH));
+			pack.set_data_data_wState_timeDomainLength(timeDomainLength);
+		}
+
+		public void send() {
+			try {
+				if (bcast) {
+					sendPack((BroadcastPack) pack);
+				} else {
+					sendPack((UnicastPack) pack);
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

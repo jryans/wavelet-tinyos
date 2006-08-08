@@ -38,9 +38,9 @@ public class WaveletController {
 		new Timer().scheduleAtFixedRate(new ConfigPulse(mote), 200, 300);
 	}
 
-	public void runSets(int numSets, long setLength) {
+	public void runSets(int numSets) {
 		new WaveletData(numSets, mote.size());
-		CompassMote.startDataSet(setLength);
+		CompassMote.broadcast.startDataSet();
 		System.out.println("Sent start command!");
 	}
 
