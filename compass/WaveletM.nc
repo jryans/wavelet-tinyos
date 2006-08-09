@@ -49,6 +49,7 @@ implementation {
   
   uint8_t numLevels; // Total number of wavelet levels
   WaveletLevel *level; // Array of WaveletLevels
+  bool predicted;
   bool wlAlloc;
   
 #ifdef RAW
@@ -451,6 +452,7 @@ implementation {
       ExtWaveletLevel **lvl = conf->level;
       waveletFree();
       dbg(DBG_USR2, "Wavelet: Big Pack Config Test\n");
+      predicted = FALSE;
       numLevels = conf->numLevels;
       if ((level = malloc(numLevels * sizeof(WaveletLevel))) == NULL) {
         dbg(DBG_USR2, "Wavelet: Couldn't allocate level!\n");
@@ -462,7 +464,7 @@ implementation {
         if ((level[l].nb = malloc(level[l].nbCount * sizeof(WaveletNeighbor))) == NULL) {
           dbg(DBG_USR2, "Wavelet: Couldn't allocate nb for level #%i!\n", l + 1);
           return;
-        } 
+        }
         for (i = 0; i < lvl[l]->nbCount; i++) {
           dbg(DBG_USR2, "Wavelet:   Neighbor #%i\n", i + 1);
           level[l].nb[i].id = lvl[l]->nb[i].id;
@@ -472,6 +474,8 @@ implementation {
           level[l].nb[i].coeff = lvl[l]->nb[i].coeff;
           dbg(DBG_USR2, "Wavelet:     Coeff: %f\n", level[l].nb[i].coeff);
         }
+        if (!predicted && level[l].nb[0].state == S_PREDICTING)
+          predicted = TRUE;
       }
       wlAlloc = TRUE;
       call State.toIdle();

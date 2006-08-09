@@ -53,13 +53,25 @@ typedef struct wc {
 
 /*** State Control ***/
 
-typedef struct { 
-  uint8_t mask; // Bit mask to mark what settings should be read
-  uint8_t state; // One of the states from WaveletM
+typedef struct {
   uint32_t dataSetTime; // Length of time between data sets (and samples) 
   uint8_t transformType; // One of various transform types
   uint8_t resultType; // Controls data sent back to base
   uint8_t timeDomainLength; // Number of data points collected for TD transform
+} __attribute__ ((packed)) WaveletOpt;
+
+typedef struct {
+  uint8_t numTargets; // Number of targets in the following array
+  float compTarget[5]; // Array of compression target values
+} __attribute__ ((packed)) WaveletComp;
+
+typedef struct { 
+  uint8_t mask; // Bit mask to mark what settings should be read
+  uint8_t state; // One of the states from WaveletM
+  union {
+    WaveletOpt opt;
+    WaveletComp comp;
+  } data;
 } __attribute__ ((packed)) WaveletState;
 
 enum { // Bitmasks
@@ -67,7 +79,8 @@ enum { // Bitmasks
   WS_DATASETTIME = 0x02,
   WS_TRANSFORMTYPE = 0x04,
   WS_RESULTTYPE = 0x08,
-  WS_TIMEDOMAINLENGTH = 0x10
+  WS_TIMEDOMAINLENGTH = 0x10,
+  WS_COMPTARGET = 0x20
 };
 
 enum { // Transform Types
