@@ -49,14 +49,20 @@ implementation {
   
   uint8_t numLevels; // Total number of wavelet levels
   WaveletLevel *level; // Array of WaveletLevels
-  bool predicted;
   bool wlAlloc;
+  
+  /*** Compression ***/
+  bool predicted; // True if mote predicts
+  uint8_t matchingTarget; // Index of first target that this mote's values are above
+  uint8_t numTargets; // Number of targets in the following array
+  float compTarget[WT_MAX_TARGETS]; // Array of compression target values
   
 #ifdef RAW
   float rawVals[WT_SENSORS];
 #endif
 
   /*** Transform Options ***/
+  uint32_t dataSetTime; // Length of time between data sets
   uint8_t transformType; // One of various transform types
   uint8_t resultType; // Controls data sent back to base
   uint8_t timeDomainLength; // Number of data points collected for TD transform
@@ -74,7 +80,7 @@ implementation {
     S_PREDICTED = 7,
     S_UPDATED = 8,
     S_SKIPLEVEL = 9,
-    S_DONE = 10,
+    S_TRANSMIT = 10,
     S_OFFLINE = 11,
     S_ERROR = 12,
     S_RAW = 13
@@ -98,7 +104,7 @@ implementation {
   void sendValuesToNeighbors();
   void calcNewValues();
   void delayState();
-  void newDataSet();
+  void moveToTransmit();
   void clearNeighborState();
   void checkData();
   void waveletFree();
@@ -119,6 +125,7 @@ implementation {
         call BigPackClient.request();
         break; }
       case S_START_DATASET: {
+        call DataSet.start(TIMER_ONE_SHOT, dataSetTime);
         delayState();
         call Leds.redOff();
         call Leds.yellowOn();
@@ -150,7 +157,6 @@ implementation {
             dataSet, curLevel + 1);
         break; }  
       case S_PREDICTED: {
-        delayState();
         calcNewValues();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Sending values to update nodes...\n",
             dataSet, curLevel + 1);
@@ -167,9 +173,10 @@ implementation {
         nextWaveletLevel();
         call State.toIdle();
         break; }
-      case S_DONE: {
+      case S_TRANSMIT: {
+        delayState();
 #ifdef RAW
-        if ((resultType & WS_RT_RAW) != 0) {
+        if (resultType & WS_RT_RAW) {
           dbg(DBG_USR2, "Diag: DS: %i, Sending raw values to base...\n", dataSet);
           sendRawToBase();
         }
@@ -234,32 +241,34 @@ implementation {
       forceNextState = TRUE;
       delay = 1500;
       break; }
-    case S_PREDICTED: {
-      nextState = S_DONE;
-      delay = 500;
-      break; }
     case S_UPDATED: {
       (curLevel + 1 == numLevels) 
-        ? (nextState = S_DONE)
+        ? (nextState = S_IDLE)
         : (nextState = level[curLevel + 1].nb[0].state);
       if (nextState == S_UPDATING) {
-        delay = 2000;
-      } else if (nextState == S_DONE) {
-        delay = 500;
+        delay = 1000;
       } else {
-        delay = 1500;
+        delay = 500;
       }
       break; }
     case S_SKIPLEVEL: {
       (curLevel + 1 == numLevels) 
-        ? (nextState = S_DONE)
+        ? (nextState = S_IDLE)
         : (nextState = level[curLevel + 1].nb[0].state);
       if (nextState == S_UPDATING) {
-        delay = 4500;
-      } else if (nextState == S_DONE) {
+        delay = 3500;
+      } else if (nextState == S_IDLE) {
         delay = 2500;
       } else {
-        delay = 4000;
+        delay = 3000;
+      }
+      break; }
+    case S_TRANSMIT: {
+      if (resultType & WS_RT_COMP) {
+        nextState = S_IDLE;
+      } else {
+        nextState = S_START_DATASET;
+        delay = WT_SLOTS * WT_SLOT_LENGTH;
       }
       break; }
     }
@@ -275,7 +284,7 @@ implementation {
    */ 
   void nextWaveletLevel() {
     uint8_t i;
-    if (nextState != S_DONE) {
+    if (nextState != S_IDLE) { // More levels to go
       for (i = 0; i < WT_SENSORS; i++) // Carry data over to next level
         level[curLevel + 1].nb[0].value[i] = level[curLevel].nb[0].value[i];
       curLevel++;
@@ -294,7 +303,7 @@ implementation {
     msg.type = WAVELETDATA;
     msg.data.wData.dataSet = dataSet;
     msg.data.wData.level = curLevel;
-    msg.data.wData.state = S_DONE;
+    msg.data.wData.state = S_TRANSMIT;
     for (i = 0; i < WT_SENSORS; i++)
       msg.data.wData.value[i] = level[curLevel].nb[0].value[i];
     res = msg;
@@ -408,7 +417,9 @@ implementation {
   }
   
   void sendDelayedMsg() {
-    call DelayedSend.start(TIMER_ONE_SHOT, (call Random.rand() & 0x7) * 50);
+    uint32_t delay = (call Random.rand() & (WT_SLOTS - 1)) * WT_SLOT_LENGTH;
+    dbg(DBG_USR2, "Wavelet: Delaying results by %i bms\n", delay);
+    call DelayedSend.start(TIMER_ONE_SHOT, delay);
   }
 
   /*** Commands and Events ***/
@@ -488,7 +499,7 @@ implementation {
    * TODO: Could be improved, doesn't respond for all messages.
    */
   event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
-    if (msg.type == WAVELETDATA) {
+    /* if (msg.type == WAVELETDATA) {
       switch (call State.getState()) {
         case S_UPDATING: {
           if (result == FAIL)
@@ -503,7 +514,7 @@ implementation {
             dbg(DBG_USR2, "Done: DS: %i, Sending final values to base failed!\n", dataSet);
           } break; }
       }
-    }
+    } */
     return SUCCESS;
   }
     
@@ -557,33 +568,37 @@ implementation {
       }
       break; }
     case WAVELETSTATE: {
-      WaveletState *s = &msg.data.wState;
+      WaveletState *ws = &msg.data.wState;
+      WaveletOpt *wo = &msg.data.wState.data.opt;
       if (TOS_LOCAL_ADDRESS == 0)
         return;
       dbg(DBG_USR2, "Wavelet: Rcvd new state data\n");
-      if ((s->mask & WS_TRANSFORMTYPE) != 0) {
-        dbg(DBG_USR2, "Wavelet: Setting transform type to %i\n", s->transformType);
-        transformType = s->transformType;
+      if ((ws->mask & WS_TRANSFORMTYPE) != 0) {
+        dbg(DBG_USR2, "Wavelet: Setting transform type to %i\n", wo->transformType);
+        transformType = wo->transformType;
       }
-      if ((s->mask & WS_RESULTTYPE) != 0) {
-        dbg(DBG_USR2, "Wavelet: Setting result type to %i\n", s->resultType);
-        resultType = s->resultType;
+      if ((ws->mask & WS_RESULTTYPE) != 0) {
+        dbg(DBG_USR2, "Wavelet: Setting result type to %i\n", wo->resultType);
+        resultType = wo->resultType;
       }
-      if ((s->mask & WS_TIMEDOMAINLENGTH) != 0) {
-        dbg(DBG_USR2, "Wavelet: Setting time domain length to %i\n", s->timeDomainLength);
-        timeDomainLength = s->timeDomainLength;
+      if ((ws->mask & WS_TIMEDOMAINLENGTH) != 0) {
+        dbg(DBG_USR2, "Wavelet: Setting time domain length to %i\n", wo->timeDomainLength);
+        timeDomainLength = wo->timeDomainLength;
       }
-      if ((s->mask & WS_STATE) != 0) {
-        if (msg.data.wState.state == S_START_DATASET &&
-            (s->mask & WS_DATASETTIME) != 0) {
-          newDataSet();
-          call DataSet.start(TIMER_REPEAT, msg.data.wState.dataSetTime);
-        } else { // Allows stoping and restarting on demand
-          call DataSet.stop();
-          call StateTimer.stop();
-          call State.forceState(msg.data.wState.state);
-          post runState();
-        }
+      if ((ws->mask & WS_DATASETTIME) != 0) {
+        dbg(DBG_USR2, "Wavelet: Setting data set time to %i\n", wo->dataSetTime);
+        dataSetTime = wo->dataSetTime;
+      }
+      if ((ws->mask & WS_STATE) != 0) {
+        // Ignore start command if we don't have the data set time
+        if (ws->state == S_START_DATASET && dataSetTime == 0)
+          break;
+        // Allows stoping and restarting on demand
+        call DataSet.stop();
+        call StateTimer.stop();
+        call DelayedSend.stop();
+        call State.forceState(ws->state);
+        post runState();        
       }
       break; }
     }
@@ -592,11 +607,11 @@ implementation {
   /*** Timers ***/
   
   /**
-   * Enforces the dataSetTime interval by starting a new data set
-   * each time the timer fires.
+   * Enforces the dataSetTime interval by moving to the transmit
+   * stage when the timer fires.
    */
   event result_t DataSet.fired() {
-    newDataSet();
+    moveToTransmit();
     return SUCCESS;
   }
   
@@ -624,7 +639,7 @@ implementation {
   
   event result_t DelayedSend.fired() {
 #ifdef RAW    
-    if ((resultType & WS_RT_RAW) != 0)
+    if (resultType & WS_RT_RAW)
       call Message.send(raw);
 #endif    
     call Message.send(res);
@@ -632,10 +647,10 @@ implementation {
   }
   
   /**
-   * Starts the next data set.
+   * Moves to the transmit stage.
    */
-  void newDataSet() {
-    if (call State.requestState(S_START_DATASET) == FAIL) {
+  void moveToTransmit() {
+    if (call State.requestState(S_TRANSMIT) == FAIL) {
       dbg(DBG_USR2, "Wavelet: Data set %i did not finish in time!\n", dataSet);
 #ifdef BEEP
       call Beep.play(1, 250);

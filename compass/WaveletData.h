@@ -54,15 +54,19 @@ typedef struct wc {
 /*** State Control ***/
 
 typedef struct {
-  uint32_t dataSetTime; // Length of time between data sets (and samples) 
+  uint32_t dataSetTime; // Length of time between data sets
   uint8_t transformType; // One of various transform types
   uint8_t resultType; // Controls data sent back to base
   uint8_t timeDomainLength; // Number of data points collected for TD transform
 } __attribute__ ((packed)) WaveletOpt;
 
+enum {
+  WT_MAX_TARGETS = 5
+};
+
 typedef struct {
   uint8_t numTargets; // Number of targets in the following array
-  float compTarget[5]; // Array of compression target values
+  float compTarget[WT_MAX_TARGETS]; // Array of compression target values
 } __attribute__ ((packed)) WaveletComp;
 
 typedef struct { 
@@ -94,6 +98,11 @@ enum { // Result Masks
   WS_RT_RAW = 0x01, // Raw values (off|on)
 #endif
   WS_RT_COMP = 0x02 // Compression (off|on)
+};
+
+enum { // Transmit Options
+  WT_SLOTS = 8, // Number of transmit slots (must be power of 2)
+  WT_SLOT_LENGTH = 50
 };
 
 #endif // _WAVELETDATA_H
