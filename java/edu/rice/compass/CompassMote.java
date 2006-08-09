@@ -39,13 +39,6 @@ public class CompassMote extends PackerMote implements MessageListener {
 	static final short S_ERROR = 12;
 	static final short S_RAW = 13;
 
-	/* Transform Options */
-	static long dataSetTime; // Length of time between data sets (and samples)
-	static short transformType; // One of various transform types
-	static short resultType; // Controls data sent back to base
-	// Number of data points collected for TD transform
-	static short timeDomainLength;
-
 	private WaveletConf wConf;
 	private boolean configDone = false;
 
@@ -53,6 +46,7 @@ public class CompassMote extends PackerMote implements MessageListener {
 		public MoteOptions makeOptions() {
 			return new MoteOptions(true);
 		}
+
 		public WaveletState makeState() {
 			return new WaveletState(true);
 		}
@@ -75,7 +69,7 @@ public class CompassMote extends PackerMote implements MessageListener {
 				MoteStats stats = (MoteStats) msg;
 				System.out.println("Stats for Mote " + mote + ":");
 				stats.printStats();
-				CompassTools.main.saveResult(msg, "stats.xml");
+				CompassTools.saveResult(msg, "stats.xml");
 			}
 		};
 	}
@@ -103,19 +97,9 @@ public class CompassMote extends PackerMote implements MessageListener {
 		ws.send();
 	}
 
-	public void forceStop() {
+	public void sendStop() {
 		WaveletState ws = makeState();
 		ws.state(S_OFFLINE);
-		ws.send();
-	}
-
-	public void startDataSet() {
-		WaveletState ws = makeState();
-		ws.state(S_START_DATASET);
-		ws.dataSetTime(dataSetTime);
-		ws.transformType(transformType);
-		ws.resultType(resultType);
-		ws.timeDomainLength(timeDomainLength);
 		ws.send();
 	}
 
@@ -332,18 +316,11 @@ public class CompassMote extends PackerMote implements MessageListener {
 		private static final short WS_TRANSFORMTYPE = 0x04;
 		private static final short WS_RESULTTYPE = 0x08;
 		private static final short WS_TIMEDOMAINLENGTH = 0x10;
-
-		/* Transform Types */
-		// 2D spatial R. Wagner
-		public static final short WS_TT_2DRWAGNER = 0;
-		// 1D time Haar -> 2D spatial R. Wagner
-		public static final short WS_TT_1DHAAR_2DRWAGNER = 1;
-		// 1D time linear -> 2D spatial R. Wagner
-		public static final short WS_TT_1DLINEAR_2DRWAGNER = 2;
+		private static final short WS_COMPTARGET = 0x20;
 
 		/* Result Masks */
-		public static final short WS_RT_RAW = 0x01; // Raw values (off|on)
-		public static final short WS_RT_COMP = 0x02; // Compression (off|on)
+		private static final short WS_RT_RAW = 0x01; // Raw values (off|on)
+		private static final short WS_RT_COMP = 0x02; // Compression (off|on)
 
 		private OptionsPack pack;
 		private boolean bcast;
@@ -365,22 +342,42 @@ public class CompassMote extends PackerMote implements MessageListener {
 
 		public void dataSetTime(long dataSetTime) {
 			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_DATASETTIME));
-			pack.set_data_data_wState_dataSetTime(dataSetTime);
+			pack.set_data_data_wState_data_opt_dataSetTime(dataSetTime);
 		}
 
 		public void transformType(short transformType) {
 			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_TRANSFORMTYPE));
-			pack.set_data_data_wState_transformType(transformType);
+			pack.set_data_data_wState_data_opt_transformType(transformType);
+		}
+
+		public void resultType(boolean raw, boolean comp) {
+			short type = 0;
+			if (raw)
+				type |= WS_RT_RAW;
+			if (comp)
+				type |= WS_RT_COMP;
+			resultType(type);
 		}
 
 		public void resultType(short resultType) {
 			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_RESULTTYPE));
-			pack.set_data_data_wState_resultType(resultType);
+			pack.set_data_data_wState_data_opt_resultType(resultType);
 		}
 
 		public void timeDomainLength(short timeDomainLength) {
 			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_TIMEDOMAINLENGTH));
-			pack.set_data_data_wState_timeDomainLength(timeDomainLength);
+			pack.set_data_data_wState_data_opt_timeDomainLength(timeDomainLength);
+		}
+
+		public void compTarget(float compTarget[]) {
+			if (compTarget.length <= 5) {
+				pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_RESULTTYPE));
+				pack.set_data_data_wState_data_comp_numTargets((short)compTarget.length);
+				pack.set_data_data_wState_data_comp_compTarget(compTarget);
+			} else {
+				System.out.println("Compression target array too large!");
+				System.exit(1);
+			}
 		}
 
 		public void send() {

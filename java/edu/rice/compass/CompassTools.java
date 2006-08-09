@@ -14,25 +14,24 @@ import com.martiansoftware.jsap.*;
 import com.thoughtworks.xstream.*;
 import edu.rice.compass.bigpack.*;
 import edu.rice.compass.comm.*;
-import edu.rice.compass.CompassMote.WaveletState;
 
 public class CompassTools {
 
-	public static CompassTools main;
 	private static boolean debug;
 
 	private JSAPResult config;
-	private XStream xs = new XStream();
+	private static XStream xs = new XStream();
 	private WaveletController wCont;
-	public String packagePath;
-	public String workingDir;
+	public static String packagePath;
+	public static String workingDir;
+	private static String inputFileName;
 
 	public static void main(String[] args) {
 		try {
-			main = new CompassTools(args);
-			main.execute();
+			new CompassTools(args).execute();
 		} catch (Exception e) {
 			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 
@@ -107,12 +106,13 @@ public class CompassTools {
 	private void execute() {
 		debug = config.getBoolean("debug");
 
-		// Store package path and working directory
+		// Store package path, working directory, and base file name
 		Class pClass = CompassTools.class;
 		Package mPackage = pClass.getPackage();
 		URL pAddr = pClass.getResource("/" + mPackage.getName().replace('.', '/'));
 		packagePath = pAddr.getPath() + "/";
 		workingDir = System.getProperty("user.dir") + "/";
+		inputFileName = config.getString("file", "");
 
 		// Load broadcast sequence number
 		if (!config.getBoolean("ignoreseqno"))
@@ -133,6 +133,7 @@ public class CompassTools {
 						+ "does not exist!");
 				System.exit(1);
 			}
+			// TODO: Make WaveletController do this
 			// Try reading the config data
 			try {
 				FileInputStream fs = new FileInputStream(wcFile);
@@ -162,33 +163,20 @@ public class CompassTools {
 					setLength = minSetLen;
 				}
 			}
-			// Set transform options - there should be a better way...
-			CompassMote.dataSetTime = setLength;
-			if (config.getString("transType").equals("2DRWAGNER")) {
-				CompassMote.transformType = WaveletState.WS_TT_2DRWAGNER;
-			} else if (config.getString("transType").equals("1DHAAR_2DRWAGNER")) {
-				CompassMote.transformType = WaveletState.WS_TT_1DHAAR_2DRWAGNER;
-			} else if (config.getString("transType").equals("1DLINEAR_2DRWAGNER")) {
-				CompassMote.transformType = WaveletState.WS_TT_1DLINEAR_2DRWAGNER;
-			} else {
-				System.out.println("Unknown transform type!");
-				System.exit(1);
-			}
-			short resultType = 0;
-			if (config.getBoolean("raw"))
-				resultType |= WaveletState.WS_RT_RAW;
-			if (config.getBoolean("comp"))
-				resultType |= WaveletState.WS_RT_COMP;
-			CompassMote.resultType = resultType;
-			CompassMote.timeDomainLength = config.getShort("tdLength");
+			// Set transform options
+			wCont.setNumSets(config.getInt("sets"));
+			wCont.setDataSetTime(setLength);
+			wCont.setTransformType(config.getString("transType"));
+			wCont.setResultType(config.getBoolean("raw"), config.getBoolean("comp"));
+			wCont.setTimeDomainLength(config.getShort("tdLength"));
 			// Inputs are good, stop the motes to make sure they aren't
 			// doing anything first.
-			CompassMote.broadcast.forceStop();
+			CompassMote.broadcast.sendStop();
 			if (config.getBoolean("prog")) {
 				wCont.configMotes(); // Send config to each mote
 			} else {
 				System.out.println("Skipping wavelet config transmission");
-				configDone(); // Start transform
+				wCont.runSets(); // Start transform
 			}
 		} else if (config.getBoolean("stats")) {
 			new CompassMote(destCheck()).getStats();
@@ -338,13 +326,9 @@ public class CompassTools {
 		return config.getInt("dest");
 	}
 
-	public void configDone() {
-		wCont.runSets(config.getInt("sets"));
-	}
-
-	public void saveResult(Object data, String fileName) {
-		if (config.contains("file"))
-			fileName = config.getString("file");
+	public static void saveResult(Object data, String fileName) {
+		if (!inputFileName.equals(""))
+			fileName = inputFileName;
 		File out = new File(fileName);
 		if (!out.isAbsolute())
 			out = new File(workingDir + fileName);

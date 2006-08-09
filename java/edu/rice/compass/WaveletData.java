@@ -65,8 +65,8 @@ public class WaveletData implements MessageListener {
 		if (++curSet < value.length) {
 			//clearDataCheck();
 		} else {
-			CompassMote.broadcast.forceStop();
-			CompassTools.main.saveResult(this, "waveletData.xml");
+			CompassMote.broadcast.sendStop();
+			CompassTools.saveResult(this, "waveletData.xml");
 		}
 	}
 

@@ -105,21 +105,31 @@ public interface OptionsPack {
   /**
    * Set the value of the field 'data.data.wState.dataSetTime'
    */
-  public void set_data_data_wState_dataSetTime(long value);
+  public void set_data_data_wState_data_opt_dataSetTime(long value);
   
   /**
    * Set the value of the field 'data.data.wState.transformType'
    */
-  public void set_data_data_wState_transformType(short value);
+  public void set_data_data_wState_data_opt_transformType(short value);
   
   /**
    * Set the value of the field 'data.data.wState.resultType'
    */
-  public void set_data_data_wState_resultType(short value);
+  public void set_data_data_wState_data_opt_resultType(short value);
   
   /**
    * Set the value of the field 'data.data.wState.timeDomainLength'
    */
-  public void set_data_data_wState_timeDomainLength(short value);
+  public void set_data_data_wState_data_opt_timeDomainLength(short value);
+  
+  /**
+   * Set the value of the field 'data.data.wState.data.comp.numTargets'
+   */
+  public void set_data_data_wState_data_comp_numTargets(short value);
+  
+  /**
+   * Set the contents of the array 'data.data.wState.data.comp.compTarget' from the given float[]
+   */
+  public void set_data_data_wState_data_comp_compTarget(float[] value);
 
 }

@@ -57,7 +57,7 @@ public class MoteCom extends MoteIF {
 
 	private static short restoreSequenceNo() {
 		try {
-			FileInputStream fis = new FileInputStream(CompassTools.main.packagePath
+			FileInputStream fis = new FileInputStream(CompassTools.packagePath
 					+ "bcast.properties");
 			p.load(fis);
 			short i = (short) Integer.parseInt(p.getProperty("sequenceNo", "1"));
@@ -71,7 +71,7 @@ public class MoteCom extends MoteIF {
 
 	private void saveSequenceNo(short i) {
 		try {
-			FileOutputStream fos = new FileOutputStream(CompassTools.main.packagePath
+			FileOutputStream fos = new FileOutputStream(CompassTools.packagePath
 					+ "bcast.properties");
 			p.setProperty("sequenceNo", Integer.toString(i));
 			p.store(fos, "#Properties for BcastInject\n");
