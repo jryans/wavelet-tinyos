@@ -60,13 +60,20 @@ typedef struct {
   uint8_t timeDomainLength; // Number of data points collected for TD transform
 } __attribute__ ((packed)) WaveletOpt;
 
-enum {
-  WT_MAX_TARGETS = 5
+enum { // Transmit Options
+  WT_SLOTS = 8, // Number of transmit slots (must be power of 2)
+  WT_SLOT_TIME = 50, // Length of one slot (bms)
+  WT_MAX_BANDS = 5, // Maximum number of compression bands
+  WT_SLOT_STAGE_TIME = WT_SLOTS * WT_SLOT_TIME, // Length of entire slot stage (bms)
+  // Length of wait time after sending one band of data in compressed mode (bms)
+  WT_WAIT_STAGE_TIME = 2000,
+  // Length of an entire compression band (bms)                            
+  WT_BAND_TIME = WT_SLOT_STAGE_TIME + WT_WAIT_STAGE_TIME
 };
 
 typedef struct {
-  uint8_t numTargets; // Number of targets in the following array
-  float compTarget[WT_MAX_TARGETS]; // Array of compression target values
+  uint8_t numBands; // Number of bands in the following array
+  float compTarget[WT_MAX_BANDS]; // Array of compression target values for each band
 } __attribute__ ((packed)) WaveletComp;
 
 typedef struct { 
@@ -98,11 +105,6 @@ enum { // Result Masks
   WS_RT_RAW = 0x01, // Raw values (off|on)
 #endif
   WS_RT_COMP = 0x02 // Compression (off|on)
-};
-
-enum { // Transmit Options
-  WT_SLOTS = 8, // Number of transmit slots (must be power of 2)
-  WT_SLOT_LENGTH = 50
 };
 
 #endif // _WAVELETDATA_H

@@ -62,5 +62,8 @@ implementation {
   BigPackM.Timeout -> TimerC.Timer[unique("Timer")];
   WaveletM.DataSet -> TimerC.Timer[unique("Timer")];
   WaveletM.StateTimer -> TimerC.Timer[unique("Timer")];
-  WaveletM.DelayedSend -> TimerC.Timer[unique("Timer")];
+  WaveletM.DelayResults -> TimerC.Timer[unique("Timer")];
+#ifdef RAW
+  WaveletM.DelayRaw -> TimerC.Timer[unique("Timer")];
+#endif
 }

@@ -49,45 +49,45 @@ implementation {
     case MOTEOPTIONS: {
       MoteOptData *o = &msg.data.opt;
       dbg(DBG_USR2, "MoteOptions: Rcvd new options data\n");
-      if ((o->mask & MO_CLEARSTATS) != 0) {
+      if (o->mask & MO_CLEARSTATS) {
         dbg(DBG_USR2, "MoteOptions: Clearing stats data\n");
         call Stats.clear();
       }
-      if ((o->mask & MO_HPLPM) != 0) {
+      if (o->mask & MO_HPLPM) {
         dbg(DBG_USR2, "MoteOptions: Setting power management to %i\n", o->hplPM);
         (o->hplPM) ? call PM.enable()
                    : call PM.disable();
       }
-      if ((o->mask & MO_RADIORETRIES) != 0) {
+      if (o->mask & MO_RADIORETRIES) {
         dbg(DBG_USR2, "MoteOptions: Setting radio retries to %i\n", o->radioRetries);
         signal MoteOptions.receive(MO_RADIORETRIES, o->radioRetries);
         rRet = o->radioRetries;
       }
 #ifdef PLATFORM_MICAZ
-      if ((o->mask & MO_TXPOWER) != 0) {
+      if (o->mask & MO_TXPOWER) {
         if (o->txPower > 0 && o->txPower < 32) {
           dbg(DBG_USR2, "MoteOptions: Setting TX power level to %i\n", o->txPower);
           call CC2420Control.SetRFPower(o->txPower);
         }
       }
-      if ((o->mask & MO_RFCHAN) != 0) {
+      if (o->mask & MO_RFCHAN) {
         if (o->rfChan > 10 && o->rfChan < 27) {
           dbg(DBG_USR2, "MoteOptions: Setting RF channel to %i\n", o->rfChan);
           call CC2420Control.TunePreset(o->rfChan);
         }
       }
-      if ((o->mask & MO_RFACK) != 0) {
+      if (o->mask & MO_RFACK) {
         dbg(DBG_USR2, "MoteOptions: Setting RF ACK support to %i\n", o->rfAck);
         (o->rfAck) ? call MacControl.enableAck()
                    : call MacControl.disableAck();
       }
 #endif
-      if ((o->mask & MO_RADIOOFFTIME) != 0) {
+      if (o->mask & MO_RADIOOFFTIME) {
         dbg(DBG_USR2, "MoteOptions: Turning radio off for %i seconds\n", o->radioOffTime);
         call Wake.start(TIMER_ONE_SHOT, o->radioOffTime * 1024);
         signal Sleep.fired();
       }
-      if ((o->mask & MO_PINGNUM) != 0) {
+      if (o->mask & MO_PINGNUM) {
         dbg(DBG_USR2, "MoteOptions: Sending %i pings to %i\n", o->pingNum, o->radioOffTime);
         call PingB.sendTo(o->pingNum, o->radioOffTime, rRet);
       }

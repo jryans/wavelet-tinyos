@@ -26,7 +26,10 @@ module WaveletM {
     interface State;
     interface Timer as DataSet;
     interface Timer as StateTimer;
-    interface Timer as DelayedSend;
+    interface Timer as DelayResults;
+#ifdef RAW
+    interface Timer as DelayRaw;
+#endif
     interface Random;
     
     /*** Wavelet Config ***/
@@ -53,9 +56,9 @@ implementation {
   
   /*** Compression ***/
   bool predicted; // True if mote predicts
-  uint8_t matchingTarget; // Index of first target that this mote's values are above
-  uint8_t numTargets; // Number of targets in the following array
-  float compTarget[WT_MAX_TARGETS]; // Array of compression target values
+  uint8_t matchingBand; // Index of first band that this mote's values are above
+  uint8_t numBands; // Number of bands in the following array
+  float compTarget[WT_MAX_BANDS]; // Array of compression target values for each band
   
 #ifdef RAW
   float rawVals[WT_SENSORS];
@@ -96,7 +99,7 @@ implementation {
     
   /*** Functions Declarations ***/
   task void runState();
-  void nextWaveletLevel();
+  void levelDone();
   void sendResultsToBase();
 #ifdef RAW
   void sendRawToBase();
@@ -157,12 +160,14 @@ implementation {
             dataSet, curLevel + 1);
         break; }  
       case S_PREDICTED: {
+        delayState();
         calcNewValues();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Sending values to update nodes...\n",
             dataSet, curLevel + 1);
         sendValuesToNeighbors();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
         checkData();
+        levelDone();
         call State.toIdle();
         break; }
       case S_UPDATED: {
@@ -170,7 +175,7 @@ implementation {
         calcNewValues();
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
         checkData();
-        nextWaveletLevel();
+        levelDone();
         call State.toIdle();
         break; }
       case S_TRANSMIT: {
@@ -190,7 +195,7 @@ implementation {
       case S_SKIPLEVEL: {
         delayState();
         dbg(DBG_USR2, "Skip: DS: %i, L: %i, Nothing to do, level done!\n", dataSet, curLevel + 1);
-        nextWaveletLevel();
+        levelDone();
         call State.toIdle();
         break; }
       case S_OFFLINE: {
@@ -220,7 +225,8 @@ implementation {
    */
   void delayState() {
     uint32_t delay;
-    forceNextState = FALSE; // Defaults to request instead of force
+    // Defaults to request instead of force
+    forceNextState = FALSE; 
     switch (call State.getState()) {
     case S_START_DATASET: {
       nextState = S_READING_SENSORS;
@@ -240,6 +246,10 @@ implementation {
       nextState = S_PREDICTED;
       forceNextState = TRUE;
       delay = 1500;
+      break; }
+    case S_PREDICTED: {
+      nextState = S_IDLE;
+      delay = 500;
       break; }
     case S_UPDATED: {
       (curLevel + 1 == numLevels) 
@@ -266,9 +276,10 @@ implementation {
     case S_TRANSMIT: {
       if (resultType & WS_RT_COMP) {
         nextState = S_IDLE;
+        delay = numBands * WT_BAND_TIME;
       } else {
         nextState = S_START_DATASET;
-        delay = WT_SLOTS * WT_SLOT_LENGTH;
+        delay = WT_SLOT_STAGE_TIME;
       }
       break; }
     }
@@ -279,16 +290,32 @@ implementation {
   
   /**
    * If this mote is not done, then it advances to the next wavelet 
-   * level and copies the calculated values to the next level.
-   * Called during S_UPDATED and S_SKIPLEVEL.
+   * level and copies the calculated values to the next level. If it
+   * is done and compression is enabled, it find which band matches
+   * its values.
+   * Called during S_UPDATED, S_PREDICTED, and S_SKIPLEVEL.
    */ 
-  void nextWaveletLevel() {
+  void levelDone() {
     uint8_t i;
     if (nextState != S_IDLE) { // More levels to go
       for (i = 0; i < WT_SENSORS; i++) // Carry data over to next level
         level[curLevel + 1].nb[0].value[i] = level[curLevel].nb[0].value[i];
       curLevel++;
-    }  
+    } else { // Data set complete
+      if (resultType & WS_RT_COMP) {
+        if (predicted) { 
+          // Predicted values are assigned a band based on target values
+          for (i = 0; i < numBands; i++) {
+            if (level[curLevel].nb[0].value[0] >= compTarget[i])
+              break;
+          }
+          matchingBand = i;
+        } else {
+          // Scaling values are always transmitted
+          matchingBand = 0;
+        }  
+      }
+    }
   }
   
   /**
@@ -417,9 +444,29 @@ implementation {
   }
   
   void sendDelayedMsg() {
-    uint32_t delay = (call Random.rand() & (WT_SLOTS - 1)) * WT_SLOT_LENGTH;
-    dbg(DBG_USR2, "Wavelet: Delaying results by %i bms\n", delay);
-    call DelayedSend.start(TIMER_ONE_SHOT, delay);
+    uint8_t slot = call Random.rand() & (WT_SLOTS - 1);
+    uint32_t delay = slot * WT_SLOT_TIME;
+#ifdef RAW
+    if (resultType & WS_RT_RAW) {
+      // Raw values (if enabled) sent in the first band
+      uint8_t rawSlot = call Random.rand() & (WT_SLOTS - 1);
+      uint32_t rawDelay = rawSlot * WT_SLOT_TIME;
+      dbg(DBG_USR2, "Wavelet: Raw: band 0, slot %i, %i bms\n", rawSlot, rawDelay);
+      call DelayRaw.start(TIMER_ONE_SHOT, rawDelay);
+    }
+#endif
+    if (resultType & WS_RT_COMP) {
+      if (matchingBand == numBands) {
+        dbg(DBG_USR2, "Wavelet: Results don't match any bands!\n");
+        return;
+      }
+      delay += matchingBand * WT_BAND_TIME;
+      dbg(DBG_USR2, "Wavelet: Results: band %i, slot %i, %i bms\n", matchingBand, slot, delay);
+      call DelayResults.start(TIMER_ONE_SHOT, delay);
+    } else {
+      dbg(DBG_USR2, "Wavelet: Results: band 0, slot %i, %i bms\n", slot, delay);
+      call DelayResults.start(TIMER_ONE_SHOT, delay);
+    }
   }
 
   /*** Commands and Events ***/
@@ -573,30 +620,39 @@ implementation {
       if (TOS_LOCAL_ADDRESS == 0)
         return;
       dbg(DBG_USR2, "Wavelet: Rcvd new state data\n");
-      if ((ws->mask & WS_TRANSFORMTYPE) != 0) {
+      if (ws->mask & WS_TRANSFORMTYPE) {
         dbg(DBG_USR2, "Wavelet: Setting transform type to %i\n", wo->transformType);
         transformType = wo->transformType;
       }
-      if ((ws->mask & WS_RESULTTYPE) != 0) {
+      if (ws->mask & WS_RESULTTYPE) {
         dbg(DBG_USR2, "Wavelet: Setting result type to %i\n", wo->resultType);
         resultType = wo->resultType;
       }
-      if ((ws->mask & WS_TIMEDOMAINLENGTH) != 0) {
+      if (ws->mask & WS_TIMEDOMAINLENGTH) {
         dbg(DBG_USR2, "Wavelet: Setting time domain length to %i\n", wo->timeDomainLength);
         timeDomainLength = wo->timeDomainLength;
       }
-      if ((ws->mask & WS_DATASETTIME) != 0) {
+      if (ws->mask & WS_DATASETTIME) {
         dbg(DBG_USR2, "Wavelet: Setting data set time to %i\n", wo->dataSetTime);
         dataSetTime = wo->dataSetTime;
       }
-      if ((ws->mask & WS_STATE) != 0) {
+      if (ws->mask & WS_COMPTARGET) {
+        WaveletComp *wc = &msg.data.wState.data.comp;
+        dbg(DBG_USR2, "Wavelet: Storing compression band target array\n");
+        numBands = wc->numBands;
+        memcpy(compTarget, wc->compTarget, sizeof(compTarget));
+      }
+      if (ws->mask & WS_STATE) {
         // Ignore start command if we don't have the data set time
         if (ws->state == S_START_DATASET && dataSetTime == 0)
           break;
         // Allows stoping and restarting on demand
         call DataSet.stop();
         call StateTimer.stop();
-        call DelayedSend.stop();
+        call DelayResults.stop();
+#ifdef RAW        
+        call DelayRaw.stop();
+#endif        
         call State.forceState(ws->state);
         post runState();        
       }
@@ -622,7 +678,7 @@ implementation {
     if (call State.requestState(nextState) == FAIL) {
       if (forceNextState) {
         call State.forceState(nextState);
-        dbg(DBG_USR2, "Wavelet: Forced to state %i\n", nextState);
+        dbg(DBG_USR1, "Wavelet: Forced to state %i\n", nextState);
         post runState();
       } else {      
         dbg(DBG_USR2, "Wavelet: Not enough time before moving to state %i!\n", nextState);
@@ -631,20 +687,23 @@ implementation {
 #endif
       }
     } else { 
-      dbg(DBG_USR2, "Wavelet: Moved to state %i\n", nextState);
+      dbg(DBG_USR1, "Wavelet: Moved to state %i\n", nextState);
       post runState();      
     }
     return SUCCESS;
   }
   
-  event result_t DelayedSend.fired() {
-#ifdef RAW    
-    if (resultType & WS_RT_RAW)
-      call Message.send(raw);
-#endif    
+  event result_t DelayResults.fired() {   
     call Message.send(res);
     return SUCCESS;
   }
+  
+#ifdef RAW
+  event result_t DelayRaw.fired() {   
+    call Message.send(raw);   
+    return SUCCESS;
+  }
+#endif
   
   /**
    * Moves to the transmit stage.
