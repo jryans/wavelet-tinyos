@@ -34,7 +34,7 @@ public class WaveletData implements MessageListener {
 			// Check if data is from the next set
 			setCheck(pack.get_data_data_wData_dataSet() - 1);
 			// Store mote data
-			if (pack.get_data_data_wData_state() == CompassMote.S_DONE) {
+			if (pack.get_data_data_wData_state() == CompassMote.S_TRANSMIT) {
 				value[curSet][TEMP * 2 + WT_OFFSET][id - 1] = pack.getElement_data_data_wData_value(TEMP);
 				value[curSet][LIGHT * 2 + WT_OFFSET][id - 1] = pack.getElement_data_data_wData_value(LIGHT);
 				System.out.println("Got wavelet data from mote " + id);
@@ -62,9 +62,7 @@ public class WaveletData implements MessageListener {
 					+ mLeft[RAW_OFFSET] + " raw and " + mLeft[WT_OFFSET]
 					+ " wavelet.");
 		}
-		if (++curSet < value.length) {
-			//clearDataCheck();
-		} else {
+		if (++curSet >= value.length) {
 			CompassMote.broadcast.sendStop();
 			CompassTools.saveResult(this, "waveletData.xml");
 		}

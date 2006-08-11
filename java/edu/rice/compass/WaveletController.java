@@ -24,6 +24,7 @@ public class WaveletController {
 	private boolean compRes;
 	// Number of data points collected for TD transform
 	private short timeDomainLength;
+	private short maxBand;
 
 	/* Transform Types */
 	// 2D spatial R. Wagner
@@ -32,6 +33,21 @@ public class WaveletController {
 	private static final short WS_TT_1DHAAR_2DRWAGNER = 1;
 	// 1D time linear -> 2D spatial R. Wagner
 	private static final short WS_TT_1DLINEAR_2DRWAGNER = 2;
+
+	/* Transmit Options */
+	// Number of transmit slots (must be power of 2)
+	private static final short WT_SLOTS = 8;
+	// Length of one slot (bms)
+	private static final long WT_SLOT_TIME = 50;
+	// Maximum number of compression bands
+	private static final short WT_MAX_BANDS = 5;
+	// Length of entire slot stage (bms)
+	private static final long WT_SLOT_STAGE_TIME = WT_SLOTS * WT_SLOT_TIME;
+	// Length of wait time after sending one band of data in compressed mode (bms)
+	private static final long WT_WAIT_STAGE_TIME = 2000;
+	// Length of an entire compression band (bms)
+	private static final long WT_BAND_TIME = WT_SLOT_STAGE_TIME
+			+ WT_WAIT_STAGE_TIME;
 
 	public WaveletController(WaveletConfigData mWC) {
 		wc = mWC;
@@ -48,10 +64,6 @@ public class WaveletController {
 			mote.add(new CompassMote(i + 1, wc));
 	}
 
-	public int getMaxScale() {
-		return maxScale;
-	}
-
 	public void configMotes() {
 		System.out.println("Wavelet config starting");
 		new Timer().scheduleAtFixedRate(new ConfigPulse(mote), 200, 300);
@@ -59,30 +71,46 @@ public class WaveletController {
 
 	public void runSets() {
 		new WaveletData(numSets, mote.size());
-		startDataSet();
-		System.out.println("Sent start command!");
+		startTransform();
+	}
+
+	private void startTransform() {
+		// Uncompressed transform uses a single S_START_DATASET
+		// broadcast that includes transform options to start a loop of data sets
+		// without further control by the sink.
+		// Compressed transform first sends transform options, but with no state
+		// attached. At the start of each data set, a S_START_DATASET broadcast
+		// is sent with updated target band values.
+		if (compRes) {
+			WaveletState ws = CompassMote.broadcast.makeState();
+			setTransformOptions(ws);
+			ws.send();
+			new Timer().scheduleAtFixedRate(new StartCompDataSet(), 500,
+					calcBandEnding());
+		} else {
+			startDataSet();
+		}
+		System.out.println("Starting transform!");
+	}
+
+	private long calcBandEnding() {
+		long bms = dataSetTime + maxBand * WT_BAND_TIME + WT_SLOT_STAGE_TIME + 1000;
+		return (long) (1.024 * bms);
 	}
 
 	private void startDataSet() {
+		WaveletState ws = CompassMote.broadcast.makeState();
+		ws.state(CompassMote.S_START_DATASET);
 		if (compRes) {
-			WaveletState ws = CompassMote.broadcast.makeState();
-			setStateOptions(ws);
-			ws.send();
-			ws = CompassMote.broadcast.makeState();
-			ws.state(CompassMote.S_START_DATASET);
-			ws.compTarget(new float[] { 400, 200 });
-			ws.send();
+			ws.compTarget(new float[] { 400, 200, 0 });
 		} else {
-			WaveletState ws = CompassMote.broadcast.makeState();
-			ws.state(CompassMote.S_START_DATASET);
-			setStateOptions(ws);
-			ws.send();
+			setTransformOptions(ws);
 		}
+		ws.send();
 	}
 
-	private void setStateOptions(WaveletState ws) {
-		if (!compRes)
-			ws.dataSetTime(dataSetTime);
+	private void setTransformOptions(WaveletState ws) {
+		ws.dataSetTime(dataSetTime);
 		ws.transformType(transformType);
 		ws.resultType(rawRes, compRes);
 		if (transformType == WS_TT_1DHAAR_2DRWAGNER
@@ -94,17 +122,22 @@ public class WaveletController {
 		this.numSets = numSets;
 	}
 
-	public void setDataSetTime(long dataSetTime) {
-		this.dataSetTime = dataSetTime;
-	}
-
-	public void setResultType(boolean raw, boolean comp) {
-		rawRes = raw;
-		compRes = comp;
-	}
-
-	public void setTimeDomainLength(short timeDomainLength) {
-		this.timeDomainLength = timeDomainLength;
+	public void setDataSetTime(long setLength, boolean force) {
+		if (!force) {
+			long minSetLen = 5000 + 3000 * (maxScale - 1);
+			if (setLength < minSetLen) {
+				if (setLength != 0) {
+					System.out.println("Set length "
+							+ setLength
+							+ " is smaller than "
+							+ minSetLen
+							+ ", the minimum time required for the motes to process this data set.");
+					System.out.println("Using minimum time, run with --force if you want to ignore this.");
+				}
+				setLength = minSetLen;
+			}
+		}
+		dataSetTime = setLength;
 	}
 
 	public void setTransformType(String transformName) {
@@ -118,6 +151,19 @@ public class WaveletController {
 			System.out.println("Unknown transform type!");
 			System.exit(1);
 		}
+	}
+
+	public void setResultType(boolean raw, boolean comp) {
+		rawRes = raw;
+		compRes = comp;
+	}
+
+	public void setTimeDomainLength(short timeDomainLength) {
+		this.timeDomainLength = timeDomainLength;
+	}
+
+	public void setMaxBand(short maxBand) {
+		this.maxBand = maxBand;
 	}
 
 	class ConfigPulse extends TimerTask {
@@ -150,6 +196,22 @@ public class WaveletController {
 					cancel();
 				}
 			}
+		}
+
+	}
+
+	class StartCompDataSet extends TimerTask {
+
+		boolean setEnded = false;
+
+		public void run() {
+			if (setEnded) {
+				System.out.println("Reached end of band " + maxBand
+						+ ", starting next data set.");
+			} else {
+				setEnded = true;
+			}
+			startDataSet();
 		}
 
 	}

@@ -57,6 +57,8 @@ public class CompassTools {
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "transType"),
 						new FlaggedOption("tdLength", JSAP.SHORT_PARSER, "8",
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "timeDomainLength"),
+						new FlaggedOption("maxBand", JSAP.SHORT_PARSER, "0",
+								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "maxBand"),
 						new FlaggedOption("ping", JSAP.INTEGER_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "ping"),
 						new FlaggedOption("pm", JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT,
@@ -74,7 +76,7 @@ public class CompassTools {
 						new Switch("summary", JSAP.NO_SHORTFLAG, "summary"),
 						new Switch("ver", JSAP.NO_SHORTFLAG, "ver"),
 						new UnflaggedOption("file"),
-						new FlaggedOption("setlength", JSAP.LONG_PARSER, JSAP.NO_DEFAULT,
+						new FlaggedOption("setlength", JSAP.LONG_PARSER, "0",
 								JSAP.NOT_REQUIRED, 'l', "length"),
 						new FlaggedOption("config", JSAP.STRING_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "config"),
@@ -149,26 +151,14 @@ public class CompassTools {
 				e.printStackTrace();
 				System.exit(1);
 			}
-			// Check for valid set length
-			long setLength = config.getLong("setlength", 0);
-			if (!config.getBoolean("force")) {
-				long minSetLen = 6000 + 4000 * (wCont.getMaxScale() - 1);
-				if (setLength < minSetLen) {
-					if (setLength == 0) {
-						System.out.println("Set length is smaller than "
-								+ minSetLen
-								+ ", the minimum time required for the motes to process this data set.");
-						System.out.println("Using minimum time, run with --force if you want to ignore this.");
-					}
-					setLength = minSetLen;
-				}
-			}
 			// Set transform options
 			wCont.setNumSets(config.getInt("sets"));
-			wCont.setDataSetTime(setLength);
+			wCont.setDataSetTime(config.getLong("setlength"),
+					config.getBoolean("force"));
 			wCont.setTransformType(config.getString("transType"));
 			wCont.setResultType(config.getBoolean("raw"), config.getBoolean("comp"));
 			wCont.setTimeDomainLength(config.getShort("tdLength"));
+			wCont.setMaxBand(config.getShort("maxBand"));
 			// Inputs are good, stop the motes to make sure they aren't
 			// doing anything first.
 			CompassMote.broadcast.sendStop();

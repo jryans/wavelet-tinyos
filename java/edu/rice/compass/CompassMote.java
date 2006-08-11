@@ -34,7 +34,7 @@ public class CompassMote extends PackerMote implements MessageListener {
 	static final short S_PREDICTED = 7;
 	static final short S_UPDATED = 8;
 	static final short S_SKIPLEVEL = 9;
-	static final short S_DONE = 10;
+	static final short S_TRANSMIT = 10;
 	static final short S_OFFLINE = 11;
 	static final short S_ERROR = 12;
 	static final short S_RAW = 13;
@@ -371,7 +371,7 @@ public class CompassMote extends PackerMote implements MessageListener {
 
 		public void compTarget(float compTarget[]) {
 			if (compTarget.length <= 5) {
-				pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_RESULTTYPE));
+				pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_COMPTARGET));
 				pack.set_data_data_wState_data_comp_numTargets((short)compTarget.length);
 				pack.set_data_data_wState_data_comp_compTarget(compTarget);
 			} else {
@@ -445,7 +445,7 @@ public class CompassMote extends PackerMote implements MessageListener {
 			// Otherwise, we now know how many levels the mote is used in.
 			if (lastUpdLevel < 0) {
 				state = new short[1];
-				state[0] = S_DONE;
+				state[0] = S_IDLE;
 			} else {
 				state = new short[lastUpdLevel + 1];
 				state[lastUpdLevel] = S_UPDATING;
@@ -464,7 +464,7 @@ public class CompassMote extends PackerMote implements MessageListener {
 				}
 			}
 			switch (state[levelIdx]) {
-			case S_DONE:
+			case S_IDLE:
 			case S_SKIPLEVEL:
 				// First entry about ourselves
 				neighbors[levelIdx] = new WaveletNeighbor[] { new WaveletNeighbor(id,
