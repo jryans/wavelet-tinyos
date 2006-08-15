@@ -50,7 +50,8 @@ implementation {
   /*** Variables and Constants ***/ 
   uint8_t curLevel; // The current wavelet transform level
   uint8_t dataSet; // Identifies the current data set number
-  uint8_t curTime; // Index in time that the next sample will fill
+  uint8_t curTime; // Index in time that the current sample will fill
+  uint8_t nextTime; // Index in time that the next sample will fill
   
   uint8_t numLevels; // Total number of wavelet levels
   WaveletLevel *level; // Array of WaveletLevels
@@ -76,7 +77,7 @@ implementation {
   // Defines all possible mote states
   enum {
     S_IDLE = 0,
-    S_STARTUP = 1,
+    S_CONFIGURE = 1,
     S_START_DATASET = 2,
     S_READING_SENSORS = 3,
     S_UPDATING = 4,
@@ -87,9 +88,8 @@ implementation {
     S_SKIPLEVEL = 9,
     S_TRANSMIT = 10,
     S_OFFLINE = 11,
-    S_ERROR = 12,
-    S_RAW = 13,
-    S_CLEAR_SENSORS = 14
+    S_CLEAR_SENSORS = 12,
+    S_RAW = 13
   };
   
   uint8_t nextState;
@@ -125,17 +125,18 @@ implementation {
   task void runState() {
     delayNextState();
     switch (call State.getState()) {
-      case S_STARTUP: { // Retrieve wavelet config data
+      case S_CONFIGURE: { // Retrieve wavelet config data
         call Leds.redOn();
         waveletFree();
         call BigPackClient.request();
         break; }
       case S_READING_SENSORS: {
-        dbg(DBG_USR2, "DS: %i, Reading sensors...\n", dataSet);
+        dbg(DBG_USR2, "DS: %i, Reading sensors data for sample %i...\n", dataSet, curTime);
         call SensorData.readSensors();
+        curTime = nextTime;
         break; }
       case S_START_DATASET: {
-        call DataSetTimer.start(TIMER_ONE_SHOT, dataSetTime);
+        call DataSetTimer.start(TIMER_ONE_SHOT, sampleTime - WT_PREDATASET_TIME);
         call Leds.redOff();
         call Leds.yellowOn();
         curLevel = 0;
@@ -195,7 +196,8 @@ implementation {
         break; }
       case S_OFFLINE: {
         dbg(DBG_USR2, "Wavelet: Offline\n");
-        dataSet = 0;        
+        dataSet = 0;
+        curTime = 0;       
         call Leds.redOff();
         call Leds.yellowOff();
         call State.toIdle();
@@ -225,39 +227,45 @@ implementation {
     switch (call State.getState()) {
     case S_CLEAR_SENSORS: {
       nextState = S_READING_SENSORS;
-      delay = WD_CLEAR_SENSORS_TO_READING_SENSORS;
-      break; }  
+      delay = WSD_CS_TO_RS;
+      nextTime = (curTime + 1) % timeDomainLength;
+      break; }
     case S_READING_SENSORS: {
-      nextState = level[curLevel].nb[0].state;
-      (nextState == S_UPDATING) ? (delay = WD_READING_SENSORS_TO_UPDATING)
-                                : (delay = WD_READING_SENSORS_TO_OTHER);
+      if (nextTime) {
+        nextState = S_IDLE;
+        dbg(DBG_USR2, "Wavelet: Unimplemented time domain in use!\n");
+      } else { 
+        nextState = S_START_DATASET;
+      }
+      delay = WSD_RS_TO_ANY;
       break; }
     case S_START_DATASET: {
-      nextState = S_CLEAR_SENSORS;
-      delay = 500;
+      nextState = level[curLevel].nb[0].state;
+      (nextState == S_UPDATING) ? (delay = WSD_SDS_TO_UING)
+                                : (delay = WSD_SDS_TO_OTHER);
       break; }    
     case S_UPDATING: {
       nextState = S_UPDATED;
       forceNextState = TRUE;
-      delay = 2000;
+      delay = WSD_UING_TO_UED;
       break; }
     case S_PREDICTING: {
       nextState = S_PREDICTED;
       forceNextState = TRUE;
-      delay = 1500;
+      delay = WSD_PING_TO_PED;
       break; }
     case S_PREDICTED: {
       nextState = S_IDLE;
-      delay = 500;
+      delay = WSD_PED_TO_IDLE;
       break; }
     case S_UPDATED: {
       (curLevel + 1 == numLevels) 
         ? (nextState = S_IDLE)
         : (nextState = level[curLevel + 1].nb[0].state);
       if (nextState == S_UPDATING) {
-        delay = 1000;
+        delay = WSD_UED_TO_UING;
       } else {
-        delay = 500;
+        delay = WSD_UED_TO_OTHER;
       }
       break; }
     case S_SKIPLEVEL: {
@@ -265,11 +273,11 @@ implementation {
         ? (nextState = S_IDLE)
         : (nextState = level[curLevel + 1].nb[0].state);
       if (nextState == S_UPDATING) {
-        delay = 3500;
+        delay = WSD_SKIP_TO_UING;
       } else if (nextState == S_IDLE) {
-        delay = 2500;
+        delay = WSD_SKIP_TO_IDLE;
       } else {
-        delay = 3000;
+        delay = WSD_SKIP_TO_OTHER;
       }
       break; }
     case S_TRANSMIT: {
@@ -623,6 +631,8 @@ implementation {
       if (ws->mask & WS_TRANSFORMTYPE) {
         dbg(DBG_USR2, "Wavelet: Setting transform type to %i\n", wo->transformType);
         transformType = wo->transformType;
+        if (transformType == WS_TT_2DRWAGNER)
+          timeDomainLength = 1;
       }
       if (ws->mask & WS_RESULTTYPE) {
         dbg(DBG_USR2, "Wavelet: Setting result type to %i\n", wo->resultType);
@@ -644,7 +654,7 @@ implementation {
       }
       if (ws->mask & WS_STATE) {
         // Ignore start command if we don't have the sample time
-        if (ws->state == S_START_DATASET && sampleTime == 0)
+        if (ws->state == S_CLEAR_SENSORS && sampleTime == 0)
           break;
         // Allows stoping and restarting on demand
         call SampleTimer.stop();
@@ -655,7 +665,9 @@ implementation {
         call DelayRaw.stop();
 #endif        
         call State.forceState(ws->state);
-        post runState();        
+        post runState();
+        if (ws->state == S_CLEAR_SENSORS)
+          call SampleTimer.start(TIMER_REPEAT, sampleTime);       
       }
       break; }
     }
@@ -688,8 +700,7 @@ implementation {
    */
   event result_t SampleTimer.fired() {
     if (call State.requestState(S_CLEAR_SENSORS) == FAIL) {
-      dbg(DBG_USR2, "Wavelet: Moving to collect sample %i for data set %i failed!\n", 
-          curTime, dataSet);
+      dbg(DBG_USR2, "Wavelet: Moving to collect sample %i failed!\n", curTime);
 #ifdef BEEP
       call Beep.play(1, 250);
 #endif

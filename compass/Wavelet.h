@@ -54,11 +54,21 @@ typedef struct wc {
 /*** State Control ***/
 
 // Based on diagram at http://www.gliffy.com/publish/1039648/L
-enum { // State Timing Table
-  WD_CLEAR_SENSORS_TO_READING_SENSORS = 1000,
-  WD_READING_SENSORS_TO_UPDATING = 1000,
-  WD_READING_SENSORS_TO_OTHER = 500,
-}
+enum { // State Delay Table
+  WSD_CS_TO_RS = 1000,
+  WSD_RS_TO_ANY = 500,
+  WT_PREDATASET_TIME = WSD_CS_TO_RS + WSD_RS_TO_ANY,
+  WSD_SDS_TO_UING = 1000,
+  WSD_SDS_TO_OTHER = 500,
+  WSD_UING_TO_UED = 2000,
+  WSD_PING_TO_PED = 1500,
+  WSD_PED_TO_IDLE = 500,
+  WSD_UED_TO_UING = 1000,
+  WSD_UED_TO_OTHER = 500,
+  WSD_SKIP_TO_UING = 3500,
+  WSD_SKIP_TO_IDLE = 2500,
+  WSD_SKIP_TO_OTHER = 3000
+};
 
 typedef struct {
   uint32_t sampleTime; // Length of time between samples
