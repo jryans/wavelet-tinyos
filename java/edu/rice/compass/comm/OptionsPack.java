@@ -88,48 +88,48 @@ public interface OptionsPack {
 	public void set_data_data_opt_radioRetries(short value);
 	
 	/**
-   * Return the value (as a short) of the field 'data.data.wState.mask'
+   * Return the value (as a short) of the field 'data.data.wCntl.mask'
    */
-  public short get_data_data_wState_mask();
+  public short get_data_data_wCntl_mask();
 	
 	/**
-   * Set the value of the field 'data.data.wState.mask'
+   * Set the value of the field 'data.data.wCntl.mask'
    */
-  public void set_data_data_wState_mask(short value);
+  public void set_data_data_wCntl_mask(short value);
   
   /**
-   * Set the value of the field 'data.data.wState.state'
+   * Set the value of the field 'data.data.wCntl.cmd'
    */
-  public void set_data_data_wState_state(short value);
+  public void set_data_data_wCntl_cmd(short value);
   
   /**
-   * Set the value of the field 'data.data.wState.dataSetTime'
+   * Set the value of the field 'data.data.wCntl.sampleTime'
    */
-  public void set_data_data_wState_data_opt_dataSetTime(long value);
+  public void set_data_data_wCntl_data_opt_sampleTime(long value);
   
   /**
-   * Set the value of the field 'data.data.wState.transformType'
+   * Set the value of the field 'data.data.wCntl.transformType'
    */
-  public void set_data_data_wState_data_opt_transformType(short value);
+  public void set_data_data_wCntl_data_opt_transformType(short value);
   
   /**
-   * Set the value of the field 'data.data.wState.resultType'
+   * Set the value of the field 'data.data.wCntl.resultType'
    */
-  public void set_data_data_wState_data_opt_resultType(short value);
+  public void set_data_data_wCntl_data_opt_resultType(short value);
   
   /**
-   * Set the value of the field 'data.data.wState.timeDomainLength'
+   * Set the value of the field 'data.data.wCntl.timeDomainLength'
    */
-  public void set_data_data_wState_data_opt_timeDomainLength(short value);
+  public void set_data_data_wCntl_data_opt_timeDomainLength(short value);
   
   /**
-   * Set the value of the field 'data.data.wState.data.comp.numTargets'
+   * Set the value of the field 'data.data.wCntl.data.comp.numBands'
    */
-  public void set_data_data_wState_data_comp_numTargets(short value);
+  public void set_data_data_wCntl_data_comp_numBands(short value);
   
   /**
-   * Set the contents of the array 'data.data.wState.data.comp.compTarget' from the given float[]
+   * Set the contents of the array 'data.data.wCntl.data.comp.compTarget' from the given float[]
    */
-  public void set_data_data_wState_data_comp_compTarget(float[] value);
+  public void set_data_data_wCntl_data_comp_compTarget(float[] value);
 
 }

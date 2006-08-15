@@ -19,25 +19,31 @@ public class CompassMote extends PackerMote implements MessageListener {
 	public static final short WAVELETDATA = 1;
 	public static final short BIGPACKHEADER = 2;
 	public static final short BIGPACKDATA = 3;
-	public static final short WAVELETSTATE = 4;
+	public static final short WAVELETCONTROL = 4;
 	public static final short ROUTERDATA = 5;
 	public static final short PWRCONTROL = 6;
 	public static final short COMPTIME = 7;
 
 	/* Wavelet Mote States */
-	static final short S_IDLE = 0;
-	static final short S_STARTUP = 1;
-	static final short S_START_DATASET = 2;
-	static final short S_READING_SENSORS = 3;
-	static final short S_UPDATING = 4;
-	static final short S_PREDICTING = 5;
-	static final short S_PREDICTED = 7;
-	static final short S_UPDATED = 8;
-	static final short S_SKIPLEVEL = 9;
-	static final short S_TRANSMIT = 10;
-	static final short S_OFFLINE = 11;
-	static final short S_ERROR = 12;
-	static final short S_RAW = 13;
+	static final short WS_IDLE = 0;
+	static final short WS_CONFIGURE = 1;
+	static final short WS_START_DATASET = 2;
+	static final short WS_READING_SENSORS = 3;
+	static final short WS_UPDATING = 4;
+	static final short WS_PREDICTING = 5;
+	static final short WS_PREDICTED = 7;
+	static final short WS_UPDATED = 8;
+	static final short WS_SKIPLEVEL = 9;
+	static final short WS_TRANSMIT = 10;
+	static final short WS_OFFLINE = 11;
+	static final short WS_CLEAR_SENSORS = 12;
+	static final short WS_RAW = 13;
+	
+	/* Wavelet Commands */
+	static final short WC_CONFIGURE = 0;
+	static final short WC_START_TRANSFORM = 1;
+	static final short WC_STOP_TRANSFORM = 2;
+	static final short WC_STOP_DATASET = 3;
 
 	private WaveletConf wConf;
 	private boolean configDone = false;
@@ -47,8 +53,8 @@ public class CompassMote extends PackerMote implements MessageListener {
 			return new MoteOptions(true);
 		}
 
-		public WaveletState makeState() {
-			return new WaveletState(true);
+		public WaveletControl makeWaveletControl() {
+			return new WaveletControl(true);
 		}
 	};
 
@@ -86,20 +92,28 @@ public class CompassMote extends PackerMote implements MessageListener {
 		};
 	}
 
+	public static long BMStoMS(long bms) {
+		return bms * 1000 / 1024;
+	}
+
+	public static long MStoBMS(long ms) {
+		return ms * 1024 / 1000;
+	}
+
 	public boolean getStats() {
 		System.out.println("Requesting stats from mote " + id);
 		return requestPack(MoteStats.getType());
 	}
 
-	public void sendStartup() {
-		WaveletState ws = makeState();
-		ws.state(S_STARTUP);
+	public void sendConfigure() {
+		WaveletControl ws = makeWaveletControl();
+		ws.cmd(WC_CONFIGURE);
 		ws.send();
 	}
 
 	public void sendStop() {
-		WaveletState ws = makeState();
-		ws.state(S_OFFLINE);
+		WaveletControl ws = makeWaveletControl();
+		ws.cmd(WC_STOP_TRANSFORM);
 		ws.send();
 	}
 
@@ -280,11 +294,11 @@ public class CompassMote extends PackerMote implements MessageListener {
 		}
 
 		public void sleepInterval(int sleep) {
-			pack.set_data_data_pCntl_sleepInterval(sleep);
+			pack.set_data_data_pCntl_sleepInterval(MStoBMS(sleep));
 		}
 
 		public void wakeInterval(int wake) {
-			pack.set_data_data_pCntl_wakeUpInterval(wake);
+			pack.set_data_data_pCntl_wakeUpInterval(MStoBMS(wake));
 		}
 
 		public void reboot(boolean reboot) {
@@ -301,79 +315,79 @@ public class CompassMote extends PackerMote implements MessageListener {
 
 	}
 
-	public WaveletState makeState() {
-		return new WaveletState(false);
+	public WaveletControl makeWaveletControl() {
+		return new WaveletControl(false);
 	}
 
 	/**
 	 * Controls wavelet transform state and options
 	 */
-	public class WaveletState {
+	public class WaveletControl {
 
 		/* Bitmasks */
-		private static final short WS_STATE = 0x01;
-		private static final short WS_DATASETTIME = 0x02;
-		private static final short WS_TRANSFORMTYPE = 0x04;
-		private static final short WS_RESULTTYPE = 0x08;
-		private static final short WS_TIMEDOMAINLENGTH = 0x10;
-		private static final short WS_COMPTARGET = 0x20;
+		private static final short WC_CMD = 0x01;
+		private static final short WC_SAMPLETIME = 0x02;
+		private static final short WC_TRANSFORMTYPE = 0x04;
+		private static final short WC_RESULTTYPE = 0x08;
+		private static final short WC_TIMEDOMAINLENGTH = 0x10;
+		private static final short WC_COMPTARGET = 0x20;
 
 		/* Result Masks */
-		private static final short WS_RT_RAW = 0x01; // Raw values (off|on)
-		private static final short WS_RT_COMP = 0x02; // Compression (off|on)
+		private static final short WC_RT_RAW = 0x01; // Raw values (off|on)
+		private static final short WC_RT_COMP = 0x02; // Compression (off|on)
 
 		private OptionsPack pack;
 		private boolean bcast;
 
-		private WaveletState(boolean broadcast) {
+		private WaveletControl(boolean broadcast) {
 			bcast = broadcast;
 			if (bcast) {
 				pack = new BroadcastPack();
 			} else {
 				pack = new UnicastPack();
 			}
-			pack.set_data_type(WAVELETSTATE);
+			pack.set_data_type(WAVELETCONTROL);
 		}
 
-		public void state(short state) {
-			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_STATE));
-			pack.set_data_data_wState_state(state);
+		public void cmd(short cmd) {
+			pack.set_data_data_wCntl_mask((short) (pack.get_data_data_wCntl_mask() | WC_CMD));
+			pack.set_data_data_wCntl_cmd(cmd);
 		}
 
-		public void dataSetTime(long dataSetTime) {
-			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_DATASETTIME));
-			pack.set_data_data_wState_data_opt_dataSetTime(dataSetTime);
+		public void sampleTime(long sampleTime) {
+			pack.set_data_data_wCntl_mask((short) (pack.get_data_data_wCntl_mask() | WC_SAMPLETIME));
+			pack.set_data_data_wCntl_data_opt_sampleTime(sampleTime);
 		}
 
 		public void transformType(short transformType) {
-			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_TRANSFORMTYPE));
-			pack.set_data_data_wState_data_opt_transformType(transformType);
+			pack.set_data_data_wCntl_mask((short) (pack.get_data_data_wCntl_mask() | WC_TRANSFORMTYPE));
+			pack.set_data_data_wCntl_data_opt_transformType(transformType);
 		}
 
 		public void resultType(boolean raw, boolean comp) {
 			short type = 0;
 			if (raw)
-				type |= WS_RT_RAW;
+				type |= WC_RT_RAW;
 			if (comp)
-				type |= WS_RT_COMP;
+				type |= WC_RT_COMP;
 			resultType(type);
 		}
 
 		public void resultType(short resultType) {
-			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_RESULTTYPE));
-			pack.set_data_data_wState_data_opt_resultType(resultType);
+			pack.set_data_data_wCntl_mask((short) (pack.get_data_data_wCntl_mask() | WC_RESULTTYPE));
+			pack.set_data_data_wCntl_data_opt_resultType(resultType);
 		}
 
 		public void timeDomainLength(short timeDomainLength) {
-			pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_TIMEDOMAINLENGTH));
-			pack.set_data_data_wState_data_opt_timeDomainLength(timeDomainLength);
+			pack.set_data_data_wCntl_mask((short) (pack.get_data_data_wCntl_mask() | WC_TIMEDOMAINLENGTH));
+			pack.set_data_data_wCntl_data_opt_timeDomainLength(timeDomainLength);
 		}
 
 		public void compTarget(float compTarget[]) {
 			if (compTarget.length <= 5) {
-				pack.set_data_data_wState_mask((short) (pack.get_data_data_wState_mask() | WS_COMPTARGET));
-				pack.set_data_data_wState_data_comp_numTargets((short)compTarget.length);
-				pack.set_data_data_wState_data_comp_compTarget(compTarget);
+				pack.set_data_data_wCntl_mask((short) (pack.get_data_data_wCntl_mask() | WC_COMPTARGET));
+				pack.set_data_data_wCntl_data_comp_numBands((short)compTarget.length);
+				pack.set_data_data_wCntl_data_comp_compTarget(compTarget);
 			} else {
 				System.out.println("Compression target array too large!");
 				System.exit(1);
@@ -432,9 +446,9 @@ public class CompassMote extends PackerMote implements MessageListener {
 			state = new short[predLevel];
 			// If it has no neighbors at predLevel, then it should really skip.
 			if (wc.mPredNB[id - 1] != null) {
-				state[predLevel - 1] = S_PREDICTING;
+				state[predLevel - 1] = WS_PREDICTING;
 			} else {
-				state[predLevel - 1] = S_SKIPLEVEL;
+				state[predLevel - 1] = WS_SKIPLEVEL;
 			}
 		} else {
 			for (lastUpdLevel = maxLevel - 1; lastUpdLevel >= 0; lastUpdLevel--) {
@@ -445,10 +459,10 @@ public class CompassMote extends PackerMote implements MessageListener {
 			// Otherwise, we now know how many levels the mote is used in.
 			if (lastUpdLevel < 0) {
 				state = new short[1];
-				state[0] = S_IDLE;
+				state[0] = WS_IDLE;
 			} else {
 				state = new short[lastUpdLevel + 1];
-				state[lastUpdLevel] = S_UPDATING;
+				state[lastUpdLevel] = WS_UPDATING;
 			}
 		}
 		// Allocate neighbors array now that the number of states is known
@@ -458,22 +472,22 @@ public class CompassMote extends PackerMote implements MessageListener {
 		for (int levelIdx = 0; levelIdx < state.length; levelIdx++) {
 			if (state[levelIdx] == 0) {
 				if (updInfo[levelIdx].size() == 0) {
-					state[levelIdx] = S_SKIPLEVEL;
+					state[levelIdx] = WS_SKIPLEVEL;
 				} else {
-					state[levelIdx] = S_UPDATING;
+					state[levelIdx] = WS_UPDATING;
 				}
 			}
 			switch (state[levelIdx]) {
-			case S_IDLE:
-			case S_SKIPLEVEL:
+			case WS_IDLE:
+			case WS_SKIPLEVEL:
 				// First entry about ourselves
 				neighbors[levelIdx] = new WaveletNeighbor[] { new WaveletNeighbor(id,
-						S_SKIPLEVEL, 0) };
+						WS_SKIPLEVEL, 0) };
 				break;
-			case S_UPDATING:
+			case WS_UPDATING:
 				neighbors[levelIdx] = new WaveletNeighbor[updInfo[levelIdx].size() + 1];
 				// First entry about ourselves
-				neighbors[levelIdx][0] = new WaveletNeighbor(id, S_UPDATING, 0);
+				neighbors[levelIdx][0] = new WaveletNeighbor(id, WS_UPDATING, 0);
 				for (int nb = 1; nb < neighbors[levelIdx].length; nb++) {
 					// Choose neighbors randomly, to increase chances that other
 					// nodes won't have them in the same order.
@@ -483,18 +497,18 @@ public class CompassMote extends PackerMote implements MessageListener {
 					// list
 					double[] nbCoeff = (double[]) wc.mUpdCoeff[curNb.predID];
 					neighbors[levelIdx][nb] = new WaveletNeighbor(curNb.predID + 1,
-							S_UPDATING, (float) nbCoeff[curNb.coeffIndex]);
+							WS_UPDATING, (float) nbCoeff[curNb.coeffIndex]);
 				}
 				break;
-			case S_PREDICTING:
+			case WS_PREDICTING:
 				double[] predNb = (double[]) wc.mPredNB[id - 1];
 				double[] predCoeff = (double[]) wc.mPredCoeff[id - 1];
 				neighbors[levelIdx] = new WaveletNeighbor[predNb.length + 1];
 				// First entry about ourselves
-				neighbors[levelIdx][0] = new WaveletNeighbor(id, S_PREDICTING, 0);
+				neighbors[levelIdx][0] = new WaveletNeighbor(id, WS_PREDICTING, 0);
 				for (int nb = 1; nb < neighbors[levelIdx].length; nb++)
 					neighbors[levelIdx][nb] = new WaveletNeighbor((int) predNb[nb - 1],
-							S_PREDICTING, (float) predCoeff[nb - 1]);
+							WS_PREDICTING, (float) predCoeff[nb - 1]);
 				break;
 			}
 		}

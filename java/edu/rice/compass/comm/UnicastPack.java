@@ -164,30 +164,30 @@ public class UnicastPack extends net.tinyos.message.Message implements OptionsPa
         s += "]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wState.mask=0x"+Long.toHexString(get_data_data_wState_mask())+"]\n";
+        s += "  [data.data.wCntl.mask=0x"+Long.toHexString(get_data_data_wCntl_mask())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wState.state=0x"+Long.toHexString(get_data_data_wState_state())+"]\n";
+        s += "  [data.data.wCntl.cmd=0x"+Long.toHexString(get_data_data_wCntl_cmd())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wState.data.opt.dataSetTime=0x"+Long.toHexString(get_data_data_wState_data_opt_dataSetTime())+"]\n";
+        s += "  [data.data.wCntl.data.opt.sampleTime=0x"+Long.toHexString(get_data_data_wCntl_data_opt_sampleTime())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wState.data.opt.transformType=0x"+Long.toHexString(get_data_data_wState_data_opt_transformType())+"]\n";
+        s += "  [data.data.wCntl.data.opt.transformType=0x"+Long.toHexString(get_data_data_wCntl_data_opt_transformType())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wState.data.opt.resultType=0x"+Long.toHexString(get_data_data_wState_data_opt_resultType())+"]\n";
+        s += "  [data.data.wCntl.data.opt.resultType=0x"+Long.toHexString(get_data_data_wCntl_data_opt_resultType())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wState.data.opt.timeDomainLength=0x"+Long.toHexString(get_data_data_wState_data_opt_timeDomainLength())+"]\n";
+        s += "  [data.data.wCntl.data.opt.timeDomainLength=0x"+Long.toHexString(get_data_data_wCntl_data_opt_timeDomainLength())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wState.data.comp.numTargets=0x"+Long.toHexString(get_data_data_wState_data_comp_numTargets())+"]\n";
+        s += "  [data.data.wCntl.data.comp.numBands=0x"+Long.toHexString(get_data_data_wCntl_data_comp_numBands())+"]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
       try {
-        s += "  [data.data.wState.data.comp.compTarget=";
+        s += "  [data.data.wCntl.data.comp.compTarget=";
         for (int i = 0; i < 5; i++) {
-          s += Float.toString(getElement_data_data_wState_data_comp_compTarget(i))+" ";
+          s += Float.toString(getElement_data_data_wCntl_data_comp_compTarget(i))+" ";
         }
         s += "]\n";
       } catch (ArrayIndexOutOfBoundsException aioobe) { /* Skip field */ }
@@ -1825,471 +1825,471 @@ public class UnicastPack extends net.tinyos.message.Message implements OptionsPa
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wState.mask
+    // Accessor methods for field: data.data.wCntl.mask
     //   Field type: short
     //   Offset (bits): 48
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wState.mask' is signed (false).
+     * Return whether the field 'data.data.wCntl.mask' is signed (false).
      */
-    public static boolean isSigned_data_data_wState_mask() {
+    public static boolean isSigned_data_data_wCntl_mask() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wState.mask' is an array (false).
+     * Return whether the field 'data.data.wCntl.mask' is an array (false).
      */
-    public static boolean isArray_data_data_wState_mask() {
+    public static boolean isArray_data_data_wCntl_mask() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wState.mask'
+     * Return the offset (in bytes) of the field 'data.data.wCntl.mask'
      */
-    public static int offset_data_data_wState_mask() {
+    public static int offset_data_data_wCntl_mask() {
         return (48 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wState.mask'
+     * Return the offset (in bits) of the field 'data.data.wCntl.mask'
      */
-    public static int offsetBits_data_data_wState_mask() {
+    public static int offsetBits_data_data_wCntl_mask() {
         return 48;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.wState.mask'
+     * Return the value (as a short) of the field 'data.data.wCntl.mask'
      */
-    public short get_data_data_wState_mask() {
-        return (short)getUIntElement(offsetBits_data_data_wState_mask(), 8);
+    public short get_data_data_wCntl_mask() {
+        return (short)getUIntElement(offsetBits_data_data_wCntl_mask(), 8);
     }
 
     /**
-     * Set the value of the field 'data.data.wState.mask'
+     * Set the value of the field 'data.data.wCntl.mask'
      */
-    public void set_data_data_wState_mask(short value) {
-        setUIntElement(offsetBits_data_data_wState_mask(), 8, value);
+    public void set_data_data_wCntl_mask(short value) {
+        setUIntElement(offsetBits_data_data_wCntl_mask(), 8, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.wState.mask'
+     * Return the size, in bytes, of the field 'data.data.wCntl.mask'
      */
-    public static int size_data_data_wState_mask() {
+    public static int size_data_data_wCntl_mask() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.wState.mask'
+     * Return the size, in bits, of the field 'data.data.wCntl.mask'
      */
-    public static int sizeBits_data_data_wState_mask() {
+    public static int sizeBits_data_data_wCntl_mask() {
         return 8;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wState.state
+    // Accessor methods for field: data.data.wCntl.cmd
     //   Field type: short
     //   Offset (bits): 56
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wState.state' is signed (false).
+     * Return whether the field 'data.data.wCntl.cmd' is signed (false).
      */
-    public static boolean isSigned_data_data_wState_state() {
+    public static boolean isSigned_data_data_wCntl_cmd() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wState.state' is an array (false).
+     * Return whether the field 'data.data.wCntl.cmd' is an array (false).
      */
-    public static boolean isArray_data_data_wState_state() {
+    public static boolean isArray_data_data_wCntl_cmd() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wState.state'
+     * Return the offset (in bytes) of the field 'data.data.wCntl.cmd'
      */
-    public static int offset_data_data_wState_state() {
+    public static int offset_data_data_wCntl_cmd() {
         return (56 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wState.state'
+     * Return the offset (in bits) of the field 'data.data.wCntl.cmd'
      */
-    public static int offsetBits_data_data_wState_state() {
+    public static int offsetBits_data_data_wCntl_cmd() {
         return 56;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.wState.state'
+     * Return the value (as a short) of the field 'data.data.wCntl.cmd'
      */
-    public short get_data_data_wState_state() {
-        return (short)getUIntElement(offsetBits_data_data_wState_state(), 8);
+    public short get_data_data_wCntl_cmd() {
+        return (short)getUIntElement(offsetBits_data_data_wCntl_cmd(), 8);
     }
 
     /**
-     * Set the value of the field 'data.data.wState.state'
+     * Set the value of the field 'data.data.wCntl.cmd'
      */
-    public void set_data_data_wState_state(short value) {
-        setUIntElement(offsetBits_data_data_wState_state(), 8, value);
+    public void set_data_data_wCntl_cmd(short value) {
+        setUIntElement(offsetBits_data_data_wCntl_cmd(), 8, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.wState.state'
+     * Return the size, in bytes, of the field 'data.data.wCntl.cmd'
      */
-    public static int size_data_data_wState_state() {
+    public static int size_data_data_wCntl_cmd() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.wState.state'
+     * Return the size, in bits, of the field 'data.data.wCntl.cmd'
      */
-    public static int sizeBits_data_data_wState_state() {
+    public static int sizeBits_data_data_wCntl_cmd() {
         return 8;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wState.data.opt.dataSetTime
+    // Accessor methods for field: data.data.wCntl.data.opt.sampleTime
     //   Field type: long
     //   Offset (bits): 64
     //   Size (bits): 32
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wState.data.opt.dataSetTime' is signed (false).
+     * Return whether the field 'data.data.wCntl.data.opt.sampleTime' is signed (false).
      */
-    public static boolean isSigned_data_data_wState_data_opt_dataSetTime() {
+    public static boolean isSigned_data_data_wCntl_data_opt_sampleTime() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wState.data.opt.dataSetTime' is an array (false).
+     * Return whether the field 'data.data.wCntl.data.opt.sampleTime' is an array (false).
      */
-    public static boolean isArray_data_data_wState_data_opt_dataSetTime() {
+    public static boolean isArray_data_data_wCntl_data_opt_sampleTime() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wState.data.opt.dataSetTime'
+     * Return the offset (in bytes) of the field 'data.data.wCntl.data.opt.sampleTime'
      */
-    public static int offset_data_data_wState_data_opt_dataSetTime() {
+    public static int offset_data_data_wCntl_data_opt_sampleTime() {
         return (64 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wState.data.opt.dataSetTime'
+     * Return the offset (in bits) of the field 'data.data.wCntl.data.opt.sampleTime'
      */
-    public static int offsetBits_data_data_wState_data_opt_dataSetTime() {
+    public static int offsetBits_data_data_wCntl_data_opt_sampleTime() {
         return 64;
     }
 
     /**
-     * Return the value (as a long) of the field 'data.data.wState.data.opt.dataSetTime'
+     * Return the value (as a long) of the field 'data.data.wCntl.data.opt.sampleTime'
      */
-    public long get_data_data_wState_data_opt_dataSetTime() {
-        return (long)getUIntElement(offsetBits_data_data_wState_data_opt_dataSetTime(), 32);
+    public long get_data_data_wCntl_data_opt_sampleTime() {
+        return (long)getUIntElement(offsetBits_data_data_wCntl_data_opt_sampleTime(), 32);
     }
 
     /**
-     * Set the value of the field 'data.data.wState.data.opt.dataSetTime'
+     * Set the value of the field 'data.data.wCntl.data.opt.sampleTime'
      */
-    public void set_data_data_wState_data_opt_dataSetTime(long value) {
-        setUIntElement(offsetBits_data_data_wState_data_opt_dataSetTime(), 32, value);
+    public void set_data_data_wCntl_data_opt_sampleTime(long value) {
+        setUIntElement(offsetBits_data_data_wCntl_data_opt_sampleTime(), 32, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.wState.data.opt.dataSetTime'
+     * Return the size, in bytes, of the field 'data.data.wCntl.data.opt.sampleTime'
      */
-    public static int size_data_data_wState_data_opt_dataSetTime() {
+    public static int size_data_data_wCntl_data_opt_sampleTime() {
         return (32 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.wState.data.opt.dataSetTime'
+     * Return the size, in bits, of the field 'data.data.wCntl.data.opt.sampleTime'
      */
-    public static int sizeBits_data_data_wState_data_opt_dataSetTime() {
+    public static int sizeBits_data_data_wCntl_data_opt_sampleTime() {
         return 32;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wState.data.opt.transformType
+    // Accessor methods for field: data.data.wCntl.data.opt.transformType
     //   Field type: short
     //   Offset (bits): 96
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wState.data.opt.transformType' is signed (false).
+     * Return whether the field 'data.data.wCntl.data.opt.transformType' is signed (false).
      */
-    public static boolean isSigned_data_data_wState_data_opt_transformType() {
+    public static boolean isSigned_data_data_wCntl_data_opt_transformType() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wState.data.opt.transformType' is an array (false).
+     * Return whether the field 'data.data.wCntl.data.opt.transformType' is an array (false).
      */
-    public static boolean isArray_data_data_wState_data_opt_transformType() {
+    public static boolean isArray_data_data_wCntl_data_opt_transformType() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wState.data.opt.transformType'
+     * Return the offset (in bytes) of the field 'data.data.wCntl.data.opt.transformType'
      */
-    public static int offset_data_data_wState_data_opt_transformType() {
+    public static int offset_data_data_wCntl_data_opt_transformType() {
         return (96 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wState.data.opt.transformType'
+     * Return the offset (in bits) of the field 'data.data.wCntl.data.opt.transformType'
      */
-    public static int offsetBits_data_data_wState_data_opt_transformType() {
+    public static int offsetBits_data_data_wCntl_data_opt_transformType() {
         return 96;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.wState.data.opt.transformType'
+     * Return the value (as a short) of the field 'data.data.wCntl.data.opt.transformType'
      */
-    public short get_data_data_wState_data_opt_transformType() {
-        return (short)getUIntElement(offsetBits_data_data_wState_data_opt_transformType(), 8);
+    public short get_data_data_wCntl_data_opt_transformType() {
+        return (short)getUIntElement(offsetBits_data_data_wCntl_data_opt_transformType(), 8);
     }
 
     /**
-     * Set the value of the field 'data.data.wState.data.opt.transformType'
+     * Set the value of the field 'data.data.wCntl.data.opt.transformType'
      */
-    public void set_data_data_wState_data_opt_transformType(short value) {
-        setUIntElement(offsetBits_data_data_wState_data_opt_transformType(), 8, value);
+    public void set_data_data_wCntl_data_opt_transformType(short value) {
+        setUIntElement(offsetBits_data_data_wCntl_data_opt_transformType(), 8, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.wState.data.opt.transformType'
+     * Return the size, in bytes, of the field 'data.data.wCntl.data.opt.transformType'
      */
-    public static int size_data_data_wState_data_opt_transformType() {
+    public static int size_data_data_wCntl_data_opt_transformType() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.wState.data.opt.transformType'
+     * Return the size, in bits, of the field 'data.data.wCntl.data.opt.transformType'
      */
-    public static int sizeBits_data_data_wState_data_opt_transformType() {
+    public static int sizeBits_data_data_wCntl_data_opt_transformType() {
         return 8;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wState.data.opt.resultType
+    // Accessor methods for field: data.data.wCntl.data.opt.resultType
     //   Field type: short
     //   Offset (bits): 104
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wState.data.opt.resultType' is signed (false).
+     * Return whether the field 'data.data.wCntl.data.opt.resultType' is signed (false).
      */
-    public static boolean isSigned_data_data_wState_data_opt_resultType() {
+    public static boolean isSigned_data_data_wCntl_data_opt_resultType() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wState.data.opt.resultType' is an array (false).
+     * Return whether the field 'data.data.wCntl.data.opt.resultType' is an array (false).
      */
-    public static boolean isArray_data_data_wState_data_opt_resultType() {
+    public static boolean isArray_data_data_wCntl_data_opt_resultType() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wState.data.opt.resultType'
+     * Return the offset (in bytes) of the field 'data.data.wCntl.data.opt.resultType'
      */
-    public static int offset_data_data_wState_data_opt_resultType() {
+    public static int offset_data_data_wCntl_data_opt_resultType() {
         return (104 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wState.data.opt.resultType'
+     * Return the offset (in bits) of the field 'data.data.wCntl.data.opt.resultType'
      */
-    public static int offsetBits_data_data_wState_data_opt_resultType() {
+    public static int offsetBits_data_data_wCntl_data_opt_resultType() {
         return 104;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.wState.data.opt.resultType'
+     * Return the value (as a short) of the field 'data.data.wCntl.data.opt.resultType'
      */
-    public short get_data_data_wState_data_opt_resultType() {
-        return (short)getUIntElement(offsetBits_data_data_wState_data_opt_resultType(), 8);
+    public short get_data_data_wCntl_data_opt_resultType() {
+        return (short)getUIntElement(offsetBits_data_data_wCntl_data_opt_resultType(), 8);
     }
 
     /**
-     * Set the value of the field 'data.data.wState.data.opt.resultType'
+     * Set the value of the field 'data.data.wCntl.data.opt.resultType'
      */
-    public void set_data_data_wState_data_opt_resultType(short value) {
-        setUIntElement(offsetBits_data_data_wState_data_opt_resultType(), 8, value);
+    public void set_data_data_wCntl_data_opt_resultType(short value) {
+        setUIntElement(offsetBits_data_data_wCntl_data_opt_resultType(), 8, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.wState.data.opt.resultType'
+     * Return the size, in bytes, of the field 'data.data.wCntl.data.opt.resultType'
      */
-    public static int size_data_data_wState_data_opt_resultType() {
+    public static int size_data_data_wCntl_data_opt_resultType() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.wState.data.opt.resultType'
+     * Return the size, in bits, of the field 'data.data.wCntl.data.opt.resultType'
      */
-    public static int sizeBits_data_data_wState_data_opt_resultType() {
+    public static int sizeBits_data_data_wCntl_data_opt_resultType() {
         return 8;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wState.data.opt.timeDomainLength
+    // Accessor methods for field: data.data.wCntl.data.opt.timeDomainLength
     //   Field type: short
     //   Offset (bits): 112
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wState.data.opt.timeDomainLength' is signed (false).
+     * Return whether the field 'data.data.wCntl.data.opt.timeDomainLength' is signed (false).
      */
-    public static boolean isSigned_data_data_wState_data_opt_timeDomainLength() {
+    public static boolean isSigned_data_data_wCntl_data_opt_timeDomainLength() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wState.data.opt.timeDomainLength' is an array (false).
+     * Return whether the field 'data.data.wCntl.data.opt.timeDomainLength' is an array (false).
      */
-    public static boolean isArray_data_data_wState_data_opt_timeDomainLength() {
+    public static boolean isArray_data_data_wCntl_data_opt_timeDomainLength() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wState.data.opt.timeDomainLength'
+     * Return the offset (in bytes) of the field 'data.data.wCntl.data.opt.timeDomainLength'
      */
-    public static int offset_data_data_wState_data_opt_timeDomainLength() {
+    public static int offset_data_data_wCntl_data_opt_timeDomainLength() {
         return (112 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wState.data.opt.timeDomainLength'
+     * Return the offset (in bits) of the field 'data.data.wCntl.data.opt.timeDomainLength'
      */
-    public static int offsetBits_data_data_wState_data_opt_timeDomainLength() {
+    public static int offsetBits_data_data_wCntl_data_opt_timeDomainLength() {
         return 112;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.wState.data.opt.timeDomainLength'
+     * Return the value (as a short) of the field 'data.data.wCntl.data.opt.timeDomainLength'
      */
-    public short get_data_data_wState_data_opt_timeDomainLength() {
-        return (short)getUIntElement(offsetBits_data_data_wState_data_opt_timeDomainLength(), 8);
+    public short get_data_data_wCntl_data_opt_timeDomainLength() {
+        return (short)getUIntElement(offsetBits_data_data_wCntl_data_opt_timeDomainLength(), 8);
     }
 
     /**
-     * Set the value of the field 'data.data.wState.data.opt.timeDomainLength'
+     * Set the value of the field 'data.data.wCntl.data.opt.timeDomainLength'
      */
-    public void set_data_data_wState_data_opt_timeDomainLength(short value) {
-        setUIntElement(offsetBits_data_data_wState_data_opt_timeDomainLength(), 8, value);
+    public void set_data_data_wCntl_data_opt_timeDomainLength(short value) {
+        setUIntElement(offsetBits_data_data_wCntl_data_opt_timeDomainLength(), 8, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.wState.data.opt.timeDomainLength'
+     * Return the size, in bytes, of the field 'data.data.wCntl.data.opt.timeDomainLength'
      */
-    public static int size_data_data_wState_data_opt_timeDomainLength() {
+    public static int size_data_data_wCntl_data_opt_timeDomainLength() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.wState.data.opt.timeDomainLength'
+     * Return the size, in bits, of the field 'data.data.wCntl.data.opt.timeDomainLength'
      */
-    public static int sizeBits_data_data_wState_data_opt_timeDomainLength() {
+    public static int sizeBits_data_data_wCntl_data_opt_timeDomainLength() {
         return 8;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wState.data.comp.numTargets
+    // Accessor methods for field: data.data.wCntl.data.comp.numBands
     //   Field type: short
     //   Offset (bits): 64
     //   Size (bits): 8
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wState.data.comp.numTargets' is signed (false).
+     * Return whether the field 'data.data.wCntl.data.comp.numBands' is signed (false).
      */
-    public static boolean isSigned_data_data_wState_data_comp_numTargets() {
+    public static boolean isSigned_data_data_wCntl_data_comp_numBands() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wState.data.comp.numTargets' is an array (false).
+     * Return whether the field 'data.data.wCntl.data.comp.numBands' is an array (false).
      */
-    public static boolean isArray_data_data_wState_data_comp_numTargets() {
+    public static boolean isArray_data_data_wCntl_data_comp_numBands() {
         return false;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wState.data.comp.numTargets'
+     * Return the offset (in bytes) of the field 'data.data.wCntl.data.comp.numBands'
      */
-    public static int offset_data_data_wState_data_comp_numTargets() {
+    public static int offset_data_data_wCntl_data_comp_numBands() {
         return (64 / 8);
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wState.data.comp.numTargets'
+     * Return the offset (in bits) of the field 'data.data.wCntl.data.comp.numBands'
      */
-    public static int offsetBits_data_data_wState_data_comp_numTargets() {
+    public static int offsetBits_data_data_wCntl_data_comp_numBands() {
         return 64;
     }
 
     /**
-     * Return the value (as a short) of the field 'data.data.wState.data.comp.numTargets'
+     * Return the value (as a short) of the field 'data.data.wCntl.data.comp.numBands'
      */
-    public short get_data_data_wState_data_comp_numTargets() {
-        return (short)getUIntElement(offsetBits_data_data_wState_data_comp_numTargets(), 8);
+    public short get_data_data_wCntl_data_comp_numBands() {
+        return (short)getUIntElement(offsetBits_data_data_wCntl_data_comp_numBands(), 8);
     }
 
     /**
-     * Set the value of the field 'data.data.wState.data.comp.numTargets'
+     * Set the value of the field 'data.data.wCntl.data.comp.numBands'
      */
-    public void set_data_data_wState_data_comp_numTargets(short value) {
-        setUIntElement(offsetBits_data_data_wState_data_comp_numTargets(), 8, value);
+    public void set_data_data_wCntl_data_comp_numBands(short value) {
+        setUIntElement(offsetBits_data_data_wCntl_data_comp_numBands(), 8, value);
     }
 
     /**
-     * Return the size, in bytes, of the field 'data.data.wState.data.comp.numTargets'
+     * Return the size, in bytes, of the field 'data.data.wCntl.data.comp.numBands'
      */
-    public static int size_data_data_wState_data_comp_numTargets() {
+    public static int size_data_data_wCntl_data_comp_numBands() {
         return (8 / 8);
     }
 
     /**
-     * Return the size, in bits, of the field 'data.data.wState.data.comp.numTargets'
+     * Return the size, in bits, of the field 'data.data.wCntl.data.comp.numBands'
      */
-    public static int sizeBits_data_data_wState_data_comp_numTargets() {
+    public static int sizeBits_data_data_wCntl_data_comp_numBands() {
         return 8;
     }
 
     /////////////////////////////////////////////////////////
-    // Accessor methods for field: data.data.wState.data.comp.compTarget
+    // Accessor methods for field: data.data.wCntl.data.comp.compTarget
     //   Field type: float[]
     //   Offset (bits): 72
     //   Size of each element (bits): 32
     /////////////////////////////////////////////////////////
 
     /**
-     * Return whether the field 'data.data.wState.data.comp.compTarget' is signed (false).
+     * Return whether the field 'data.data.wCntl.data.comp.compTarget' is signed (false).
      */
-    public static boolean isSigned_data_data_wState_data_comp_compTarget() {
+    public static boolean isSigned_data_data_wCntl_data_comp_compTarget() {
         return false;
     }
 
     /**
-     * Return whether the field 'data.data.wState.data.comp.compTarget' is an array (true).
+     * Return whether the field 'data.data.wCntl.data.comp.compTarget' is an array (true).
      */
-    public static boolean isArray_data_data_wState_data_comp_compTarget() {
+    public static boolean isArray_data_data_wCntl_data_comp_compTarget() {
         return true;
     }
 
     /**
-     * Return the offset (in bytes) of the field 'data.data.wState.data.comp.compTarget'
+     * Return the offset (in bytes) of the field 'data.data.wCntl.data.comp.compTarget'
      */
-    public static int offset_data_data_wState_data_comp_compTarget(int index1) {
+    public static int offset_data_data_wCntl_data_comp_compTarget(int index1) {
         int offset = 72;
         if (index1 < 0 || index1 >= 5) throw new ArrayIndexOutOfBoundsException();
         offset += 0 + index1 * 32;
@@ -2297,9 +2297,9 @@ public class UnicastPack extends net.tinyos.message.Message implements OptionsPa
     }
 
     /**
-     * Return the offset (in bits) of the field 'data.data.wState.data.comp.compTarget'
+     * Return the offset (in bits) of the field 'data.data.wCntl.data.comp.compTarget'
      */
-    public static int offsetBits_data_data_wState_data_comp_compTarget(int index1) {
+    public static int offsetBits_data_data_wCntl_data_comp_compTarget(int index1) {
         int offset = 72;
         if (index1 < 0 || index1 >= 5) throw new ArrayIndexOutOfBoundsException();
         offset += 0 + index1 * 32;
@@ -2307,86 +2307,86 @@ public class UnicastPack extends net.tinyos.message.Message implements OptionsPa
     }
 
     /**
-     * Return the entire array 'data.data.wState.data.comp.compTarget' as a float[]
+     * Return the entire array 'data.data.wCntl.data.comp.compTarget' as a float[]
      */
-    public float[] get_data_data_wState_data_comp_compTarget() {
+    public float[] get_data_data_wCntl_data_comp_compTarget() {
         float[] tmp = new float[5];
-        for (int index0 = 0; index0 < numElements_data_data_wState_data_comp_compTarget(0); index0++) {
-            tmp[index0] = getElement_data_data_wState_data_comp_compTarget(index0);
+        for (int index0 = 0; index0 < numElements_data_data_wCntl_data_comp_compTarget(0); index0++) {
+            tmp[index0] = getElement_data_data_wCntl_data_comp_compTarget(index0);
         }
         return tmp;
     }
 
     /**
-     * Set the contents of the array 'data.data.wState.data.comp.compTarget' from the given float[]
+     * Set the contents of the array 'data.data.wCntl.data.comp.compTarget' from the given float[]
      */
-    public void set_data_data_wState_data_comp_compTarget(float[] value) {
+    public void set_data_data_wCntl_data_comp_compTarget(float[] value) {
         for (int index0 = 0; index0 < value.length; index0++) {
-            setElement_data_data_wState_data_comp_compTarget(index0, value[index0]);
+            setElement_data_data_wCntl_data_comp_compTarget(index0, value[index0]);
         }
     }
 
     /**
-     * Return an element (as a float) of the array 'data.data.wState.data.comp.compTarget'
+     * Return an element (as a float) of the array 'data.data.wCntl.data.comp.compTarget'
      */
-    public float getElement_data_data_wState_data_comp_compTarget(int index1) {
-        return (float)getFloatElement(offsetBits_data_data_wState_data_comp_compTarget(index1), 32);
+    public float getElement_data_data_wCntl_data_comp_compTarget(int index1) {
+        return (float)getFloatElement(offsetBits_data_data_wCntl_data_comp_compTarget(index1), 32);
     }
 
     /**
-     * Set an element of the array 'data.data.wState.data.comp.compTarget'
+     * Set an element of the array 'data.data.wCntl.data.comp.compTarget'
      */
-    public void setElement_data_data_wState_data_comp_compTarget(int index1, float value) {
-        setFloatElement(offsetBits_data_data_wState_data_comp_compTarget(index1), 32, value);
+    public void setElement_data_data_wCntl_data_comp_compTarget(int index1, float value) {
+        setFloatElement(offsetBits_data_data_wCntl_data_comp_compTarget(index1), 32, value);
     }
 
     /**
-     * Return the total size, in bytes, of the array 'data.data.wState.data.comp.compTarget'
+     * Return the total size, in bytes, of the array 'data.data.wCntl.data.comp.compTarget'
      */
-    public static int totalSize_data_data_wState_data_comp_compTarget() {
+    public static int totalSize_data_data_wCntl_data_comp_compTarget() {
         return (160 / 8);
     }
 
     /**
-     * Return the total size, in bits, of the array 'data.data.wState.data.comp.compTarget'
+     * Return the total size, in bits, of the array 'data.data.wCntl.data.comp.compTarget'
      */
-    public static int totalSizeBits_data_data_wState_data_comp_compTarget() {
+    public static int totalSizeBits_data_data_wCntl_data_comp_compTarget() {
         return 160;
     }
 
     /**
-     * Return the size, in bytes, of each element of the array 'data.data.wState.data.comp.compTarget'
+     * Return the size, in bytes, of each element of the array 'data.data.wCntl.data.comp.compTarget'
      */
-    public static int elementSize_data_data_wState_data_comp_compTarget() {
+    public static int elementSize_data_data_wCntl_data_comp_compTarget() {
         return (32 / 8);
     }
 
     /**
-     * Return the size, in bits, of each element of the array 'data.data.wState.data.comp.compTarget'
+     * Return the size, in bits, of each element of the array 'data.data.wCntl.data.comp.compTarget'
      */
-    public static int elementSizeBits_data_data_wState_data_comp_compTarget() {
+    public static int elementSizeBits_data_data_wCntl_data_comp_compTarget() {
         return 32;
     }
 
     /**
-     * Return the number of dimensions in the array 'data.data.wState.data.comp.compTarget'
+     * Return the number of dimensions in the array 'data.data.wCntl.data.comp.compTarget'
      */
-    public static int numDimensions_data_data_wState_data_comp_compTarget() {
+    public static int numDimensions_data_data_wCntl_data_comp_compTarget() {
         return 1;
     }
 
     /**
-     * Return the number of elements in the array 'data.data.wState.data.comp.compTarget'
+     * Return the number of elements in the array 'data.data.wCntl.data.comp.compTarget'
      */
-    public static int numElements_data_data_wState_data_comp_compTarget() {
+    public static int numElements_data_data_wCntl_data_comp_compTarget() {
         return 5;
     }
 
     /**
-     * Return the number of elements in the array 'data.data.wState.data.comp.compTarget'
+     * Return the number of elements in the array 'data.data.wCntl.data.comp.compTarget'
      * for the given dimension.
      */
-    public static int numElements_data_data_wState_data_comp_compTarget(int dimension) {
+    public static int numElements_data_data_wCntl_data_comp_compTarget(int dimension) {
       int array_dims[] = { 5,  };
         if (dimension < 0 || dimension >= 1) throw new ArrayIndexOutOfBoundsException();
         if (array_dims[dimension] == 0) throw new IllegalArgumentException("Array dimension "+dimension+" has unknown size");

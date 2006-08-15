@@ -76,7 +76,7 @@ public class CompassTools {
 						new Switch("summary", JSAP.NO_SHORTFLAG, "summary"),
 						new Switch("ver", JSAP.NO_SHORTFLAG, "ver"),
 						new UnflaggedOption("file"),
-						new FlaggedOption("setlength", JSAP.LONG_PARSER, "0",
+						new FlaggedOption("sampleTime", JSAP.LONG_PARSER, "0",
 								JSAP.NOT_REQUIRED, 'l', "length"),
 						new FlaggedOption("config", JSAP.STRING_PARSER, JSAP.NO_DEFAULT,
 								JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "config"),
@@ -153,12 +153,12 @@ public class CompassTools {
 			}
 			// Set transform options
 			wCont.setNumSets(config.getInt("sets"));
-			wCont.setDataSetTime(config.getLong("setlength"),
-					config.getBoolean("force"));
 			wCont.setTransformType(config.getString("transType"));
 			wCont.setResultType(config.getBoolean("raw"), config.getBoolean("comp"));
 			wCont.setTimeDomainLength(config.getShort("tdLength"));
 			wCont.setMaxBand(config.getShort("maxBand"));
+			wCont.setSampleTime(config.getLong("sampleTime"),
+					config.getBoolean("force"));
 			// Inputs are good, stop the motes to make sure they aren't
 			// doing anything first.
 			CompassMote.broadcast.sendStop();
@@ -208,9 +208,9 @@ public class CompassTools {
 			pm.pmMode(config.getString("mode"));
 			pm.awake(config.getBoolean("awake"));
 			if (config.contains("sleepInt"))
-				pm.sleepInterval(config.getInt("sleepInt") * 1024 / 1000);
+				pm.sleepInterval(config.getInt("sleepInt"));
 			if (config.contains("wakeInt"))
-				pm.wakeInterval(config.getInt("wakeInt") * 1024 / 1000);
+				pm.wakeInterval(config.getInt("wakeInt"));
 			pm.reboot(config.getBoolean("reboot"));
 			pm.send();
 			System.exit(0);
@@ -315,7 +315,7 @@ public class CompassTools {
 		}
 		return config.getInt("dest");
 	}
-
+	
 	public static void saveResult(Object data, String fileName) {
 		if (!inputFileName.equals(""))
 			fileName = inputFileName;

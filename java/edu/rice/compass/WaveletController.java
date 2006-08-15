@@ -18,13 +18,14 @@ public class WaveletController {
 
 	/* Transform Options */
 	private int numSets; // Number of data sets
-	private long dataSetTime; // Length of time between data sets (and samples)
+	private long sampleTime; // Length of time between data samples (bms)
 	private short transformType; // One of various transform types
 	private boolean rawRes;
 	private boolean compRes;
 	// Number of data points collected for TD transform
 	private short timeDomainLength;
 	private short maxBand;
+	private float compTarget[] = new float[] { 400, 200, 0 };
 
 	/* Transform Types */
 	// 2D spatial R. Wagner
@@ -49,6 +50,20 @@ public class WaveletController {
 	private static final long WT_BAND_TIME = WT_SLOT_STAGE_TIME
 			+ WT_WAIT_STAGE_TIME;
 
+	/* State Delay Table (bms) */
+	private static final long WSD_CS_TO_RS = 1000;
+	private static final long WSD_RS_TO_ANY = 500;
+	// private static final long WSD_SDS_TO_UING = 1000;
+	private static final long WSD_SDS_TO_OTHER = 500;
+	// private static final long WSD_UING_TO_UED = 2000;
+	// private static final long WSD_PING_TO_PED = 1500;
+	// private static final long WSD_PED_TO_IDLE = 500;
+	// private static final long WSD_UED_TO_UING = 1000;
+	// private static final long WSD_UED_TO_OTHER = 500;
+	// private static final long WSD_SKIP_TO_UING = 3500;
+	// private static final long WSD_SKIP_TO_IDLE = 2500;
+	private static final long WSD_SKIP_TO_OTHER = 3000;
+
 	public WaveletController(WaveletConfigData mWC) {
 		wc = mWC;
 		buildMotes(); // Create each mote's config data and the mote itself
@@ -70,47 +85,83 @@ public class WaveletController {
 	}
 
 	public void runSets() {
-		new WaveletData(numSets, mote.size());
+		new WaveletData(numSets, mote.size(), CompassMote.BMStoMS(getTransmitTime()
+				+ WT_BAND_TIME));
 		startTransform();
 	}
 
+	/**
+	 * For the uncompressed transform, a single WC_START_TRANSFORM broadcast that
+	 * includes transform options is sent to start a loop of data sets without
+	 * further control by the sink. For the compressed transform, first the
+	 * transform options are sent, but with no state attached. To start the
+	 * transform, a WC_START_TRANSFORM broadcast is sent with initial target band
+	 * values. When enough data bands have been received, a WC_STOP_DATASET
+	 * broadcast is sent, along with updated target band values that will be used
+	 * for the next data set.
+	 */
 	private void startTransform() {
-		// Uncompressed transform uses a single S_START_DATASET
-		// broadcast that includes transform options to start a loop of data sets
-		// without further control by the sink.
-		// Compressed transform first sends transform options, but with no state
-		// attached. At the start of each data set, a S_START_DATASET broadcast
-		// is sent with updated target band values.
 		if (compRes) {
-			WaveletState ws = CompassMote.broadcast.makeState();
+			WaveletControl ws = CompassMote.broadcast.makeWaveletControl();
 			setTransformOptions(ws);
 			ws.send();
-			new Timer().scheduleAtFixedRate(new StartCompDataSet(), 500,
-					calcBandEnding());
+			startSampling();
+			new Timer().scheduleAtFixedRate(new StopCompDataSet(),
+					CompassMote.BMStoMS(getCompStopTime()),
+					CompassMote.BMStoMS(sampleTime));
 		} else {
-			startDataSet();
+			startSampling();
 		}
 		System.out.println("Starting transform!");
 	}
 
-	private long calcBandEnding() {
-		long bms = dataSetTime + maxBand * WT_BAND_TIME + WT_SLOT_STAGE_TIME + 1000;
-		return (long) (1.024 * bms);
+	/* Stage Length Functions (bms) */
+
+	private static long getCollectSampleTime() {
+		return WSD_CS_TO_RS + WSD_RS_TO_ANY;
 	}
 
-	private void startDataSet() {
-		WaveletState ws = CompassMote.broadcast.makeState();
-		ws.state(CompassMote.S_START_DATASET);
+	private static long getScaleJTime() {
+		return WSD_SDS_TO_OTHER + WSD_SKIP_TO_OTHER;
+	}
+
+	private static long getScaleOtherTime() {
+		return WSD_SKIP_TO_OTHER;
+	}
+
+	private long getScalesTime() {
+		return getScaleJTime() + getScaleOtherTime() * (maxScale - 1);
+	}
+
+	private long getTransmitTime() {
 		if (compRes) {
-			ws.compTarget(new float[] { 400, 200, 0 });
+			return compTarget.length * WT_BAND_TIME;
+		}
+		return WT_SLOT_STAGE_TIME;
+	}
+
+	private long getMinSampleTime() {
+		return getCollectSampleTime() + getScalesTime() + getTransmitTime();
+	}
+
+	private long getCompStopTime() {
+		return getCollectSampleTime() + getScalesTime() + maxBand * WT_BAND_TIME
+				+ WT_SLOT_STAGE_TIME + WT_WAIT_STAGE_TIME / 2;
+	}
+
+	private void startSampling() {
+		WaveletControl ws = CompassMote.broadcast.makeWaveletControl();
+		ws.cmd(CompassMote.WC_START_TRANSFORM);
+		if (compRes) {
+			ws.compTarget(compTarget);
 		} else {
 			setTransformOptions(ws);
 		}
 		ws.send();
 	}
 
-	private void setTransformOptions(WaveletState ws) {
-		ws.dataSetTime(dataSetTime);
+	private void setTransformOptions(WaveletControl ws) {
+		ws.sampleTime(sampleTime);
 		ws.transformType(transformType);
 		ws.resultType(rawRes, compRes);
 		if (transformType == WS_TT_1DHAAR_2DRWAGNER
@@ -122,22 +173,19 @@ public class WaveletController {
 		this.numSets = numSets;
 	}
 
-	public void setDataSetTime(long setLength, boolean force) {
+	public void setSampleTime(long uSampleTime, boolean force) {
 		if (!force) {
-			long minSetLen = 5000 + 3000 * (maxScale - 1);
-			if (setLength < minSetLen) {
-				if (setLength != 0) {
-					System.out.println("Set length "
-							+ setLength
-							+ " is smaller than "
-							+ minSetLen
-							+ ", the minimum time required for the motes to process this data set.");
-					System.out.println("Using minimum time, run with --force if you want to ignore this.");
+			long minSampleTime = getMinSampleTime();
+			if (uSampleTime < minSampleTime) {
+				if (uSampleTime != 0) {
+					System.out.println("Sample time " + uSampleTime + " is smaller than "
+							+ minSampleTime + ", the minimum time required.");
+					System.out.println("Using the minimum time, run with --force if you want to ignore this.");
 				}
-				setLength = minSetLen;
+				uSampleTime = minSampleTime;
 			}
 		}
-		dataSetTime = setLength;
+		sampleTime = uSampleTime;
 	}
 
 	public void setTransformType(String transformName) {
@@ -179,7 +227,7 @@ public class WaveletController {
 		public void run() {
 			if (moteEnum.hasMoreElements()) { // More motes to configure
 				CompassMote cm = (CompassMote) moteEnum.nextElement();
-				cm.sendStartup();
+				cm.sendConfigure();
 			} else { // Wait for all motes to finish
 				Enumeration waitEnum = mote.elements();
 				boolean allDone = true;
@@ -200,18 +248,20 @@ public class WaveletController {
 
 	}
 
-	class StartCompDataSet extends TimerTask {
+	private class StopCompDataSet extends TimerTask {
 
-		boolean setEnded = false;
+		private WaveletControl wc;
+
+		private StopCompDataSet() {
+			wc = CompassMote.broadcast.makeWaveletControl();
+			wc.cmd(CompassMote.WC_STOP_DATASET);
+			wc.compTarget(compTarget);
+		}
 
 		public void run() {
-			if (setEnded) {
-				System.out.println("Reached end of band " + maxBand
-						+ ", starting next data set.");
-			} else {
-				setEnded = true;
-			}
-			startDataSet();
+			System.out.println("Reached end of band " + maxBand
+					+ ", stopping current data set.");
+			wc.send();
 		}
 
 	}
