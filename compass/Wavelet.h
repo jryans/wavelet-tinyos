@@ -5,8 +5,8 @@
  * @author Ryan Stinnett
  */
 
-#ifndef _WAVELETDATA_H
-#define _WAVELETDATA_H
+#ifndef _WAVELET_H
+#define _WAVELET_H
 
 #include "Sensors.h"
 
@@ -114,4 +114,4 @@ enum { // Result Masks
   WS_RT_COMP = 0x02 // Compression (off|on)
 };
 
-#endif // _WAVELETDATA_H
+#endif // _WAVELET_H

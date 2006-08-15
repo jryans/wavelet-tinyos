@@ -6,7 +6,7 @@
 #define _MESSAGEDATA_H
 
 #include "MoteOptions.h"
-#include "WaveletData.h"
+#include "Wavelet.h"
 #include "BigPack.h"
 #include "Router.h"
 
