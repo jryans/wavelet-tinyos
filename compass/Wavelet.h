@@ -53,11 +53,27 @@ typedef struct wc {
 
 /*** State Control ***/
 
+enum { // Wavelet Transform States
+  WS_IDLE = 0,
+  WS_CONFIGURE = 1,
+  WS_START_DATASET = 2,
+  WS_READING_SENSORS = 3,
+  WS_UPDATING = 4,
+  WS_PREDICTING = 5,
+  WS_CACHE = 6,
+  WS_PREDICTED = 7,
+  WS_UPDATED = 8,
+  WS_SKIPLEVEL = 9,
+  WS_TRANSMIT = 10,
+  WS_OFFLINE = 11,
+  WS_CLEAR_SENSORS = 12,
+  WS_RAW = 13
+};
+
 // Based on diagram at http://www.gliffy.com/publish/1039648/L
-enum { // State Delay Table
+enum { // State Delay Table (bms)
   WSD_CS_TO_RS = 1000,
   WSD_RS_TO_ANY = 500,
-  WT_PREDATASET_TIME = WSD_CS_TO_RS + WSD_RS_TO_ANY,
   WSD_SDS_TO_UING = 1000,
   WSD_SDS_TO_OTHER = 500,
   WSD_UING_TO_UED = 2000,
@@ -68,6 +84,12 @@ enum { // State Delay Table
   WSD_SKIP_TO_UING = 3500,
   WSD_SKIP_TO_IDLE = 2500,
   WSD_SKIP_TO_OTHER = 3000
+};
+
+enum { // Stage Length Table (bms)
+  WT_COLLECT_SAMPLE_TIME = WSD_CS_TO_RS + WSD_RS_TO_ANY,
+  WT_SCALE_J_TIME = WSD_SDS_TO_OTHER + WSD_SKIP_TO_OTHER,
+  WT_SCALE_OTHER_TIME = WSD_SKIP_TO_OTHER
 };
 
 typedef struct {
@@ -95,33 +117,40 @@ typedef struct {
 
 typedef struct { 
   uint8_t mask; // Bit mask to mark what settings should be read
-  uint8_t state; // One of the states from WaveletM
+  uint8_t cmd; // One of the following commands
   union {
     WaveletOpt opt;
     WaveletComp comp;
   } data;
-} __attribute__ ((packed)) WaveletState;
+} __attribute__ ((packed)) WaveletControl;
+
+enum { // Commands
+  WC_CONFIGURE = 0,
+  WC_START_TRANSFORM = 1,
+  WC_STOP_TRANSFORM = 2,
+  WC_STOP_DATASET = 3
+};
 
 enum { // Bitmasks
-  WS_STATE = 0x01,
-  WS_SAMPLETIME = 0x02,
-  WS_TRANSFORMTYPE = 0x04,
-  WS_RESULTTYPE = 0x08,
-  WS_TIMEDOMAINLENGTH = 0x10,
-  WS_COMPTARGET = 0x20
+  WC_CMD = 0x01,
+  WC_SAMPLETIME = 0x02,
+  WC_TRANSFORMTYPE = 0x04,
+  WC_RESULTTYPE = 0x08,
+  WC_TIMEDOMAINLENGTH = 0x10,
+  WC_COMPTARGET = 0x20
 };
 
 enum { // Transform Types
-  WS_TT_2DRWAGNER = 0, // 2D spatial R. Wagner
-  WS_TT_1DHAAR_2DRWAGNER = 1, // 1D time Haar -> 2D spatial R. Wagner
-  WS_TT_1DLINEAR_2DRWAGNER = 2 // 1D time linear -> 2D spatial R. Wagner
+  WC_TT_2DRWAGNER = 0, // 2D spatial R. Wagner
+  WC_TT_1DHAAR_2DRWAGNER = 1, // 1D time Haar -> 2D spatial R. Wagner
+  WC_TT_1DLINEAR_2DRWAGNER = 2 // 1D time linear -> 2D spatial R. Wagner
 };
 
 enum { // Result Masks
 #ifdef RAW
-  WS_RT_RAW = 0x01, // Raw values (off|on)
+  WC_RT_RAW = 0x01, // Raw values (off|on)
 #endif
-  WS_RT_COMP = 0x02 // Compression (off|on)
+  WC_RT_COMP = 0x02 // Compression (off|on)
 };
 
 #endif // _WAVELET_H

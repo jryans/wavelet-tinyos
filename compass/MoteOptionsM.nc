@@ -83,7 +83,7 @@ implementation {
       }
 #endif
       if (o->mask & MO_RADIOOFFTIME) {
-        dbg(DBG_USR2, "MoteOptions: Turning radio off for %i seconds\n", o->radioOffTime);
+        dbg(DBG_USR2, "MoteOptions: Turning radio off for %i bms\n", o->radioOffTime * 1024);
         call Wake.start(TIMER_ONE_SHOT, o->radioOffTime * 1024);
         signal Sleep.fired();
       }
