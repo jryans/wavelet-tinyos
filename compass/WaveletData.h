@@ -53,8 +53,15 @@ typedef struct wc {
 
 /*** State Control ***/
 
+// Based on diagram at http://www.gliffy.com/publish/1039648/L
+enum { // State Timing Table
+  WD_CLEAR_SENSORS_TO_READING_SENSORS = 1000,
+  WD_READING_SENSORS_TO_UPDATING = 1000,
+  WD_READING_SENSORS_TO_OTHER = 500,
+}
+
 typedef struct {
-  uint32_t dataSetTime; // Length of time between data sets
+  uint32_t sampleTime; // Length of time between samples
   uint8_t transformType; // One of various transform types
   uint8_t resultType; // Controls data sent back to base
   uint8_t timeDomainLength; // Number of data points collected for TD transform
@@ -87,7 +94,7 @@ typedef struct {
 
 enum { // Bitmasks
   WS_STATE = 0x01,
-  WS_DATASETTIME = 0x02,
+  WS_SAMPLETIME = 0x02,
   WS_TRANSFORMTYPE = 0x04,
   WS_RESULTTYPE = 0x08,
   WS_TIMEDOMAINLENGTH = 0x10,

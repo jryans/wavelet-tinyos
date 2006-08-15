@@ -24,7 +24,8 @@ module WaveletM {
     
     /*** State Management ***/
     interface State;
-    interface Timer as DataSet;
+    interface Timer as DataSetTimer;
+    interface Timer as SampleTimer;
     interface Timer as StateTimer;
     interface Timer as DelayResults;
 #ifdef RAW
@@ -49,10 +50,11 @@ implementation {
   /*** Variables and Constants ***/ 
   uint8_t curLevel; // The current wavelet transform level
   uint8_t dataSet; // Identifies the current data set number
+  uint8_t curTime; // Index in time that the next sample will fill
   
   uint8_t numLevels; // Total number of wavelet levels
   WaveletLevel *level; // Array of WaveletLevels
-  bool wlAlloc;
+  bool wlAlloc; // TRUE is level has been allocated, else FALSE.
   
   /*** Compression ***/
   bool predicted; // True if mote predicts
@@ -65,7 +67,7 @@ implementation {
 #endif
 
   /*** Transform Options ***/
-  uint32_t dataSetTime; // Length of time between data sets
+  uint32_t sampleTime; // Length of time between samples
   uint8_t transformType; // One of various transform types
   uint8_t resultType; // Controls data sent back to base
   uint8_t timeDomainLength; // Number of data points collected for TD transform
@@ -86,7 +88,8 @@ implementation {
     S_TRANSMIT = 10,
     S_OFFLINE = 11,
     S_ERROR = 12,
-    S_RAW = 13
+    S_RAW = 13,
+    S_CLEAR_SENSORS = 14
   };
   
   uint8_t nextState;
@@ -106,8 +109,7 @@ implementation {
 #endif
   void sendValuesToNeighbors();
   void calcNewValues();
-  void delayState();
-  void moveToTransmit();
+  void delayNextState();
   void clearNeighborState();
   void checkData();
   void waveletFree();
@@ -121,15 +123,19 @@ implementation {
    * functions that state requires.
    */
   task void runState() {
+    delayNextState();
     switch (call State.getState()) {
       case S_STARTUP: { // Retrieve wavelet config data
         call Leds.redOn();
         waveletFree();
         call BigPackClient.request();
         break; }
+      case S_READING_SENSORS: {
+        dbg(DBG_USR2, "DS: %i, Reading sensors...\n", dataSet);
+        call SensorData.readSensors();
+        break; }
       case S_START_DATASET: {
-        call DataSet.start(TIMER_ONE_SHOT, dataSetTime);
-        delayState();
+        call DataSetTimer.start(TIMER_ONE_SHOT, dataSetTime);
         call Leds.redOff();
         call Leds.yellowOn();
         curLevel = 0;
@@ -140,14 +146,8 @@ implementation {
         // temperature values will be way off.  Using state delays
         // on both sides of the sensor reading work around this.
         call State.toIdle();
-        break; }
-      case S_READING_SENSORS: {
-        delayState();
-        dbg(DBG_USR2, "DS: %i, Reading sensors...\n", dataSet);
-        call SensorData.readSensors();
-        break; }
+        break; }      
       case S_UPDATING: {
-        delayState();
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Sending values to predict nodes...\n",
             dataSet, curLevel + 1);
         sendValuesToNeighbors();
@@ -155,12 +155,10 @@ implementation {
             dataSet, curLevel + 1);
         break; }
       case S_PREDICTING: {
-        delayState();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Waiting to hear from update nodes...\n",
             dataSet, curLevel + 1);
         break; }  
       case S_PREDICTED: {
-        delayState();
         calcNewValues();
         dbg(DBG_USR2, "Predict: DS: %i, L: %i, Sending values to update nodes...\n",
             dataSet, curLevel + 1);
@@ -171,7 +169,6 @@ implementation {
         call State.toIdle();
         break; }
       case S_UPDATED: {
-        delayState();
         calcNewValues();
         dbg(DBG_USR2, "Update: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
         checkData();
@@ -179,7 +176,6 @@ implementation {
         call State.toIdle();
         break; }
       case S_TRANSMIT: {
-        delayState();
 #ifdef RAW
         if (resultType & WS_RT_RAW) {
           dbg(DBG_USR2, "Diag: DS: %i, Sending raw values to base...\n", dataSet);
@@ -193,7 +189,6 @@ implementation {
         call State.toIdle();
         break; }
       case S_SKIPLEVEL: {
-        delayState();
         dbg(DBG_USR2, "Skip: DS: %i, L: %i, Nothing to do, level done!\n", dataSet, curLevel + 1);
         levelDone();
         call State.toIdle();
@@ -223,20 +218,24 @@ implementation {
    * Calculates the delay until the next state change
    * should occur and sets a timer to make it so.
    */
-  void delayState() {
-    uint32_t delay;
+  void delayNextState() {
+    uint32_t delay = 0;
     // Defaults to request instead of force
     forceNextState = FALSE; 
     switch (call State.getState()) {
-    case S_START_DATASET: {
+    case S_CLEAR_SENSORS: {
       nextState = S_READING_SENSORS;
-      delay = 1500;
+      delay = WD_CLEAR_SENSORS_TO_READING_SENSORS;
       break; }  
     case S_READING_SENSORS: {
       nextState = level[curLevel].nb[0].state;
-      (nextState == S_UPDATING) ? (delay = 1000)
-                                : (delay = 500);
+      (nextState == S_UPDATING) ? (delay = WD_READING_SENSORS_TO_UPDATING)
+                                : (delay = WD_READING_SENSORS_TO_OTHER);
       break; }
+    case S_START_DATASET: {
+      nextState = S_CLEAR_SENSORS;
+      delay = 500;
+      break; }    
     case S_UPDATING: {
       nextState = S_UPDATED;
       forceNextState = TRUE;
@@ -283,7 +282,8 @@ implementation {
       }
       break; }
     }
-    call StateTimer.start(TIMER_ONE_SHOT, delay);
+    if (delay)
+      call StateTimer.start(TIMER_ONE_SHOT, delay);
   }
   
   /*** Helper Functions ***/
@@ -335,8 +335,8 @@ implementation {
       msg.data.wData.value[i] = level[curLevel].nb[0].value[i];
     res = msg;
   }
-  
 #ifdef RAW
+
   /**
    * Once this mote has finished a data set, its raw values are packaged
    * up and sent to the computer.  Only used for testing.
@@ -632,9 +632,9 @@ implementation {
         dbg(DBG_USR2, "Wavelet: Setting time domain length to %i\n", wo->timeDomainLength);
         timeDomainLength = wo->timeDomainLength;
       }
-      if (ws->mask & WS_DATASETTIME) {
-        dbg(DBG_USR2, "Wavelet: Setting data set time to %i\n", wo->dataSetTime);
-        dataSetTime = wo->dataSetTime;
+      if (ws->mask & WS_SAMPLETIME) {
+        dbg(DBG_USR2, "Wavelet: Setting sample time to %i\n", wo->sampleTime);
+        sampleTime = wo->sampleTime;
       }
       if (ws->mask & WS_COMPTARGET) {
         WaveletComp *wc = &msg.data.wState.data.comp;
@@ -643,11 +643,12 @@ implementation {
         memcpy(compTarget, wc->compTarget, sizeof(compTarget));
       }
       if (ws->mask & WS_STATE) {
-        // Ignore start command if we don't have the data set time
-        if (ws->state == S_START_DATASET && dataSetTime == 0)
+        // Ignore start command if we don't have the sample time
+        if (ws->state == S_START_DATASET && sampleTime == 0)
           break;
         // Allows stoping and restarting on demand
-        call DataSet.stop();
+        call SampleTimer.stop();
+        call DataSetTimer.stop();
         call StateTimer.stop();
         call DelayResults.stop();
 #ifdef RAW        
@@ -666,8 +667,35 @@ implementation {
    * Enforces the dataSetTime interval by moving to the transmit
    * stage when the timer fires.
    */
-  event result_t DataSet.fired() {
-    moveToTransmit();
+  event result_t DataSetTimer.fired() {
+    if (call State.requestState(S_TRANSMIT) == FAIL) {
+      dbg(DBG_USR2, "Wavelet: Data set %i did not finish in time!\n", dataSet);
+#ifdef BEEP
+      call Beep.play(1, 250);
+#endif
+    } else {
+      post runState();
+    }
+    return SUCCESS;
+  }
+  
+  /**
+   * Fires periodically to collect data samples.  After all
+   * samples needed for a full time domain set have been collected,
+   * the 2D spatial transform will be started.  Even if the time
+   * domain transform is not activated, that is just the same as
+   * as a time domain set of length 1.
+   */
+  event result_t SampleTimer.fired() {
+    if (call State.requestState(S_CLEAR_SENSORS) == FAIL) {
+      dbg(DBG_USR2, "Wavelet: Moving to collect sample %i for data set %i failed!\n", 
+          curTime, dataSet);
+#ifdef BEEP
+      call Beep.play(1, 250);
+#endif
+    } else {
+      post runState();
+    }
     return SUCCESS;
   }
   
@@ -697,25 +725,11 @@ implementation {
     call Message.send(res);
     return SUCCESS;
   }
-  
 #ifdef RAW
+
   event result_t DelayRaw.fired() {   
     call Message.send(raw);   
     return SUCCESS;
   }
 #endif
-  
-  /**
-   * Moves to the transmit stage.
-   */
-  void moveToTransmit() {
-    if (call State.requestState(S_TRANSMIT) == FAIL) {
-      dbg(DBG_USR2, "Wavelet: Data set %i did not finish in time!\n", dataSet);
-#ifdef BEEP
-      call Beep.play(1, 250);
-#endif
-    } else {
-      post runState();
-    }
-  }
 }
