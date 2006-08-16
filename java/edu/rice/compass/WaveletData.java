@@ -22,12 +22,7 @@ public class WaveletData implements MessageListener {
 	private long waitTime;
 	private boolean timerRunning = false;
 	private static Timer waitTimer = new Timer();
-	private TimerTask waitTask = new TimerTask() {
-		public void run() {
-			cancel();
-			timerRunning = false;
-			finishSet();
-		}};
+	private WaitTask curWaitTask;
 
 	public WaveletData() {
 	}
@@ -35,38 +30,33 @@ public class WaveletData implements MessageListener {
 	public WaveletData(int sets, int motes, long waitTime) {
 		value = new float[sets][2 * WT_SENSORS][motes];
 		check = new DataCheck(sets, motes);
-		curSet = 0;
+		curSet = -1;
 		this.waitTime = waitTime;
 		MoteCom.singleton.registerListener(new UnicastPack(), this);
 	}
 
 	public void messageReceived(int to, Message m) {
 		UnicastPack pack = (UnicastPack) m;
-		if (pack.get_data_type() == CompassMote.WAVELETDATA
-				&& (pack.get_data_data_wData_dataSet() - 1 == curSet || pack.get_data_data_wData_dataSet() - 1 == curSet + 1)) {
-			int id = pack.get_data_src();
-			// Check if data is from the next set
-			setCheck(pack.get_data_data_wData_dataSet() - 1);
-			// Store mote data
-			if (pack.get_data_data_wData_state() == CompassMote.WS_TRANSMIT) {
-				value[curSet][TEMP * 2 + WT_OFFSET][id - 1] = pack.getElement_data_data_wData_value(TEMP);
-				value[curSet][LIGHT * 2 + WT_OFFSET][id - 1] = pack.getElement_data_data_wData_value(LIGHT);
-				System.out.println("Got wavelet data from mote " + id);
-				check.setWaveletDone(id);
-			} else if (pack.get_data_data_wData_state() == CompassMote.WS_RAW) {
-				value[curSet][TEMP * 2 + RAW_OFFSET][id - 1] = pack.getElement_data_data_wData_value(TEMP);
-				value[curSet][LIGHT * 2 + RAW_OFFSET][id - 1] = pack.getElement_data_data_wData_value(LIGHT);
-				System.out.println("Got raw data from mote " + id);
-				check.setRawDone(id);
+		if (pack.get_data_type() == CompassMote.WAVELETDATA) {
+			int msgSet = pack.get_data_data_wData_dataSet() - 1;
+			if (msgSet >= curSet) {
+				if (msgSet > curSet)
+					beginNewSet(msgSet);
+				// Store mote data
+				int id = pack.get_data_src();
+				if (pack.get_data_data_wData_state() == CompassMote.WS_TRANSMIT) {
+					value[curSet][TEMP * 2 + WT_OFFSET][id - 1] = pack.getElement_data_data_wData_value(TEMP);
+					value[curSet][LIGHT * 2 + WT_OFFSET][id - 1] = pack.getElement_data_data_wData_value(LIGHT);
+					System.out.println("Got wavelet data from mote " + id);
+					check.setWaveletDone(id);
+				} else if (pack.get_data_data_wData_state() == CompassMote.WS_RAW) {
+					value[curSet][TEMP * 2 + RAW_OFFSET][id - 1] = pack.getElement_data_data_wData_value(TEMP);
+					value[curSet][LIGHT * 2 + RAW_OFFSET][id - 1] = pack.getElement_data_data_wData_value(LIGHT);
+					System.out.println("Got raw data from mote " + id);
+					check.setRawDone(id);
+				}
 			}
 		}
-	}
-
-	private synchronized void setCheck(int msgSet) {
-		if (msgSet > curSet)
-			if (timerRunning)
-				waitTask.run();
-			beginNewSet();
 	}
 
 	private synchronized void finishSet() {
@@ -82,14 +72,25 @@ public class WaveletData implements MessageListener {
 			CompassTools.saveResult(this, "waveletData.xml");
 		}
 	}
-	
-	private synchronized void beginNewSet() {
-		curSet++;
-		waitTimer.schedule(waitTask, waitTime);
+
+	private synchronized void beginNewSet(int newSet) {
+		if (timerRunning)
+			curWaitTask.run();
+		curSet = newSet;
+		curWaitTask = new WaitTask();
+		waitTimer.schedule(curWaitTask, waitTime);
 		timerRunning = true;
 	}
+	
+	private class WaitTask extends TimerTask {
+		public void run() {
+			cancel();
+			timerRunning = false;
+			finishSet();
+		}
+	}
 
-	class DataCheck {
+	private class DataCheck {
 
 		boolean dataDone[][][];
 
