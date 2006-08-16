@@ -25,7 +25,7 @@ module WaveletM {
     
     /*** State Management ***/
     interface State;
-    interface Timer as DataSetTimer;
+    interface Timer as TransmitTimer;
     interface Timer as SampleTimer;
     interface Timer as StateTimer;
     interface Timer as DelayResults;
@@ -98,6 +98,7 @@ implementation {
   void checkData();
   void waveletFree();
   void sendDelayedMsg();
+  uint32_t getTransmitTime();
   
   /*** State Management ***/
   
@@ -119,20 +120,22 @@ implementation {
           call SampleTimer.start(TIMER_REPEAT, sampleTime);
           sampleTimerRunning = TRUE;
         }
+        call State.toIdle();
         break; }
       case WS_READING_SENSORS: {
-        dbg(DBG_USR2, "DS: %i, Reading sensors data for sample %i...\n", dataSet, curTime);
+        dbg(DBG_USR2, "Wavelet: DS: %i, Reading sensor data for sample %i...\n", dataSet + 1, curTime);
         call SensorData.readSensors();
         curTime = nextTime;
         break; }
       case WS_START_DATASET: {
-        call DataSetTimer.start(TIMER_ONE_SHOT, sampleTime - WT_COLLECT_SAMPLE_TIME);
+        call TransmitTimer.start(TIMER_ONE_SHOT, 
+             sampleTime - WT_COLLECT_SAMPLE_TIME - getTransmitTime());
         call Leds.redOff();
         call Leds.yellowOn();
         curLevel = 0;
         dataSet++;
         clearNeighborState();
-        dbg(DBG_USR2, "DS: %i, Starting data set...\n", dataSet);
+        dbg(DBG_USR2, "Wavelet: DS: %i, Starting data set...\n", dataSet);
         // If a message is received while reading the sensors,
         // temperature values will be way off.  Using state delays
         // on both sides of the sensor reading work around this.
@@ -169,12 +172,12 @@ implementation {
       case WS_TRANSMIT: {
 #ifdef RAW
         if (resultType & WC_RT_RAW) {
-          dbg(DBG_USR2, "Diag: DS: %i, Sending raw values to base...\n", dataSet);
+          dbg(DBG_USR1, "Transmit: DS: %i, Sending raw values to base...\n", dataSet);
           sendRawToBase();
         }
 #endif   
         call Leds.redOn();
-        dbg(DBG_USR2, "Done: DS: %i, Sending final values to base...\n", dataSet);
+        dbg(DBG_USR1, "Transmit: DS: %i, Sending final values to base...\n", dataSet);
         sendResultsToBase();
         sendDelayedMsg();
         call State.toIdle();
@@ -188,7 +191,7 @@ implementation {
         dbg(DBG_USR2, "Wavelet: Offline\n");
         call SampleTimer.stop();
         sampleTimerRunning = FALSE;
-        call DataSetTimer.stop();
+        call TransmitTimer.stop();
         call StateTimer.stop();
         call DelayResults.stop();
 #ifdef RAW        
@@ -238,7 +241,7 @@ implementation {
       delay = WSD_RS_TO_ANY;
       break; }
     case WS_START_DATASET: {
-      nextState = level[curLevel].nb[0].state;
+      nextState = level[0].nb[0].state;
       (nextState == WS_UPDATING) ? (delay = WSD_SDS_TO_UING)
                                 : (delay = WSD_SDS_TO_OTHER);
       break; }    
@@ -278,15 +281,6 @@ implementation {
         delay = WSD_SKIP_TO_OTHER;
       }
       break; }
-    /*case WS_TRANSMIT: {
-      nextState = WS_IDLE;
-      if (resultType & WS_RT_COMP) {        
-        delay = numBands * WT_BAND_TIME;
-      } else {        
-        delay = WT_SLOT_STAGE_TIME;
-      }
-      break; } */
-      
     }
     if (delay)
       call StateTimer.start(TIMER_ONE_SHOT, delay);
@@ -327,7 +321,7 @@ implementation {
   /**
    * Once this mote has finished a data set, its results are packaged
    * up and sent to the computer.
-   * Called during WS_DONE.
+   * Called during WS_TRANSMIT.
    */
   void sendResultsToBase() {
     msgData msg;
@@ -346,7 +340,7 @@ implementation {
   /**
    * Once this mote has finished a data set, its raw values are packaged
    * up and sent to the computer.  Only used for testing.
-   * Called during WS_DONE.
+   * Called during WS_TRANSMIT.
    */  
   void sendRawToBase() {
     msgData msg;
@@ -457,22 +451,29 @@ implementation {
       // Raw values (if enabled) sent in the first band
       uint8_t rawSlot = call Random.rand() & (WT_SLOTS - 1);
       uint32_t rawDelay = rawSlot * WT_SLOT_TIME;
-      dbg(DBG_USR2, "Wavelet: Raw: band 0, slot %i, %i bms\n", rawSlot, rawDelay);
+      dbg(DBG_USR2, "Transmit: Raw: band 0, slot %i, %i bms\n", rawSlot, rawDelay);
       call DelayRaw.start(TIMER_ONE_SHOT, rawDelay);
     }
 #endif
     if (resultType & WC_RT_COMP) {
       if (matchingBand == numBands) {
-        dbg(DBG_USR2, "Wavelet: Results don't match any bands!\n");
+        dbg(DBG_USR2, "Transmit: Results don't match any bands!\n");
         return;
       }
       delay += matchingBand * WT_BAND_TIME;
-      dbg(DBG_USR2, "Wavelet: Results: band %i, slot %i, %i bms\n", matchingBand, slot, delay);
+      dbg(DBG_USR2, "Transmit: Results: band %i, slot %i, %i bms\n", matchingBand, slot, delay);
       call DelayResults.start(TIMER_ONE_SHOT, delay);
     } else {
-      dbg(DBG_USR2, "Wavelet: Results: band 0, slot %i, %i bms\n", slot, delay);
+      dbg(DBG_USR2, "Transmit: Results: band 0, slot %i, %i bms\n", slot, delay);
       call DelayResults.start(TIMER_ONE_SHOT, delay);
     }
+  }
+  
+  uint32_t getTransmitTime() {
+    if (resultType & WC_RT_COMP) {        
+      return WT_BAND_TIME * numBands;
+    }      
+    return WT_SLOT_STAGE_TIME;
   }
 
   /*** Commands and Events ***/
@@ -655,7 +656,6 @@ implementation {
         // Ignore start command if we don't have the sample time
         if (wc->cmd == WC_START_TRANSFORM && sampleTime == 0)
           break;
-        dbg(DBG_USR2, "Wavelet: Rcvd wavelet command %i\n", wc->cmd);
         switch (wc->cmd) {
         case WC_CONFIGURE: {
           state = WS_CONFIGURE;
@@ -692,10 +692,10 @@ implementation {
   /*** Timers ***/
   
   /**
-   * Enforces the dataSetTime interval by moving to the transmit
+   * Enforces a synchronized transmit time by moving to the transmit
    * stage when the timer fires.
    */
-  event result_t DataSetTimer.fired() {
+  event result_t TransmitTimer.fired() {
     if (call State.requestState(WS_TRANSMIT) == FAIL) {
       dbg(DBG_USR2, "Wavelet: Data set %i did not finish in time!\n", dataSet);
 #ifdef BEEP

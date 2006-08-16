@@ -165,24 +165,24 @@ implementation {
       ExtWaveletLevel **lvl = conf->level;
       StatsWT *w = &data.wavelet;
       waveletFree();
-      dbg(DBG_USR2, "Stats: Big Pack Config Test\n");
+      dbg(DBG_USR1, "Stats: Big Pack Config Test\n");
       w->numLevels = conf->numLevels;
       if ((w->level = malloc(w->numLevels * sizeof(StatsWTL))) == NULL) {
-        dbg(DBG_USR2, "Stats: Couldn't allocate wavelet.level!\n");
+        dbg(DBG_USR1, "Stats: Couldn't allocate wavelet.level!\n");
         return;
       } 
       for (l = 0; l < w->numLevels; l++) {
-        dbg(DBG_USR2, "Stats: Level #%i\n", l + 1);
+        dbg(DBG_USR1, "Stats: Level #%i\n", l + 1);
         w->level[l].nbCount = lvl[l]->nbCount;
         if ((w->level[l].nb = malloc(w->level[l].nbCount * sizeof(StatsWTNB))) == NULL) {
-          dbg(DBG_USR2, "Stats: Couldn't allocate nb for wavelet.level #%i!\n", l + 1);
+          dbg(DBG_USR1, "Stats: Couldn't allocate nb for wavelet.level #%i!\n", l + 1);
           return;
         } 
         for (i = 0; i < w->level[l].nbCount; i++) {
-          dbg(DBG_USR2, "Stats:   Neighbor #%i\n", i + 1);
+          dbg(DBG_USR1, "Stats:   Neighbor #%i\n", i + 1);
           (i != 0) ? (w->level[l].nb[i].id = lvl[l]->nb[i].id)
                    : (w->level[l].nb[i].id = 0);
-          dbg(DBG_USR2, "Stats:     ID:    %i\n", w->level[l].nb[i].id);
+          dbg(DBG_USR1, "Stats:     ID:    %i\n", w->level[l].nb[i].id);
           w->level[l].nb[i].retries = 0;
           w->level[l].nb[i].cacheHits = 0;
         }

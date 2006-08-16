@@ -61,7 +61,7 @@ implementation {
   Main.StdControl -> TimerC;
   BigPackM.Timeout -> TimerC.Timer[unique("Timer")];
   WaveletM.SampleTimer -> TimerC.Timer[unique("Timer")];
-  WaveletM.DataSetTimer -> TimerC.Timer[unique("Timer")];
+  WaveletM.TransmitTimer -> TimerC.Timer[unique("Timer")];
   WaveletM.StateTimer -> TimerC.Timer[unique("Timer")];
   WaveletM.DelayResults -> TimerC.Timer[unique("Timer")];
 #ifdef RAW
