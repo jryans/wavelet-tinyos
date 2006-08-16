@@ -23,11 +23,10 @@ public class WaveletData implements MessageListener {
 	private boolean timerRunning = false;
 	private static Timer waitTimer = new Timer();
 	private WaitTask curWaitTask;
+	private transient Notify host;
 
-	public WaveletData() {
-	}
-
-	public WaveletData(int sets, int motes, long waitTime) {
+	public WaveletData(int sets, int motes, long waitTime, Notify host) {
+		this.host = host;
 		value = new float[sets][2 * WT_SENSORS][motes];
 		check = new DataCheck(sets, motes);
 		curSet = -1;
@@ -60,6 +59,7 @@ public class WaveletData implements MessageListener {
 	}
 
 	private synchronized void finishSet() {
+		host.dataSetDone();
 		int[] mLeft = check.isDataDone();
 		if (mLeft[RAW_OFFSET] == 0 && mLeft[WT_OFFSET] == 0) {
 			System.out.println("Data set " + (curSet + 1) + " complete!");
@@ -68,8 +68,7 @@ public class WaveletData implements MessageListener {
 					+ mLeft[RAW_OFFSET] + " raw and " + mLeft[WT_OFFSET] + " wavelet.");
 		}
 		if (curSet + 1 >= value.length) {
-			CompassMote.broadcast.sendStop();
-			CompassTools.saveResult(this, "waveletData.xml");
+			host.transformDone(this);
 		}
 	}
 
@@ -81,7 +80,7 @@ public class WaveletData implements MessageListener {
 		waitTimer.schedule(curWaitTask, waitTime);
 		timerRunning = true;
 	}
-	
+
 	private class WaitTask extends TimerTask {
 		public void run() {
 			cancel();
@@ -128,4 +127,11 @@ public class WaveletData implements MessageListener {
 		}
 
 	}
+
+	interface Notify {
+		void dataSetDone();
+
+		void transformDone(WaveletData data);
+	}
+
 }

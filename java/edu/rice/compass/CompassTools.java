@@ -20,7 +20,7 @@ public class CompassTools {
 	private static boolean debug;
 
 	private JSAPResult config;
-	private static XStream xs = new XStream();
+	public static XStream xs = new XStream();
 	private WaveletController wCont;
 	public static String packagePath;
 	public static String workingDir;
@@ -317,13 +317,9 @@ public class CompassTools {
 	}
 	
 	public static void saveResult(Object data, String fileName) {
-		if (!inputFileName.equals(""))
-			fileName = inputFileName;
-		File out = new File(fileName);
-		if (!out.isAbsolute())
-			out = new File(workingDir + fileName);
+		File out = getFile(fileName);
 		try {
-			FileOutputStream fs = new FileOutputStream(fileName);
+			FileOutputStream fs = new FileOutputStream(out);
 			xs.toXML(data, fs);
 			fs.close();
 			System.out.println("Data write successful!");
@@ -333,6 +329,15 @@ public class CompassTools {
 			System.exit(1);
 		}
 		System.exit(0);
+	}
+	
+	public static File getFile(String fileName) {
+		if (!inputFileName.equals(""))
+			fileName = inputFileName;
+		File out = new File(fileName);
+		if (!out.isAbsolute())
+			out = new File(workingDir + fileName);
+		return out;
 	}
 
 	public static void debugPrint(String s) {

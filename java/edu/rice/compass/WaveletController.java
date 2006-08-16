@@ -13,7 +13,7 @@ public class WaveletController {
 
 	/* Variables */
 	private Vector mote = new Vector();
-	private WaveletConfigData wc;
+	private WaveletConfigData wcd;
 	private int maxScale = 0;
 
 	/* Transform Options */
@@ -65,18 +65,18 @@ public class WaveletController {
 	private static final long WSD_SKIP_TO_OTHER = 3000;
 
 	public WaveletController(WaveletConfigData mWC) {
-		wc = mWC;
+		wcd = mWC;
 		buildMotes(); // Create each mote's config data and the mote itself
 	}
 
 	private void buildMotes() {
 		// Find max scale
-		for (int i = 0; i < wc.mScale.length; i++)
-			if (wc.mScale[i] > maxScale)
-				maxScale = (int) wc.mScale[i];
+		for (int i = 0; i < wcd.mScale.length; i++)
+			if (wcd.mScale[i] > maxScale)
+				maxScale = (int) wcd.mScale[i];
 		// Build each mote
-		for (int i = 0; i < wc.mScale.length; i++)
-			mote.add(new CompassMote(i + 1, wc));
+		for (int i = 0; i < wcd.mScale.length; i++)
+			mote.add(new CompassMote(i + 1, wcd));
 	}
 
 	public void configMotes() {
@@ -85,8 +85,24 @@ public class WaveletController {
 	}
 
 	public void runSets() {
-		new WaveletData(numSets, mote.size(), CompassMote.BMStoMS(getTransmitTime()
-				+ WT_BAND_TIME));
+		new WaveletData(numSets, mote.size(),
+				CompassMote.BMStoMS(getDataCollectionTime()), new WaveletData.Notify() {
+					public void dataSetDone() {
+						if (compRes) {
+							System.out.println("Reached end of band " + maxBand
+									+ ", stopping current data set.");
+							WaveletControl wc = CompassMote.broadcast.makeWaveletControl();
+							wc.cmd(CompassMote.WC_STOP_DATASET);
+							wc.compTarget(compTarget);
+							wc.send();
+						}
+					}
+
+					public void transformDone(WaveletData data) {
+						CompassMote.broadcast.sendStop();
+						CompassTools.saveResult(data, "waveletData.xml");
+					}
+				});
 		startTransform();
 	}
 
@@ -105,14 +121,8 @@ public class WaveletController {
 			WaveletControl ws = CompassMote.broadcast.makeWaveletControl();
 			setTransformOptions(ws);
 			ws.send();
-			startSampling();
-			new Timer().scheduleAtFixedRate(new StopCompDataSet(),
-					CompassMote.BMStoMS(getCompStopTime()),
-					CompassMote.BMStoMS(sampleTime));
-		} else {
-			startSampling();
 		}
-		System.out.println("Starting transform!");
+		startSampling();
 	}
 
 	/* Stage Length Functions (bms) */
@@ -144,12 +154,18 @@ public class WaveletController {
 		return getCollectSampleTime() + getScalesTime() + getTransmitTime();
 	}
 
-	private long getCompStopTime() {
-		return getCollectSampleTime() + getScalesTime() + maxBand * WT_BAND_TIME
-				+ WT_SLOT_STAGE_TIME + WT_WAIT_STAGE_TIME / 2;
+	private long getDataCollectionTime() {
+		long dcTime = WT_WAIT_STAGE_TIME / 2;
+		if (compRes) {
+			dcTime += maxBand * WT_BAND_TIME + WT_SLOT_STAGE_TIME;
+		} else {
+			dcTime += getTransmitTime();
+		}
+		return dcTime;
 	}
 
 	private void startSampling() {
+		System.out.println("Starting transform!");
 		WaveletControl ws = CompassMote.broadcast.makeWaveletControl();
 		ws.cmd(CompassMote.WC_START_TRANSFORM);
 		if (compRes) {
@@ -244,24 +260,6 @@ public class WaveletController {
 					cancel();
 				}
 			}
-		}
-
-	}
-
-	private class StopCompDataSet extends TimerTask {
-
-		private WaveletControl wc;
-
-		private StopCompDataSet() {
-			wc = CompassMote.broadcast.makeWaveletControl();
-			wc.cmd(CompassMote.WC_STOP_DATASET);
-			wc.compTarget(compTarget);
-		}
-
-		public void run() {
-			System.out.println("Reached end of band " + maxBand
-					+ ", stopping current data set.");
-			wc.send();
 		}
 
 	}
