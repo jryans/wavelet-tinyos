@@ -451,7 +451,7 @@ implementation {
       // Raw values (if enabled) sent in the first band
       uint8_t rawSlot = call Random.rand() & (WT_SLOTS - 1);
       uint32_t rawDelay = rawSlot * WT_SLOT_TIME;
-      dbg(DBG_USR2, "Transmit: Raw: band 0, slot %i, %i bms\n", rawSlot, rawDelay);
+      dbg(DBG_USR2, "Transmit: Raw:     band 0, slot %i, %i bms\n", rawSlot, rawDelay);
       call DelayRaw.start(TIMER_ONE_SHOT, rawDelay);
     }
 #endif
@@ -669,6 +669,10 @@ implementation {
           break; } 
         case WC_STOP_DATASET: {
           state = WS_IDLE;
+          call DelayResults.stop();
+#ifdef RAW
+          call DelayRaw.stop();
+#endif       
           break; } 
         }
         if (call State.requestState(state) == FAIL) {
@@ -751,12 +755,14 @@ implementation {
   
   event result_t DelayResults.fired() {   
     call Message.send(res);
+    dbg(DBG_USR2, "Transmit: Results sent!\n");
     return SUCCESS;
   }
 #ifdef RAW
 
   event result_t DelayRaw.fired() {   
     call Message.send(raw);   
+    dbg(DBG_USR2, "Transmit: Raw sent!\n");
     return SUCCESS;
   }
 #endif
