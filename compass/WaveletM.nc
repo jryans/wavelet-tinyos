@@ -651,7 +651,7 @@ implementation {
         memcpy(compTarget, wComp->compTarget, sizeof(compTarget));
       }
       if (wc->mask & WC_CMD) {
-        uint8_t state;
+        int8_t state = -1;
         bool force = FALSE;
         // Ignore start command if we don't have the sample time
         if (wc->cmd == WC_START_TRANSFORM && sampleTime == 0)
@@ -675,6 +675,9 @@ implementation {
 #endif       
           break; } 
         }
+        // Ignore unsupported commands
+        if (state == -1)
+          break;
         if (call State.requestState(state) == FAIL) {
           if (force) {
             call State.forceState(state);
@@ -686,7 +689,7 @@ implementation {
         } else { 
           dbg(DBG_USR1, "Wavelet: Moved to state %i\n", state);     
         }
-        dbg(DBG_USR2, "Wavelet: Processed command %i successfully\n", wc->cmd);
+        dbg(DBG_USR1, "Wavelet: Processed command %i successfully\n", wc->cmd);
         post runState();
       }
       break; }
