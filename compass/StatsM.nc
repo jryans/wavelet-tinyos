@@ -158,7 +158,7 @@ implementation {
    * Once the request is complete, the requester is given a pointer to the main
    * data block.
    */
-  event void WaveletPack.requestDone(int8_t *mainBlock, result_t result) {
+  event void WaveletPack.requestDone(void *mainBlock, result_t result) {
     if (result == SUCCESS) {
       uint8_t l, i;
       ExtWaveletConf *conf = (ExtWaveletConf *) mainBlock;

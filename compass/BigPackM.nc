@@ -32,7 +32,7 @@ implementation {
   uint8_t numPacks;
   int8_t curPackNum;
   uint8_t numBytes;
-  int8_t *bigData;
+  uint8_t *bigData;
   bool bdAlloc = FALSE;
   
   BigPackBlock *block;
@@ -44,11 +44,11 @@ implementation {
   bool bppAlloc = FALSE;
   
   uint8_t curType;
-  bool activeRequest = FALSE; // True if a request is in progress
-  //msgData repeatMsg; // Message to repeat
+  // TRUE if a request is in progress, else FALSE.
+  bool activeRequest;
   
-  int8_t **blockAddr[BP_MAX_REQUESTS];
-  int8_t *mainBlock[BP_MAX_REQUESTS];
+  uint8_t **blockAddr[BP_MAX_REQUESTS];
+  void *mainBlock[BP_MAX_REQUESTS];
   uint8_t refs[BP_MAX_REQUESTS];
   uint8_t numListeners[BP_MAX_REQUESTS];
   
@@ -76,7 +76,6 @@ implementation {
    * Helper function for stopping BigPack after a timeout
    */ 
   void timeoutSend(msgData msg) {
-    //repeatMsg = msg;
     call Message.send(msg);
     call Timeout.start(TIMER_ONE_SHOT, BP_TIMEOUT);
   }
@@ -108,6 +107,7 @@ implementation {
       numListeners[i] = 0;
       refs[i] = 0;
     }
+    activeRequest = FALSE;
     return SUCCESS;
   }
   
@@ -143,7 +143,7 @@ implementation {
     if (mainBlock[type] == NULL) {
       msgData msg;
       curType = type;
-      mainBlock[type] = (int8_t *) 1122; // Just so it's not NULL
+      mainBlock[type] = (void *) 1122; // Just so it's not NULL
       msg.dest = NET_UART_ADDR;
       msg.type = BIGPACKHEADER;
       msg.data.bpHeader.requestType = type;
@@ -180,7 +180,7 @@ implementation {
    * Once the request is complete, the requester is given a pointer to the main
    * data block.
    */
-  default event void BigPackClient.requestDone[uint8_t type](int8_t *mb, result_t result) {}
+  default event void BigPackClient.requestDone[uint8_t type](void *mb, result_t result) {}
   
   /*** BigPackServer ***/
   
@@ -360,27 +360,11 @@ implementation {
       bdAlloc = FALSE;
     }
   }
-   
-  /*** Other Commands and Events ***/
-  
-  /**
-   * sendDone is signaled when the send has completed
-   */
-  event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
-    switch (msg.type) {
-      case BIGPACKHEADER: {
-        if (result == FAIL) {
-          dbg(DBG_USR2, "BigPack: BP header request failed!\n");
-        }
-        break; }
-    }
-    return SUCCESS;
-  }
   
   void rebuildBlocks() {
     uint16_t start;
     uint8_t b, i;
-    int8_t **tmp, **bStore;
+    uint8_t **tmp, **bStore;
     dbg(DBG_USR2, "BigPack: Blocks and Pointers\n");
     // Allocate block address space
     if ((blockAddr[curType] = malloc(numBlocks[curType] * sizeof(int8_t *))) == NULL) {
@@ -407,17 +391,17 @@ implementation {
       }
     }
     // Main block is the last block
-    mainBlock[curType] = bStore[b - 1];
+    mainBlock[curType] = (void *)bStore[b - 1];
     // Recreate each pointer needed
     for (b = 0; b < numPtrs; b++) {
       dbg(DBG_USR2, "BigPack: Pointer #%i\n", b + 1);
       dbg(DBG_USR2, "BigPack:   Addr of Block: %i\n", ptr[b].addrOfBlock + 1);
       dbg(DBG_USR2, "BigPack:   Dest Block:    %i\n", ptr[b].destBlock + 1);
       dbg(DBG_USR2, "BigPack:   Dest Offset:   %i\n", ptr[b].destOffset);
-      tmp = &bStore[ptr[b].destBlock][ptr[b].destOffset];
+      tmp = (uint8_t **)&bStore[ptr[b].destBlock][ptr[b].destOffset];
       if (ptr[b].blockArray) {
         dbg(DBG_USR2, "BigPack:   Block Array:   Yes\n");
-        *tmp = &bStore[ptr[b].addrOfBlock];
+        *tmp = (uint8_t *)&bStore[ptr[b].addrOfBlock];
       } else {
         dbg(DBG_USR2, "BigPack:   Block Array:   No\n");
         *tmp = bStore[ptr[b].addrOfBlock];
@@ -433,7 +417,7 @@ implementation {
   void decomposeStruct() {
     uint16_t start;
     uint8_t b, i;
-    int8_t **bStore, *tmp;
+    uint8_t **bStore, *tmp;
     dbg(DBG_USR2, "BigPack: Decomposition\n");
     // Count total bytes and set block start
     numBytes = 0;
@@ -452,13 +436,13 @@ implementation {
     // Put blocks and pointers into bigData
     start = 0;
     for (b = 0; b < numBlocks[curType]; b++) {
-      tmp = &block[b];
+      tmp = (uint8_t *)&block[b];
       for (i = 0; i < sizeof(BigPackBlock); i++)
         bigData[start + i] = tmp[i];
       start += sizeof(BigPackBlock);
     }
     for (b = 0; b < numPtrs; b++) {
-      tmp = &ptr[b];
+      tmp = (uint8_t *)&ptr[b];
       for (i = 0; i < sizeof(BigPackPtr); i++)
         bigData[start + i] = tmp[i];
       start += sizeof(BigPackPtr);
@@ -498,6 +482,22 @@ implementation {
     numPacks = numBytes / BP_DATA_LEN;
     if ((numBytes % BP_DATA_LEN) > 0)
       numPacks++;
+  }
+  
+  /*** Other Commands and Events ***/
+  
+  /**
+   * sendDone is signaled when the send has completed
+   */
+  event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
+    switch (msg.type) {
+      case BIGPACKHEADER: {
+        if (result == FAIL) {
+          dbg(DBG_USR2, "BigPack: BP header request failed!\n");
+        }
+        break; }
+    }
+    return SUCCESS;
   }
     
   /**
@@ -552,8 +552,8 @@ implementation {
         uint8_t i;
         int16_t base_offset, blk_offset, ptr_offset, data_offset, stopAt;
         // Byte level access to block and data
-        int8_t *tmpBlk = (int8_t *)block; 
-        int8_t *tmpPtr = (int8_t *)ptr;
+        uint8_t *tmpBlk = (uint8_t *)block; 
+        uint8_t *tmpPtr = (uint8_t *)ptr;
         // Turn off timeout check
         call Timeout.stop();
         dbg(DBG_USR2, "BigPack: Rcvd BP data (%i/%i)\n", curPackNum + 1, numPacks);

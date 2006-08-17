@@ -510,7 +510,7 @@ implementation {
    * Once the request is complete, the requester is given a pointer to the main
    * data block.
    */
-  event void BigPackClient.requestDone(int8_t *mainBlock, result_t result) {
+  event void BigPackClient.requestDone(void *mainBlock, result_t result) {
     if (result == SUCCESS) {
       uint8_t i, l;
       ExtWaveletConf *conf = (ExtWaveletConf *) mainBlock;

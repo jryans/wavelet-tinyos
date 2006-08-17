@@ -30,7 +30,7 @@ typedef struct {
 
 typedef struct {
   BigPackBlock *block; // Array of BigPackBlock
-  int8_t **blockAddr; // Array of block data pointers
+  uint8_t **blockAddr; // Array of block data pointers
   BigPackPtr *ptr; // Array of BigPackPtr
 } __attribute__ ((packed)) BigPackEnvelope;
 
@@ -40,7 +40,7 @@ enum {
 
 typedef struct {
   uint8_t curPack; // Current pack number
-  int8_t data[BP_DATA_LEN]; // Data
+  uint8_t data[BP_DATA_LEN]; // Data
 } __attribute__ ((packed)) BigPackData;
 
 enum {
