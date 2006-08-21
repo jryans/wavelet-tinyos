@@ -11,4 +11,4 @@ zeroels = find(scalesr == biggest);
 for i=1:length(zeroels)
     scalesr(zeroels(i)) = 0;
 end
-WaveletMatlab.saveConfig(scalesr, predneighbs, predfilts, upfilts);
+WaveletMatlab.saveConfig(coords, scalesr, predneighbs, predfilts, upfilts);
