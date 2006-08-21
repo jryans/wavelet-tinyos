@@ -1,0 +1,581 @@
+
+<html>
+<head>
+<title>Component: WaveletM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="apps.compass.WaveletM.nc.source">apps.compass.WaveletM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: WaveletM</h1>
+<p>
+
+
+ Defines various datatypes and constants used by the wavelet
+
+ application, including packets for obtaining configuration
+
+ data over the network.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Ryan Stinnett
+
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="apps.compass.Message.nc.html">Message</a> 
+<li>    <a href="apps.compass.Router.nc.html">Router</a> 
+<li>    <a href="tos.interfaces.Leds.nc.html">Leds</a> 
+<li>    <a href="apps.compass.SensorData.nc.html">SensorData</a> 
+<li>    <a href="apps.compass.Stats.nc.html">Stats</a> 
+<li>    <a href="tos.lib.State.State.nc.html">State</a> 
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> TransmitTimer
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> SampleTimer
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> StateTimer
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> DelayResults
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> DelayRaw
+<li>    <a href="tos.interfaces.Random.nc.html">Random</a> 
+<li>    <a href="apps.compass.BigPackClient.nc.html">BigPackClient</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   uint8_t curLevel
+<li>   uint8_t dataSet
+<li>   uint8_t curTime
+<li>   uint8_t nextTime
+<li>   uint8_t numLevels
+<li>   WaveletLevel *level
+<li>   bool wlAlloc
+<li>   bool predicted
+<li>   uint8_t matchingBand
+<li>   uint8_t numBands
+<li>   float compTarget[WT_MAX_BANDS]
+<li>   float rawVals[WT_SENSORS]
+<li>   uint32_t sampleTime
+<li>   uint8_t transformType
+<li>   uint8_t resultType
+<li>   uint8_t timeDomainLength
+<li>   uint8_t nextState
+<li>   bool forceNextState
+<li>   bool sampleTimerRunning
+<li>   msgData raw
+<li>   msgData res
+<li>   task void runState(void)
+        <br><menu>
+
+ This is the heart of the wavelet algorithm's state management.
+
+</menu>
+<li>   void levelDone(void)
+        <br><menu>
+
+ If this mote is not done, then it advances to the next wavelet 
+
+ level and copies the calculated values to the next level.</menu>
+<li>   void sendResultsToBase(void)
+        <br><menu>
+
+ Once this mote has finished a data set, its results are packaged
+
+ up and sent to the computer.
+
+</menu>
+<li>   void sendRawToBase(void)
+        <br><menu>
+
+ Once this mote has finished a data set, its raw values are packaged
+
+ up and sent to the computer. </menu>
+<li>   void sendValuesToNeighbors(void)
+        <br><menu>
+
+ For each level where a mote is not skipped or already done,
+
+ it will be in one of two states:
+
+ 1.</menu>
+<li>   void calcNewValues(void)
+        <br><menu>
+
+ Calculates new data values based on data received from neighbors.
+
+</menu>
+<li>   void delayNextState(void)
+        <br><menu>
+
+ Calculates the delay until the next state change
+
+ should occur and sets a timer to make it so.
+
+</menu>
+<li>   void clearNeighborState(void)
+        <br><menu>
+
+ The simple caching system currently used tries to track if
+
+ we have received a value from each neighbor we're supposed to
+
+ hear from during this level. </menu>
+<li>   void checkData(void)
+        <br><menu>
+
+ Reports any cache hits to Stats by checking if each neighbor's
+
+ state is still the initial state or was changed, indicatng that
+
+ new data was received.
+
+</menu>
+<li>   void waveletFree(void)
+        <br><menu>
+
+ Deallocates wavelet configuration data.
+
+</menu>
+<li>   void sendDelayedMsg(void)
+        <br><menu>
+
+ Calculates timing information for raw and result messages,
+
+ and activates timers accordingly. </menu>
+<li>   uint32_t getTransmitTime(void)
+        <br><menu>
+
+ Returns the length of the transmit stage.
+
+</menu>
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        task void     <a href="#task void runState(void)">
+<b>runState</b>    </a>
+(void)
+<menu>
+
+ This is the heart of the wavelet algorithm's state management.
+
+</menu><p>
+
+<li>
+        void <b>waveletFree</b>(void)
+<menu>
+
+ Deallocates wavelet configuration data.
+
+</menu><p>
+
+<li>
+        void <b>delayNextState</b>(void)
+<menu>
+
+ Calculates the delay until the next state change
+
+ should occur and sets a timer to make it so.
+
+</menu><p>
+
+<li>
+        void     <a href="#void levelDone(void)">
+<b>levelDone</b>    </a>
+(void)
+<menu>
+
+ If this mote is not done, then it advances to the next wavelet 
+
+ level and copies the calculated values to the next level.</menu><p>
+
+<li>
+        void     <a href="#void sendResultsToBase(void)">
+<b>sendResultsToBase</b>    </a>
+(void)
+<menu>
+
+ Once this mote has finished a data set, its results are packaged
+
+ up and sent to the computer.
+
+</menu><p>
+
+<li>
+        void     <a href="#void sendRawToBase(void)">
+<b>sendRawToBase</b>    </a>
+(void)
+<menu>
+
+ Once this mote has finished a data set, its raw values are packaged
+
+ up and sent to the computer. </menu><p>
+
+<li>
+        void     <a href="#void sendValuesToNeighbors(void)">
+<b>sendValuesToNeighbors</b>    </a>
+(void)
+<menu>
+
+ For each level where a mote is not skipped or already done,
+
+ it will be in one of two states:
+
+ 1.</menu><p>
+
+<li>
+        void     <a href="#void calcNewValues(void)">
+<b>calcNewValues</b>    </a>
+(void)
+<menu>
+
+ Calculates new data values based on data received from neighbors.
+
+</menu><p>
+
+<li>
+        void     <a href="#void clearNeighborState(void)">
+<b>clearNeighborState</b>    </a>
+(void)
+<menu>
+
+ The simple caching system currently used tries to track if
+
+ we have received a value from each neighbor we're supposed to
+
+ hear from during this level. </menu><p>
+
+<li>
+        void     <a href="#void checkData(void)">
+<b>checkData</b>    </a>
+(void)
+<menu>
+
+ Reports any cache hits to Stats by checking if each neighbor's
+
+ state is still the initial state or was changed, indicatng that
+
+ new data was received.
+
+</menu><p>
+
+<li>
+        void     <a href="#void sendDelayedMsg(void)">
+<b>sendDelayedMsg</b>    </a>
+(void)
+<menu>
+
+ Calculates timing information for raw and result messages,
+
+ and activates timers accordingly. </menu><p>
+
+<li>
+        uint32_t <b>getTransmitTime</b>(void)
+<menu>
+
+ Returns the length of the transmit stage.
+
+</menu><p>
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.init(void)">
+<b>StdControl.init</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.start(void)">
+<b>StdControl.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.stop(void)">
+<b>StdControl.stop</b>    </a>
+(void)
+
+<li>
+        event void     <a href="apps.compass.SensorData.nc.html#event void SensorData.readDone(float *newVals)">
+<b>SensorData.readDone</b>    </a>
+(float *newVals)
+<menu>
+
+ After new sensor data has been read, it is stored locally
+
+ for later use.
+
+</menu><p>
+
+<li>
+        event void     <a href="apps.compass.BigPackClient.nc.html#event void BigPackClient.requestDone(void *mainBlock, result_t result)">
+<b>BigPackClient.requestDone</b>    </a>
+(void *mainBlock, result_t result)
+<menu>
+
+ Once the request is complete, the requester is given a pointer to the main
+
+ data block.
+
+</menu><p>
+
+<li>
+        event result_t     <a href="apps.compass.Message.nc.html#event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries)">
+<b>Message.sendDone</b>    </a>
+(msgData msg, result_t result, uint8_t retries)
+<menu>
+
+ sendDone is signaled when the send has completed
+
+ TODO: Could be improved, doesn't respond for all messages.
+
+</menu><p>
+
+<li>
+        event void     <a href="apps.compass.Message.nc.html#event void Message.receive(msgData msg)">
+<b>Message.receive</b>    </a>
+(msgData msg)
+<menu>
+
+ Receive is signaled when a new message arrives
+
+</menu><p>
+
+<li>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t TransmitTimer.fired(void)">
+<b>TransmitTimer.fired</b>    </a>
+(void)
+<menu>
+
+ Enforces a synchronized transmit time by moving to the transmit
+
+ stage when the timer fires.
+
+</menu><p>
+
+<li>
+        event result_t     <a href="#event result_t SampleTimer.fired(void)">
+<b>SampleTimer.fired</b>    </a>
+(void)
+<menu>
+
+ Fires periodically to collect data samples. </menu><p>
+
+<li>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t StateTimer.fired(void)">
+<b>StateTimer.fired</b>    </a>
+(void)
+<menu>
+
+ Enforces delays between each state change.
+
+</menu><p>
+
+<li>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t DelayResults.fired(void)">
+<b>DelayResults.fired</b>    </a>
+(void)
+<menu>
+
+ Sends the results message once its delay period has ended.
+
+</menu><p>
+
+<li>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t DelayRaw.fired(void)">
+<b>DelayRaw.fired</b>    </a>
+(void)
+<menu>
+
+ Sends the raw data message once its delay period has ended.
+
+</menu><p>
+
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Descriptions</h3>
+</td></tr></table>
+    <a name="task void runState(void)"></a>
+        <h4>runState</h4>
+        task void <b>runState</b>(void)<P><menu>
+
+ This is the heart of the wavelet algorithm's state management.
+
+ Whenever the state is changed, this task is posted to run whatever
+
+ functions that state requires.
+
+</menu><hr>
+    <a name="void levelDone(void)"></a>
+        <h4>levelDone</h4>
+        void <b>levelDone</b>(void)<P><menu>
+
+ If this mote is not done, then it advances to the next wavelet 
+
+ level and copies the calculated values to the next level. If it
+
+ is done and compression is enabled, it find which band matches
+
+ its values.
+
+ Called during WS_UPDATED, WS_PREDICTED, and WS_SKIPLEVEL.
+
+</menu><hr>
+    <a name="void sendResultsToBase(void)"></a>
+        <h4>sendResultsToBase</h4>
+        void <b>sendResultsToBase</b>(void)<P><menu>
+
+ Once this mote has finished a data set, its results are packaged
+
+ up and sent to the computer.
+
+ Called during WS_TRANSMIT.
+
+</menu><hr>
+    <a name="void sendRawToBase(void)"></a>
+        <h4>sendRawToBase</h4>
+        void <b>sendRawToBase</b>(void)<P><menu>
+
+ Once this mote has finished a data set, its raw values are packaged
+
+ up and sent to the computer.  Only used for testing.
+
+ Called during WS_TRANSMIT.
+
+</menu><hr>
+    <a name="void sendValuesToNeighbors(void)"></a>
+        <h4>sendValuesToNeighbors</h4>
+        void <b>sendValuesToNeighbors</b>(void)<P><menu>
+
+ For each level where a mote is not skipped or already done,
+
+ it will be in one of two states:
+
+ 1. WS_UPDATING: Sends scaling values to predict motes and waits
+
+ 2. WS_PREDICTED: Sends its newly calculated predict values
+
+ Called during WS_UPDATED and WS_PREDICTED.
+
+</menu><hr>
+    <a name="void calcNewValues(void)"></a>
+        <h4>calcNewValues</h4>
+        void <b>calcNewValues</b>(void)<P><menu>
+
+ Calculates new data values based on data received from neighbors.
+
+ The specific algorithm is either:
+
+ 1. WS_PREDICTED: Subtracts each neighbor's value multiplied by the coefficient for 
+
+ that neighbor from this mote's value.
+
+ 1. WS_UPDATED: Adds each neighbor's value multiplied by the coefficient for 
+
+ that neighbor to this mote's value.
+
+ Called during WS_PREDICTED and WS_UPDATED.
+
+</menu><hr>
+    <a name="void clearNeighborState(void)"></a>
+        <h4>clearNeighborState</h4>
+        void <b>clearNeighborState</b>(void)<P><menu>
+
+ The simple caching system currently used tries to track if
+
+ we have received a value from each neighbor we're supposed to
+
+ hear from during this level.  This is checked by recording the
+
+ neighbor's state during when it is received.  At the beginning
+
+ of a new data set, these states are cleared.
+
+ Called during WS_START_DATASET.
+
+</menu><hr>
+    <a name="void checkData(void)"></a>
+        <h4>checkData</h4>
+        void <b>checkData</b>(void)<P><menu>
+
+ Reports any cache hits to Stats by checking if each neighbor's
+
+ state is still the initial state or was changed, indicatng that
+
+ new data was received.
+
+ Called during WS_CACHE.
+
+</menu><hr>
+    <a name="void sendDelayedMsg(void)"></a>
+        <h4>sendDelayedMsg</h4>
+        void <b>sendDelayedMsg</b>(void)<P><menu>
+
+ Calculates timing information for raw and result messages,
+
+ and activates timers accordingly.  Bands are determined by
+
+ compression target values from the sink.  If compression is
+
+ not used, all messsages are sent in band 0.  If raw messages
+
+ are to be sent, they are always sent in band 0, even when
+
+ compression is active.  Within each band, messages are
+
+ randomly assigned slots.  This serves as a simple, 
+
+ application-level, MAC-like technique to improve data
+
+ reception.
+
+</menu><hr>
+    <a name="event result_t SampleTimer.fired(void)"></a>
+        <h4>SampleTimer.fired</h4>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t SampleTimer.fired(void)"><b>SampleTimer.fired</b>    </a>
+(void)<P><menu>
+
+ Fires periodically to collect data samples.  After all
+
+ samples needed for a full time domain set have been collected,
+
+ the 2D spatial transform will be started.  Even if the time
+
+ domain transform is not activated, that is just the same as
+
+ as a time domain set of length 1.
+
+</menu>

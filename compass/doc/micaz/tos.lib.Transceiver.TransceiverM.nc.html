@@ -1,0 +1,577 @@
+
+<html>
+<head>
+<title>Component: TransceiverM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.Transceiver.TransceiverM.nc.source">tos.lib.Transceiver.TransceiverM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: TransceiverM</h1>
+<p>
+
+
+ Transceiver Module
+
+   > Queues TOS_Msg's in a circular buffer and shares it
+
+     to prevent an application from using too much RAM
+
+     for each module to have its own TOS_Msg.
+
+   > Serially sends the available TOS_Msg's as they
+
+     become available.
+
+   > Filters received packets belonging to other groups
+
+     or motes
+
+   > Provides the ability to send and receive UART and Radio,
+
+     and know for sure that it's working properly.
+
+   > Ability to resend a radio packet of a certain AM 
+
+     type that still happens to be queued in the buffer, 
+
+     to help modules with fault tolerance.
+
+   > Clean, easy to maintain code with little to no wasted 
+
+     memory.
+
+   > .. And other superhuman abilities.
+
+
+
+ Example usage:
+
+ <code>
+
+  TOS_MsgPtr *tosPtr;     // global
+
+  YourStruct *yourStruct; // global
+
+ 
+
+  // Easy way to allocate and initialize a message for
+
+  // your whole application:
+
+  result_t newMessage() {
+
+    if((tosPtr = call Transceiver.requestWrite()) != NULL) {
+
+      yourStruct = (YourStruct *) tosPtr->data;
+
+      yourStruct->msgID = msgID++;          // auto init example
+
+      yourStruct->from = TOS_LOCAL_ADDRESS; // auto init example
+
+      return SUCCESS;
+
+    }
+
+    return FAIL;
+
+  }
+
+
+
+  void sendSomething() {
+
+    if(newMessage()) {
+
+      // This AM type has a message allocated and initialized
+
+      yourStruct->value = getCurrentReading(); // example.
+
+      call Transceiver.sendRadio(TOS_BCAST_ADDR, sizeof(YourStruct));
+
+    }
+
+  }
+
+  </code>
+
+
+
+ Example Wiring:
+
+ <code>
+
+  components TransceiverC, YourModuleM;
+
+  Main.StdControl -> TransceiverC;
+
+  YourModuleM.Transceiver -> TransceiverC.Transceiver[AM_YOURTYPE];
+
+ </code>
+
+
+
+ That's it. Then you have access to radio and uart through the 
+
+ Transceiver interface. I recommend using it in every application.
+
+ 
+
+ Just keep in mind that the Transceiver will hand out exactly
+
+ one TOS_Msg per AM type.  If a single AM type requestWrite()'s
+
+ two times before sending the first one, the second call
+
+ to requestWrite() will return the same pointer that the first
+
+ call to requestWrite() returned.
+
+
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> David Moss - <a href="mailto:dmm@rincon.com">dmm@rincon.com</a>
+
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.lib.State.State.nc.html">State</a> WriteState
+<li>    <a href="tos.lib.State.State.nc.html">State</a> SendState
+<li>    <a href="tos.lib.Transceiver.PacketFilter.nc.html">PacketFilter</a> 
+<li>    <a href="tos.interfaces.BareSendMsg.nc.html">BareSendMsg</a> SendUart
+<li>    <a href="tos.interfaces.BareSendMsg.nc.html">BareSendMsg</a> SendRadio
+<li>    <a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a> ReceiveUart
+<li>    <a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a> ReceiveRadio
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+<li>    <a href="tos.lib.Transceiver.Transceiver.nc.html">Transceiver</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   struct TransceiverM.msg {
+  TOS_Msg tosMsg;
+  uint8_t sendMethod;
+  uint8_t state;
+} msg[20]
+        <br><menu> The state of this message </menu>
+<li>   uint8_t nextWriteMsg
+        <br><menu> An index to which message should be written next </menu>
+<li>   uint8_t nextSendMsg
+        <br><menu> An index to which message should be sent next </menu>
+<li>   result_t pack(uint8_t type, uint16_t dest, uint8_t payloadSize, uint8_t outMethod)
+        <br><menu>
+
+ Pack a message into the send queued and attempt to send it.
+
+</menu>
+<li>   void requestNextSend(void)
+        <br><menu> 
+
+ Send the current send index if it is available and
+
+ we aren't currently sending something else.
+
+</menu>
+<li>   bool canSend(void)
+        <br><menu> Returns TRUE if the next send index is ready </menu>
+<li>   void advanceSendIndex(void)
+        <br><menu>
+
+ Advance the index in our sending queue.
+
+</menu>
+<li>   void advanceWriteIndex(void)
+        <br><menu> 
+
+ Advance the index in our storage queue
+
+</menu>
+<li>   void sendDone(void)
+        <br><menu>
+
+ Cleanup after a send is complete
+
+</menu>
+<li>   task void sendMsg(void)
+        <br><menu>
+
+ Task to Force the current nextSendMsg index to send
+
+ over radio or uart
+
+</menu>
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.init(void)">
+<b>StdControl.init</b>    </a>
+(void)
+<menu>*************** StdControl Commands ***************</menu><p>
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.start(void)">
+<b>StdControl.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.stop(void)">
+<b>StdControl.stop</b>    </a>
+(void)
+
+<li>
+        command TOS_MsgPtr     <a href="#command TOS_MsgPtr Transceiver.requestWrite(uint8_t type)">
+<b>Transceiver.requestWrite</b>    </a>
+(uint8_t type)
+<menu>
+
+ Request a pointer to an empty TOS_Msg.data payload buffer.
+
+</menu><p>
+
+<li>
+        command bool     <a href="#command bool Transceiver.isWriteOpen(uint8_t type)">
+<b>Transceiver.isWriteOpen</b>    </a>
+(uint8_t type)
+<menu>
+
+ Check if a TOS_Msg has already been allocated by
+
+ the Transceiver from requestWrite(). 
+
+
+
+</menu><p>
+
+<li>
+        command result_t     <a href="#command result_t Transceiver.sendRadio(uint8_t type, uint16_t dest, uint8_t payloadSize)">
+<b>Transceiver.sendRadio</b>    </a>
+(uint8_t type, uint16_t dest, uint8_t payloadSize)
+<menu>
+
+ Release and send the current contents of the payload buffer over
+
+ the radio to the given address, with the given payload size.
+
+</menu><p>
+
+<li>
+        command result_t     <a href="#command result_t Transceiver.sendUart(uint8_t type, uint8_t payloadSize)">
+<b>Transceiver.sendUart</b>    </a>
+(uint8_t type, uint8_t payloadSize)
+<menu>
+
+ Release and send the current contents of the payload buffer over
+
+ UART with the given payload size. </menu><p>
+
+<li>
+        command result_t     <a href="#command result_t Transceiver.resendRadio(uint8_t type)">
+<b>Transceiver.resendRadio</b>    </a>
+(uint8_t type)
+<menu>
+
+ Attempt to resend the last message sent by this AM type.
+
+</menu><p>
+
+<li>
+        command bool     <a href="#command bool Transceiver.isSending(uint8_t type)">
+<b>Transceiver.isSending</b>    </a>
+(uint8_t type)
+<menu>
+
+</menu><p>
+
+<li>
+        event result_t     <a href="tos.interfaces.BareSendMsg.nc.html#event result_t SendRadio.sendDone(TOS_MsgPtr m, result_t result)">
+<b>SendRadio.sendDone</b>    </a>
+(TOS_MsgPtr m, result_t result)
+<menu>*************** Radio Events ***************</menu><p>
+
+<li>
+        event TOS_MsgPtr     <a href="tos.interfaces.ReceiveMsg.nc.html#event TOS_MsgPtr ReceiveRadio.receive(TOS_MsgPtr m)">
+<b>ReceiveRadio.receive</b>    </a>
+(TOS_MsgPtr m)
+
+<li>
+        event result_t     <a href="tos.interfaces.BareSendMsg.nc.html#event result_t SendUart.sendDone(TOS_MsgPtr m, result_t result)">
+<b>SendUart.sendDone</b>    </a>
+(TOS_MsgPtr m, result_t result)
+<menu>*************** UART Events ***************</menu><p>
+
+<li>
+        event TOS_MsgPtr     <a href="tos.interfaces.ReceiveMsg.nc.html#event TOS_MsgPtr ReceiveUart.receive(TOS_MsgPtr m)">
+<b>ReceiveUart.receive</b>    </a>
+(TOS_MsgPtr m)
+
+<li>
+        task void <b>sendMsg</b>(void)
+<menu>
+
+ Task to Force the current nextSendMsg index to send
+
+ over radio or uart
+
+</menu><p>
+
+<li>
+        result_t     <a href="#result_t pack(uint8_t type, uint16_t dest, uint8_t payloadSize, uint8_t outMethod)">
+<b>pack</b>    </a>
+(uint8_t type, uint16_t dest, uint8_t payloadSize, uint8_t outMethod)
+<menu>
+
+ Pack a message into the send queued and attempt to send it.
+
+</menu><p>
+
+<li>
+        void <b>sendDone</b>(void)
+<menu>
+
+ Cleanup after a send is complete
+
+</menu><p>
+
+<li>
+        void <b>requestNextSend</b>(void)
+<menu> 
+
+ Send the current send index if it is available and
+
+ we aren't currently sending something else.
+
+</menu><p>
+
+<li>
+        void <b>advanceWriteIndex</b>(void)
+<menu> 
+
+ Advance the index in our storage queue
+
+</menu><p>
+
+<li>
+        void <b>advanceSendIndex</b>(void)
+<menu>
+
+ Advance the index in our sending queue.
+
+</menu><p>
+
+<li>
+         event result_t     <a href="tos.lib.Transceiver.Transceiver.nc.html# event result_t Transceiver.radioSendDone(uint8_t type, TOS_MsgPtr m, result_t result)">
+<b>Transceiver.radioSendDone</b>    </a>
+(uint8_t type, TOS_MsgPtr m, result_t result)
+<menu>*************** Defaults ***************</menu><p>
+
+<li>
+         event result_t     <a href="tos.lib.Transceiver.Transceiver.nc.html# event result_t Transceiver.uartSendDone(uint8_t type, TOS_MsgPtr m, result_t result)">
+<b>Transceiver.uartSendDone</b>    </a>
+(uint8_t type, TOS_MsgPtr m, result_t result)
+
+<li>
+         event TOS_MsgPtr     <a href="tos.lib.Transceiver.Transceiver.nc.html# event TOS_MsgPtr Transceiver.receiveRadio(uint8_t type, TOS_MsgPtr m)">
+<b>Transceiver.receiveRadio</b>    </a>
+(uint8_t type, TOS_MsgPtr m)
+
+<li>
+         event TOS_MsgPtr     <a href="tos.lib.Transceiver.Transceiver.nc.html# event TOS_MsgPtr Transceiver.receiveUart(uint8_t type, TOS_MsgPtr m)">
+<b>Transceiver.receiveUart</b>    </a>
+(uint8_t type, TOS_MsgPtr m)
+
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Descriptions</h3>
+</td></tr></table>
+    <a name="command TOS_MsgPtr Transceiver.requestWrite(uint8_t type)"></a>
+        <h4>Transceiver.requestWrite</h4>
+        command TOS_MsgPtr     <a href="tos.lib.Transceiver.Transceiver.nc.html#command TOS_MsgPtr Transceiver.requestWrite(uint8_t type)"><b>Transceiver.requestWrite</b>    </a>
+(uint8_t type)<P><menu>
+
+ Request a pointer to an empty TOS_Msg.data payload buffer.
+
+ You must call sendRadio(..) or sendUart(..) when finished 
+
+ to release the pointer and send the message, or the
+
+ send queue will get clogged up and stop.
+
+
+
+ Only one write message is available at a time for each
+
+ AM type.
+
+ 
+
+ If the same AM type requests a write after it was already granted
+
+ a pointer but before it released the pointer, the original
+
+ pointer gets returned.
+
+
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> TOS_MsgPtr if a message buffer is available,
+
+         NULL if no message buffer is available.
+
+</td></tr></table>
+</menu><hr>
+    <a name="command bool Transceiver.isWriteOpen(uint8_t type)"></a>
+        <h4>Transceiver.isWriteOpen</h4>
+        command bool     <a href="tos.lib.Transceiver.Transceiver.nc.html#command bool Transceiver.isWriteOpen(uint8_t type)"><b>Transceiver.isWriteOpen</b>    </a>
+(uint8_t type)<P><menu>
+
+ Check if a TOS_Msg has already been allocated by
+
+ the Transceiver from requestWrite(). 
+
+
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> TRUE if requestWrite has been called and a TOS_Msg 
+
+         has been allocated to the current AM type.
+
+</td></tr></table>
+</menu><hr>
+    <a name="command result_t Transceiver.sendRadio(uint8_t type, uint16_t dest, uint8_t payloadSize)"></a>
+        <h4>Transceiver.sendRadio</h4>
+        command result_t     <a href="tos.lib.Transceiver.Transceiver.nc.html#command result_t Transceiver.sendRadio(uint8_t type, uint16_t dest, uint8_t payloadSize)"><b>Transceiver.sendRadio</b>    </a>
+(uint8_t type, uint16_t dest, uint8_t payloadSize)<P><menu>
+
+ Release and send the current contents of the payload buffer over
+
+ the radio to the given address, with the given payload size.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>dest</b> -  - the destination address
+
+ </p><p STYLE="text-indent: -1cm"><b>payloadSize</b> -  - the size of the structure inside the TOS_Msg payload.
+
+ </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the buffer will be sent. FAIL if no buffer
+
+         had been allocated by requestPayload().
+
+</td></tr></table>
+</menu><hr>
+    <a name="command result_t Transceiver.sendUart(uint8_t type, uint8_t payloadSize)"></a>
+        <h4>Transceiver.sendUart</h4>
+        command result_t     <a href="tos.lib.Transceiver.Transceiver.nc.html#command result_t Transceiver.sendUart(uint8_t type, uint8_t payloadSize)"><b>Transceiver.sendUart</b>    </a>
+(uint8_t type, uint8_t payloadSize)<P><menu>
+
+ Release and send the current contents of the payload buffer over
+
+ UART with the given payload size.  No address is needed.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>payloadSize</b> -  - the size of the structure inside the TOS_Msg payload.
+
+ </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the buffer will be sent. FAIL if no buffer
+
+         had been allocated by requestPayload().
+
+</td></tr></table>
+</menu><hr>
+    <a name="command result_t Transceiver.resendRadio(uint8_t type)"></a>
+        <h4>Transceiver.resendRadio</h4>
+        command result_t     <a href="tos.lib.Transceiver.Transceiver.nc.html#command result_t Transceiver.resendRadio(uint8_t type)"><b>Transceiver.resendRadio</b>    </a>
+(uint8_t type)<P><menu>
+
+ Attempt to resend the last message sent by this AM type.
+
+ If the message still exists and the attempt proceeds, SUCCESS
+
+ will be signaled.  Otherwise, FAIL will be signaled, and the 
+
+ module will have to reconstruct the message and try sending it
+
+ again.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the attempt proceeds, and sendDone(..) will be signaled.
+
+</td></tr></table>
+</menu><hr>
+    <a name="command bool Transceiver.isSending(uint8_t type)"></a>
+        <h4>Transceiver.isSending</h4>
+        command bool     <a href="tos.lib.Transceiver.Transceiver.nc.html#command bool Transceiver.isSending(uint8_t type)"><b>Transceiver.isSending</b>    </a>
+(uint8_t type)<P><menu>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> TRUE if the current AM type is in the process of being sent.
+
+</td></tr></table>
+</menu><hr>
+    <a name="result_t pack(uint8_t type, uint16_t dest, uint8_t payloadSize, uint8_t outMethod)"></a>
+        <h4>pack</h4>
+        result_t <b>pack</b>(uint8_t type, uint16_t dest, uint8_t payloadSize, uint8_t outMethod)<P><menu>
+
+ Pack a message into the send queued and attempt to send it.
+
+ When dest == TOS_UART_ADDR || outMethod == RADIO, 
+
+ that address is not actually changed in the
+
+ TOS_Msg.dest.  It's not used by anything anyway,
+
+ and by not adding it we leave room for the Transceiver to be
+
+ quickly wired up as an eavesdropper.
+
+</menu>

@@ -1,0 +1,19 @@
+digraph "ClockC_if" {
+    rankdir=LR;
+    ratio=compress;
+    margin="0,0";
+    ranksep=0.0005; 
+    nodesep=0.1; 
+    node [shape=ellipse style=filled fillcolor="#e0e0e0"];
+    node [fontsize=10 height=.1 width=.1];
+    edge [fontsize=9 arrowsize=.8];
+    node [fontcolor=blue];
+    edge [fontcolor=blue];
+
+    ClockC [URL="tos.system.ClockC.nc.html"];
+    HPLClock [URL="tos.platform.mica.HPLClock.nc.html"];
+    ClockC -> HPLClock [ style=dashed label="Clock" URL="tos.interfaces.Clock.nc.html" ];
+    ClockC [URL="tos.system.ClockC.nc.html"];
+    HPLClock [URL="tos.platform.mica.HPLClock.nc.html"];
+    ClockC -> HPLClock [ style=dashed label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+}

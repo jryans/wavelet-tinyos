@@ -1,11 +1,9 @@
-// Portions of this code created by The Moters (Fall 2005 - Spring 2006)
-
 /**
  * This application takes data readings from various sensors,
  * caches their values, and sends out the most recent set of data when requested.
  * IMPORTANT: Temp and Light must start and stop with each request. If
  * they are not stopped, the radio will not be able to receive.
- * @author The Moters
+ * @author The Moters (Fall 2005 - Spring 2006)
  * @author Ryan Stinnett
  */
  
@@ -99,6 +97,9 @@ implementation {
     }
   }
 
+  /**
+   * Stores a new temperature data value.
+   */
   async event result_t TempADC.dataReady(uint16_t data)
   {
     atomic {
@@ -109,6 +110,9 @@ implementation {
     return SUCCESS;
   }
  
+  /**
+   * Stores a new light data value.
+   */
   async event result_t LightADC.dataReady(uint16_t data)
   {
     atomic {
@@ -119,6 +123,9 @@ implementation {
     return SUCCESS;
   }
 
+  /**
+   * Stores a new voltage data value.
+   */
   async event result_t VoltADC.dataReady(uint16_t data)
   {
     atomic {

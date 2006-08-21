@@ -1,3 +1,8 @@
+/**
+ * Various data offsets and sizes in network packets.
+ * @author Ryan Stinnett
+ */
+
 #ifndef _PACKOFFSETS_H
 #define _PACKOFFSETS_H
 

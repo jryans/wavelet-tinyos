@@ -1,5 +1,6 @@
-/*
+/**
  * Combines various mote datatypes into a generic MessageData type.
+ * @author Ryan Stinnett
  */
 
 #ifndef _MESSAGEDATA_H
@@ -10,6 +11,7 @@
 #include "BigPack.h"
 #include "Router.h"
 
+// Basic data payload unit
 struct MessageData {
 	uint16_t src;
 	uint16_t dest;

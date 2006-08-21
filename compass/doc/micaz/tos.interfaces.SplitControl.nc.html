@@ -1,0 +1,168 @@
+
+<html>
+<head>
+<title>Interface: SplitControl</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.interfaces.SplitControl.nc.source">tos.interfaces.SplitControl.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: SplitControl</h1>
+<p>
+
+ The TinyOS standard control interface. All components that require
+ initialization or can be powered down should provide this
+ interface. start() and stop() are synonymous with powering on and
+ off, when appropriate.
+
+ On boot, the init() of all wired components must be called. init()
+ may be called multiple times, and in subcomponents before some of
+ their supercomponents (e.g. if they are the subcomponent of
+ multiple components). After init() has been called, start() and
+ stop() may be called multiple times, in any order. The call
+ sequence is therefore:
+
+ <p>init* (start|stop)*</p>
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Jason Hill
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> David Gay
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> Philip Levis
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.lib.CC2420Radio.CC2420ControlM.nc.html">tos.lib.CC2420Radio.CC2420ControlM</a><br>
+    <a href="tos.lib.CC2420Radio.CC2420RadioC.nc.html">tos.lib.CC2420Radio.CC2420RadioC</a><br>
+    <a href="tos.lib.CC2420Radio.CC2420RadioM.nc.html">tos.lib.CC2420Radio.CC2420RadioM</a><br>
+    <a href="tos.lib.Deluge.DelugeMetadataC.nc.html">tos.lib.Deluge.DelugeMetadataC</a><br>
+    <a href="tos.lib.Deluge.DelugeMetadataM.nc.html">tos.lib.Deluge.DelugeMetadataM</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="tos.lib.CC2420Radio.CC2420RadioM.nc.html">tos.lib.CC2420Radio.CC2420RadioM</a><br>
+    <a href="tos.lib.Deluge.DelugeM.nc.html">tos.lib.Deluge.DelugeM</a><br>
+    <a href="tos.lib.Deluge.NetProgM.nc.html">tos.lib.Deluge.NetProgM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+         result_t     <a href="# result_t init(void)">
+<b>init</b>    </a>
+(void)
+<menu>
+ Initialize the component and its subcomponents.
+
+</menu><p>
+
+<li>
+         result_t     <a href="# result_t start(void)">
+<b>start</b>    </a>
+(void)
+<menu>
+ Start the component and its subcomponents.
+
+</menu><p>
+
+<li>
+         result_t     <a href="# result_t stop(void)">
+<b>stop</b>    </a>
+(void)
+<menu>
+ Stop the component and pertinent subcomponents (not all
+ subcomponents may be turned off due to wakeup timers, etc.).
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events</h3></td></tr></table>
+<ul>
+<li>
+         result_t <b>initDone</b>(void)
+<menu> 
+ Notify components that the component has been init
+
+</menu><p>
+
+<li>
+         result_t <b>startDone</b>(void)
+<menu> 
+ Notify components that the component has been started and is ready to
+ receive other commands
+
+</menu><p>
+
+<li>
+         result_t <b>stopDone</b>(void)
+<menu>
+ Notify components that the component has been stopped. 
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name=" result_t init(void)"></a>
+        <h4>init</h4>
+         result_t <b>init</b>(void)<P><menu>
+ Initialize the component and its subcomponents.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> Whether initialization was successful.
+</td></tr></table>
+</menu><hr>
+    <a name=" result_t start(void)"></a>
+        <h4>start</h4>
+         result_t <b>start</b>(void)<P><menu>
+ Start the component and its subcomponents.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> Whether starting was successful.
+</td></tr></table>
+</menu><hr>
+    <a name=" result_t stop(void)"></a>
+        <h4>stop</h4>
+         result_t <b>stop</b>(void)<P><menu>
+ Stop the component and pertinent subcomponents (not all
+ subcomponents may be turned off due to wakeup timers, etc.).
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> Whether stopping was successful.
+</td></tr></table>
+</menu>

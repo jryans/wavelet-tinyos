@@ -1,0 +1,79 @@
+
+<html>
+<head>
+<title>Component: FramerAckM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.system.FramerAckM.nc.source">tos.system.FramerAckM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: FramerAckM</h1>
+<p>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Phil Buonadonna
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.TokenReceiveMsg.nc.html">TokenReceiveMsg</a> 
+<li>    <a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a> ReceiveCombined
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   uint8_t gTokenBuf
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        task void <b>SendAckTask</b>(void)
+
+<li>
+        event TOS_MsgPtr     <a href="tos.interfaces.TokenReceiveMsg.nc.html#event TOS_MsgPtr TokenReceiveMsg.receive(TOS_MsgPtr Msg, uint8_t token)">
+<b>TokenReceiveMsg.receive</b>    </a>
+(TOS_MsgPtr Msg, uint8_t token)
+
+<li>
+        event TOS_MsgPtr     <a href="tos.interfaces.ReceiveMsg.nc.html#event TOS_MsgPtr ReceiveMsg.receive(TOS_MsgPtr Msg)">
+<b>ReceiveMsg.receive</b>    </a>
+(TOS_MsgPtr Msg)
+
+</ul>
+

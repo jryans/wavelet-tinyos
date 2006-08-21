@@ -1,13 +1,12 @@
 /**
  * Computes various statistics on a data stream without
  * storing the data itself.
- * @author Ryan Stinnett
- * 
- * Median algorithm based on:
+ * Median algorithm based on:<br />
  * R. Jain and I. Chlamtac. The P^2 algorithm for dynamic
  * calculation of quantile and histograms without storing
  * observations. <i>Communications of the ACM</i>,
  * 28(10):1076-1085, October 1986.
+ * @author Ryan Stinnett
  */
 
 module StatsArrayM {
@@ -26,7 +25,7 @@ implementation {
   float p = 0.5; 
   float dnDes[numMarkers];
   
-  typedef struct { 
+  typedef struct {  
     float q[numMarkers];
     uint16_t n[numMarkers];
     float nDes[numMarkers];
@@ -37,8 +36,11 @@ implementation {
   uint8_t numArrays = uniqueCount("StatsArray");
   saInfo sa[uniqueCount("StatsArray")];
   
-  /*** Internal Functions ***/
+  // Internal Functions
   
+  /**
+   * Resets all internal structures for a given array.
+   */
   void clearInfo(uint8_t id) {
     uint8_t i;
     saInfo *s = &sa[id];
@@ -55,6 +57,9 @@ implementation {
     s->numSeen = 0;
   }
 
+  /**
+   * Adjusts markers by fitting them to a parabola.
+   */
   float parabolaAdj(uint8_t id, int8_t d, uint8_t i) {
     saInfo *s = &sa[id];
     // Break up formula for readability
@@ -66,12 +71,19 @@ implementation {
     return s->q[i] + a * (((niminus + d) * c) + ((niplus - d) * f));
   }
 
+  /**
+   * Adjusts markers by fitting them to a line.
+   */
   float linearAdj(uint8_t id, int8_t d, uint8_t i) {
     saInfo *s = &sa[id];
     float a = (s->q[i + d] - s->q[i]) / (s->n[i + d] - s->n[i]);
     return s->q[i] + d * a;
   }
-
+  
+  /**
+   * Sorts the initial data elements such that the markers
+   * are in increasing order.
+   */
   void sort(uint8_t id) {
     saInfo *s = &sa[id];
     uint8_t mi, i, j;
@@ -93,7 +105,7 @@ implementation {
     }
   }
   
-  /*** StdControl ***/
+  // StdControl
   
   command result_t StdControl.init() {
     uint8_t a;
@@ -115,8 +127,11 @@ implementation {
     return SUCCESS;
   }
   
-  /*** StatsArray ***/  
+  // StatsArray
 
+  /**
+   * Adds a new data element to the array.
+   */
   command void StatsArray.newData[uint8_t id](float newVal) {
     saInfo *s = &sa[id];
     if (s->numSeen < numMarkers) {
@@ -175,24 +190,39 @@ implementation {
     s->numSeen++; 
   }
   
+  /**
+   * Returns the array's minimum value.
+   */
   command float StatsArray.min[uint8_t id]() {
     return sa[id].q[0];
   }
   
+  /**
+   * Returns the array's maximum value.
+   */
   command float StatsArray.max[uint8_t id]() {
     return sa[id].q[numMarkers - 1];
   }
   
+  /**
+   * Returns the mean of the array.
+   */
   command float StatsArray.mean[uint8_t id]() {
     if (sa[id].numSeen == 0)
       return 0;
     return sa[id].dataSum / sa[id].numSeen;
   }
   
+  /**
+   * Returns the <b>estimated</b> median of the array.
+   */
   command float StatsArray.median[uint8_t id]() {
     return sa[id].q[numMarkers / 2];  
   }
   
+  /**
+   * Removes all data from the array.
+   */
   command void StatsArray.clear[uint8_t id]() {
     clearInfo(id);
   }

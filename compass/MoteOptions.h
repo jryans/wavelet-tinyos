@@ -6,7 +6,7 @@
 #ifndef _MOTEOPTIONS_H
 #define _MOTEOPTIONS_H
 
-typedef struct {
+typedef struct { // Various mote control settings
   uint8_t mask; // Bit mask to mark what settings should be read
   uint16_t pingNum; // Number of broadcast pings to send
   uint8_t txPower; // (MICAZ) Sets the TX power level (valid: 1 - 31, d: 31)
@@ -34,7 +34,7 @@ enum { // Defaults
   MO_DEF_WAKE = (uint32_t) 60 * 1024
 };
 
-typedef struct {
+typedef struct { // Power control settings
   uint32_t sleepInterval; // Time to wait before sleeping after last message received (bms)
   uint32_t wakeUpInterval; // Time between wake up events (bms)
   bool stayAwake; // In PM_CHECK_SINK mode, this control whether the mote stays awake

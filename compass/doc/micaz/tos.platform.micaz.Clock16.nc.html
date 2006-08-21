@@ -1,0 +1,414 @@
+
+<html>
+<head>
+<title>Interface: Clock16</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.platform.micaz.Clock16.nc.source">tos.platform.micaz.Clock16.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: Clock16</h1>
+<p>
+
+
+ The hardware clock 16bit interface. 
+ For use with 16bit HPL Timers - eg TIMER1 on ATMega128
+
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.platform.micaz.HPLTimer1M.nc.html">tos.platform.micaz.HPLTimer1M</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+          result_t     <a href="#  result_t setRate(uint16_t interval, char scale)">
+<b>setRate</b>    </a>
+(uint16_t interval, char scale)
+<menu>
+
+  Set the clock rate. </menu><p>
+
+<li>
+          void     <a href="#  void setInterval(uint16_t value)">
+<b>setInterval</b>    </a>
+(uint16_t value)
+<menu>
+
+  Set clock interval 
+
+ 
+
+ </menu><p>
+
+<li>
+          void     <a href="#  void setNextInterval(uint16_t value)">
+<b>setNextInterval</b>    </a>
+(uint16_t value)
+<menu>
+
+  Set clock interval at next clock interrupt time
+
+ 
+
+ </menu><p>
+
+<li>
+          uint16_t     <a href="#  uint16_t getInterval(void)">
+<b>getInterval</b>    </a>
+(void)
+<menu>
+
+  Get clock interval 
+
+ 
+
+ </menu><p>
+
+<li>
+          uint8_t     <a href="#  uint8_t getScale(void)">
+<b>getScale</b>    </a>
+(void)
+<menu>
+
+  Get clock scale 
+
+ 
+
+ </menu><p>
+
+<li>
+          void     <a href="#  void setNextScale(uint8_t scale)">
+<b>setNextScale</b>    </a>
+(uint8_t scale)
+<menu>
+
+  Set clock scale at next clock interrupt time 
+
+ 
+
+ </menu><p>
+
+<li>
+          result_t     <a href="#  result_t setIntervalAndScale(uint16_t interval, uint8_t scale)">
+<b>setIntervalAndScale</b>    </a>
+(uint16_t interval, uint8_t scale)
+<menu>
+
+  Set both clock interval and scale
+
+ 
+
+ </menu><p>
+
+<li>
+          uint16_t <b>readCounter</b>(void)
+<menu>
+
+  Read HW clock counter
+
+</menu><p>
+
+<li>
+          void     <a href="#  void setCounter(uint16_t n)">
+<b>setCounter</b>    </a>
+(uint16_t n)
+<menu>
+
+  Set HW clock counter to a specified value
+
+
+
+ </menu><p>
+
+<li>
+          void <b>intDisable</b>(void)
+<menu>
+
+  Disable Clock interrupt
+
+</menu><p>
+
+<li>
+          void <b>intEnable</b>(void)
+<menu>
+
+  Enable Clock interrupt
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events</h3></td></tr></table>
+<ul>
+<li>
+          result_t <b>fire</b>(void)
+<menu>
+
+  An event sent when the clock goes off.
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name="  result_t setRate(uint16_t interval, char scale)"></a>
+        <h4>setRate</h4>
+          result_t <b>setRate</b>(uint16_t interval, char scale)<P><menu>
+
+  Set the clock rate.  For the specific meanings of interval
+
+ and scale, refer to the processor data sheet. For the mica and rene:
+
+ <p>
+
+ <pre>
+
+     Clock scale
+
+         0 - off
+
+         1 - 32768 ticks/second
+
+         2 - 4096 ticks/second
+
+         3 - 1024 ticks/second
+
+         4 - 512 ticks/second
+
+         5 - 256 ticks/second
+
+         6 - 128 ticks/second
+
+         7 - 32 ticks/second
+
+ </pre>
+
+ <p>
+
+
+
+ Interval is how many ticks per clock firing.
+
+ For example, setRate(160,7) will result in an event every 160/32
+
+ seconds.
+
+
+
+ See also: <code>Clock.h</code> for predefined macros:
+
+
+
+ <p>
+
+ <pre>
+
+  interval      scale         result
+
+  TOS_I1000PS   TOS_S1000PS   1000 ticks/sec
+
+  TOS_I100PS    TOS_S100PS     100 ticks/sec
+
+  TOS_I10PS     TOS_S10PS       10 ticks/sec
+
+  TOS_I4096PS   TOS_S4096PS   4096 ticks/sec
+
+  TOS_I2048PS   TOS_S2048PS   2048 ticks/sec
+
+  TOS_I1024PS   TOS_S1024PS   1024 ticks/sec
+
+  TOS_I512PS    TOS_S512PS     512 ticks/sec
+
+  TOS_I256PS    TOS_S256PS     256 ticks/sec
+
+  TOS_I128PS    TOS_S128PS     128 ticks/sec
+
+  TOS_I64PS     TOS_S64PS       64 ticks/sec
+
+  TOS_I32PS     TOS_S32PS       32 ticks/sec
+
+  TOS_I16PS     TOS_S16PS       16 ticks/sec
+
+  TOS_I8PS      TOS_S8PS         8 ticks/sec
+
+  TOS_I4PS      TOS_S4PS         4 ticks/sec
+
+  TOS_I2PS      TOS_S2PS         2 ticks/sec
+
+  TOS_I1PS      TOS_S1PS         1 tick/sec
+
+  TOS_I0PS      TOS_S0PS         0 ticks/sec (clock off)
+
+ </pre>
+
+</menu><hr>
+    <a name="  void setInterval(uint16_t value)"></a>
+        <h4>setInterval</h4>
+          void <b>setInterval</b>(uint16_t value)<P><menu>
+
+  Set clock interval 
+
+ 
+
+  <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>value</b> -  New clock interval
+
+
+
+  </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> none
+
+</td></tr></table>
+</menu><hr>
+    <a name="  void setNextInterval(uint16_t value)"></a>
+        <h4>setNextInterval</h4>
+          void <b>setNextInterval</b>(uint16_t value)<P><menu>
+
+  Set clock interval at next clock interrupt time
+
+ 
+
+  <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>value</b> -  New clock interval
+
+
+
+  </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> none
+
+</td></tr></table>
+</menu><hr>
+    <a name="  uint16_t getInterval(void)"></a>
+        <h4>getInterval</h4>
+          uint16_t <b>getInterval</b>(void)<P><menu>
+
+  Get clock interval 
+
+ 
+
+  <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> current clock interval
+
+</td></tr></table>
+</menu><hr>
+    <a name="  uint8_t getScale(void)"></a>
+        <h4>getScale</h4>
+          uint8_t <b>getScale</b>(void)<P><menu>
+
+  Get clock scale 
+
+ 
+
+  <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> current clock scale level
+
+</td></tr></table>
+</menu><hr>
+    <a name="  void setNextScale(uint8_t scale)"></a>
+        <h4>setNextScale</h4>
+          void <b>setNextScale</b>(uint8_t scale)<P><menu>
+
+  Set clock scale at next clock interrupt time 
+
+ 
+
+  <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>scale</b> -  New clock scale
+
+
+
+  </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> none
+
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t setIntervalAndScale(uint16_t interval, uint8_t scale)"></a>
+        <h4>setIntervalAndScale</h4>
+          result_t <b>setIntervalAndScale</b>(uint16_t interval, uint8_t scale)<P><menu>
+
+  Set both clock interval and scale
+
+ 
+
+  <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>interval</b> -  New clock interval
+
+
+
+  </p><p STYLE="text-indent: -1cm"><b>scale</b> -  New clock scale
+
+
+
+  </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS or FAILED 
+
+</td></tr></table>
+</menu><hr>
+    <a name="  void setCounter(uint16_t n)"></a>
+        <h4>setCounter</h4>
+          void <b>setCounter</b>(uint16_t n)<P><menu>
+
+  Set HW clock counter to a specified value
+
+
+
+  <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>n</b> -  Value to write to TCNT0
+
+
+
+  </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> None
+
+</td></tr></table>
+</menu>

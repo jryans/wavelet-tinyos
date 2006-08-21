@@ -33,7 +33,7 @@ implementation {
   
   uint8_t RADIO_RETRIES = 5;
 
-  /*** Internal Functions ***/
+  // Internal Functions
 
   /**
    * Requests a new TOS_MsgPtr.
@@ -115,7 +115,7 @@ implementation {
     return pMsg;
   }
 
-  /*** Commands and Events ***/
+  // Commands and Events
   
   /**
    * Builds a unicast pack from an input message and sends it on its way.

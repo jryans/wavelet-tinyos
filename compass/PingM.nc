@@ -1,5 +1,5 @@
 /**
- * Broadcasts ping messages for diagnostic purposes.
+ * Sends ping messages for diagnostic purposes.
  * @author Ryan Stinnett
  */
  
@@ -35,14 +35,20 @@ implementation {
     return SUCCESS;
   }
   
-  /*** PingB ***/
+  // PingB
   
+  /**
+   * Broadcasts a given number of ping messages.
+   */
   command void PingB.send(uint16_t num) {
     numLeft = num;
     trans = TRUE;
     call Timer.start(TIMER_REPEAT, PING_INTERVAL);
   }
   
+  /**
+   * Sends a given number of ping messages to a specific mote.
+   */
   command void PingB.sendTo(uint16_t num, uint16_t mDest, uint8_t rRet) {
     numLeft = num;
     md.dest = mDest;
@@ -51,7 +57,7 @@ implementation {
     call Timer.start(TIMER_REPEAT, PING_INTERVAL * rRet);
   }
   
-  /*** Timer ***/
+  // Timer
   
   event result_t Timer.fired() {
     if (numLeft > 0) {
@@ -69,7 +75,7 @@ implementation {
     return SUCCESS;
   }
   
-  /*** PingMsg ***/
+  // PingTrans
   
   /**
    * A message was sent over radio.
@@ -109,7 +115,7 @@ implementation {
     return m;
   }
   
-  /*** PingMsg ***/
+  // PingMsg
   
   /**
    * sendDone is signaled when the send has completed

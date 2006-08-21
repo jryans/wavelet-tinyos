@@ -1,0 +1,352 @@
+
+<html>
+<head>
+<title>Component: CC2420RadioM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.CC2420Radio.CC2420RadioM.nc.source">tos.lib.CC2420Radio.CC2420RadioM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: CC2420RadioM</h1>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.SplitControl.nc.html">SplitControl</a> CC2420SplitControl
+<li>    <a href="tos.lib.CC2420Radio.CC2420Control.nc.html">CC2420Control</a> 
+<li>    <a href="tos.lib.CC2420Radio.HPLCC2420.nc.html">HPLCC2420</a> HPLChipcon
+<li>    <a href="tos.lib.CC2420Radio.HPLCC2420FIFO.nc.html">HPLCC2420FIFO</a> HPLChipconFIFO
+<li>    <a href="tos.lib.CC2420Radio.HPLCC2420Interrupt.nc.html">HPLCC2420Interrupt</a> FIFOP
+<li>    <a href="tos.lib.CC2420Radio.HPLCC2420Capture.nc.html">HPLCC2420Capture</a> SFD
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> TimerControl
+<li>    <a href="tos.lib.CC2420Radio.TimerJiffyAsync.nc.html">TimerJiffyAsync</a> BackoffTimerJiffy
+<li>    <a href="tos.interfaces.Random.nc.html">Random</a> 
+<li>    <a href="tos.interfaces.Leds.nc.html">Leds</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+<li>    <a href="tos.interfaces.SplitControl.nc.html">SplitControl</a> 
+<li>    <a href="tos.interfaces.BareSendMsg.nc.html">BareSendMsg</a> Send
+<li>    <a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a> Receive
+<li>    <a href="tos.interfaces.RadioCoordinator.nc.html">RadioCoordinator</a> RadioSendCoordinator
+<li>    <a href="tos.interfaces.RadioCoordinator.nc.html">RadioCoordinator</a> RadioReceiveCoordinator
+<li>    <a href="tos.lib.CC2420Radio.MacControl.nc.html">MacControl</a> 
+<li>    <a href="tos.lib.CC2420Radio.MacBackoff.nc.html">MacBackoff</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   norace uint8_t countRetry
+<li>   uint8_t stateRadio
+<li>   norace uint8_t stateTimer
+<li>   norace uint8_t currentDSN
+<li>   norace bool bAckEnable
+<li>   bool bPacketReceiving
+<li>   uint8_t txlength
+<li>   norace TOS_MsgPtr txbufptr
+<li>   norace TOS_MsgPtr rxbufptr
+<li>   TOS_Msg RxBuf
+<li>   volatile uint16_t LocalAddr
+<li>   void delayedRXFIFO(void)
+        <br><menu>
+ Delayed RXFIFO is used to read the receive FIFO of the CC2420
+ in task context after the uC receives an interrupt that a packet
+ is in the RXFIFO. </menu>
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        void <b>sendFailed</b>(void)
+<menu>**********************************************************</menu><p>
+
+<li>
+        void <b>flushRXFIFO</b>(void)
+
+<li>
+        __inline result_t <b>setInitialTimer</b>(uint16_t jiffy)
+
+<li>
+        __inline result_t <b>setBackoffTimer</b>(uint16_t jiffy)
+
+<li>
+        __inline result_t <b>setAckTimer</b>(uint16_t jiffy)
+
+<li>
+        task void <b>PacketRcvd</b>(void)
+<menu>*************************************************************************
+ PacketRcvd
+ - Radio packet rcvd, signal 
+*************************************************************************</menu><p>
+
+<li>
+        task void <b>PacketSent</b>(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.init(void)">
+<b>StdControl.init</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.SplitControl.nc.html#command result_t SplitControl.init(void)">
+<b>SplitControl.init</b>    </a>
+(void)
+
+<li>
+        event result_t     <a href="tos.interfaces.SplitControl.nc.html#event result_t CC2420SplitControl.initDone(void)">
+<b>CC2420SplitControl.initDone</b>    </a>
+(void)
+
+<li>
+         event result_t     <a href="tos.interfaces.SplitControl.nc.html# event result_t SplitControl.initDone(void)">
+<b>SplitControl.initDone</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.stop(void)">
+<b>StdControl.stop</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.SplitControl.nc.html#command result_t SplitControl.stop(void)">
+<b>SplitControl.stop</b>    </a>
+(void)
+
+<li>
+        event result_t     <a href="tos.interfaces.SplitControl.nc.html#event result_t CC2420SplitControl.stopDone(void)">
+<b>CC2420SplitControl.stopDone</b>    </a>
+(void)
+
+<li>
+         event result_t     <a href="tos.interfaces.SplitControl.nc.html# event result_t SplitControl.stopDone(void)">
+<b>SplitControl.stopDone</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.start(void)">
+<b>StdControl.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.SplitControl.nc.html#command result_t SplitControl.start(void)">
+<b>SplitControl.start</b>    </a>
+(void)
+
+<li>
+        event result_t     <a href="tos.interfaces.SplitControl.nc.html#event result_t CC2420SplitControl.startDone(void)">
+<b>CC2420SplitControl.startDone</b>    </a>
+(void)
+
+<li>
+         event result_t     <a href="tos.interfaces.SplitControl.nc.html# event result_t SplitControl.startDone(void)">
+<b>SplitControl.startDone</b>    </a>
+(void)
+
+<li>
+        void     <a href="#void sendPacket(void)">
+<b>sendPacket</b>    </a>
+(void)
+<menu>
+ Try to send a packet. </menu><p>
+
+<li>
+        async event result_t     <a href="tos.lib.CC2420Radio.HPLCC2420Capture.nc.html#async event result_t SFD.captured(uint16_t time)">
+<b>SFD.captured</b>    </a>
+(uint16_t time)
+<menu>
+ Captured an edge transition on the SFD pin
+ Useful for time synchronization as well as determining
+ when a packet has finished transmission
+</menu><p>
+
+<li>
+        task void <b>startSend</b>(void)
+<menu>
+ Start sending the packet data to the TXFIFO of the CC2420
+</menu><p>
+
+<li>
+        void <b>tryToSend</b>(void)
+<menu>
+ Check for a clear channel and try to send the packet if a clear
+ channel exists using the sendPacket() function
+</menu><p>
+
+<li>
+        async event result_t     <a href="tos.lib.CC2420Radio.TimerJiffyAsync.nc.html#async event result_t BackoffTimerJiffy.fired(void)">
+<b>BackoffTimerJiffy.fired</b>    </a>
+(void)
+<menu>
+ Multiplexed timer to control initial backoff, 
+ congestion backoff, and delay while waiting for an ACK
+</menu><p>
+
+<li>
+        command result_t     <a href="tos.interfaces.BareSendMsg.nc.html#command result_t Send.send(TOS_MsgPtr pMsg)">
+<b>Send.send</b>    </a>
+(TOS_MsgPtr pMsg)
+<menu>********************************************************
+ Send
+ - Xmit a packet
+    USE SFD FALLING FOR END OF XMIT !!!!!!!!!!!!!!!!!! interrupt???
+ - If in power-down state start timer ? !!!!!!!!!!!!!!!!!!!!!!!!!s
+ - If !TxBusy then 
+   a) Flush the tx fifo 
+   b) Write Txfifo address
+    
+********************************************************</menu><p>
+
+<li>
+        task void <b>delayedRXFIFOtask</b>(void)
+
+<li>
+        void     <a href="#void delayedRXFIFO(void)">
+<b>delayedRXFIFO</b>    </a>
+(void)
+<menu>
+ Delayed RXFIFO is used to read the receive FIFO of the CC2420
+ in task context after the uC receives an interrupt that a packet
+ is in the RXFIFO. </menu><p>
+
+<li>
+        async event result_t     <a href="tos.lib.CC2420Radio.HPLCC2420Interrupt.nc.html#async event result_t FIFOP.fired(void)">
+<b>FIFOP.fired</b>    </a>
+(void)
+<menu>********************************************************
+ FIFOP lo Interrupt: Rx data avail in CC2420 fifo
+ Radio must have been in Rx mode to get this interrupt
+ If FIFO pin =lo then fifo overflow=> flush fifo & exit
+ 
+
+ Things ToDo:
+
+ -Disable FIFOP interrupt until PacketRcvd task complete 
+ until send.done complete
+
+ -Fix mixup: on return
+  rxbufptr->rssi is CRC + Correlation value
+  rxbufptr->strength is RSSI
+********************************************************</menu><p>
+
+<li>
+        async event result_t     <a href="tos.lib.CC2420Radio.HPLCC2420FIFO.nc.html#async event result_t HPLChipconFIFO.RXFIFODone(uint8_t length, uint8_t *data)">
+<b>HPLChipconFIFO.RXFIFODone</b>    </a>
+(uint8_t length, uint8_t *data)
+<menu>
+ After the buffer is received from the RXFIFO,
+ process it, then post a task to signal it to the higher layers
+</menu><p>
+
+<li>
+        async event result_t     <a href="tos.lib.CC2420Radio.HPLCC2420FIFO.nc.html#async event result_t HPLChipconFIFO.TXFIFODone(uint8_t length, uint8_t *data)">
+<b>HPLChipconFIFO.TXFIFODone</b>    </a>
+(uint8_t length, uint8_t *data)
+<menu>
+ Notification that the TXFIFO has been filled with the data from the packet
+ Next step is to try to send the packet
+</menu><p>
+
+<li>
+        async command void     <a href="tos.lib.CC2420Radio.MacControl.nc.html#async command void MacControl.enableAck(void)">
+<b>MacControl.enableAck</b>    </a>
+(void)
+<menu> Enable link layer hardware acknowledgements *</menu><p>
+
+<li>
+        async command void     <a href="tos.lib.CC2420Radio.MacControl.nc.html#async command void MacControl.disableAck(void)">
+<b>MacControl.disableAck</b>    </a>
+(void)
+<menu> Disable link layer hardware acknowledgements *</menu><p>
+
+<li>
+         async event int16_t     <a href="# async event int16_t MacBackoff.initialBackoff(TOS_MsgPtr m)">
+<b>MacBackoff.initialBackoff</b>    </a>
+(TOS_MsgPtr m)
+<menu>
+ How many basic time periods to back off.
+</menu><p>
+
+<li>
+         async event int16_t     <a href="tos.lib.CC2420Radio.MacBackoff.nc.html# async event int16_t MacBackoff.congestionBackoff(TOS_MsgPtr m)">
+<b>MacBackoff.congestionBackoff</b>    </a>
+(TOS_MsgPtr m)
+<menu>
+ How many symbols to back off when there is congestion 
+ (16uS per symbol * 20 symbols/block)
+</menu><p>
+
+<li>
+         async event void     <a href="tos.interfaces.RadioCoordinator.nc.html# async event void RadioSendCoordinator.startSymbol(uint8_t bitsPerBlock, uint8_t offset, TOS_MsgPtr msgBuff)">
+<b>RadioSendCoordinator.startSymbol</b>    </a>
+(uint8_t bitsPerBlock, uint8_t offset, TOS_MsgPtr msgBuff)
+
+<li>
+         async event void     <a href="tos.interfaces.RadioCoordinator.nc.html# async event void RadioSendCoordinator.byte(TOS_MsgPtr msg, uint8_t byteCount)">
+<b>RadioSendCoordinator.byte</b>    </a>
+(TOS_MsgPtr msg, uint8_t byteCount)
+
+<li>
+         async event void     <a href="tos.interfaces.RadioCoordinator.nc.html# async event void RadioReceiveCoordinator.startSymbol(uint8_t bitsPerBlock, uint8_t offset, TOS_MsgPtr msgBuff)">
+<b>RadioReceiveCoordinator.startSymbol</b>    </a>
+(uint8_t bitsPerBlock, uint8_t offset, TOS_MsgPtr msgBuff)
+
+<li>
+         async event void     <a href="tos.interfaces.RadioCoordinator.nc.html# async event void RadioReceiveCoordinator.byte(TOS_MsgPtr msg, uint8_t byteCount)">
+<b>RadioReceiveCoordinator.byte</b>    </a>
+(TOS_MsgPtr msg, uint8_t byteCount)
+
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Descriptions</h3>
+</td></tr></table>
+    <a name="void sendPacket(void)"></a>
+        <h4>sendPacket</h4>
+        void <b>sendPacket</b>(void)<P><menu>
+ Try to send a packet.  If unsuccessful, backoff again
+</menu><hr>
+    <a name="void delayedRXFIFO(void)"></a>
+        <h4>delayedRXFIFO</h4>
+        void <b>delayedRXFIFO</b>(void)<P><menu>
+ Delayed RXFIFO is used to read the receive FIFO of the CC2420
+ in task context after the uC receives an interrupt that a packet
+ is in the RXFIFO.  Task context is necessary since reading from
+ the FIFO may take a while and we'd like to get other interrupts
+ during that time, or notifications of additional packets received
+ and stored in the CC2420 RXFIFO.
+</menu><hr>
+    <a name=" async event int16_t MacBackoff.initialBackoff(TOS_MsgPtr m)"></a>
+        <h4>MacBackoff.initialBackoff</h4>
+         async event int16_t     <a href="tos.lib.CC2420Radio.MacBackoff.nc.html# async event int16_t MacBackoff.initialBackoff(TOS_MsgPtr m)"><b>MacBackoff.initialBackoff</b>    </a>
+(TOS_MsgPtr m)<P><menu>
+ How many basic time periods to back off.
+ Each basic time period consists of 20 symbols (16uS per symbol)
+</menu>

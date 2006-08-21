@@ -1,0 +1,28 @@
+digraph "TimerC_if" {
+    rankdir=LR;
+    ratio=compress;
+    margin="0,0";
+    ranksep=0.0005; 
+    nodesep=0.1; 
+    node [shape=ellipse style=filled fillcolor="#e0e0e0"];
+    node [fontsize=10 height=.1 width=.1];
+    edge [fontsize=9 arrowsize=.8];
+    node [fontcolor=blue];
+    edge [fontcolor=blue];
+
+    TimerC [URL="tos.system.TimerC.nc.html"];
+    TimerM [URL="tos.system.TimerM.nc.html"];
+    TimerC -> TimerM [ style=dashed label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+    TimerC [URL="tos.system.TimerC.nc.html"];
+    TimerM [URL="tos.system.TimerM.nc.html"];
+    TimerC -> TimerM [ style=dashed label="Timer" URL="tos.interfaces.Timer.nc.html" ];
+    TimerM [URL="tos.system.TimerM.nc.html"];
+    NoLeds [URL="tos.system.NoLeds.nc.html"];
+    TimerM -> NoLeds [ label="Leds" URL="tos.interfaces.Leds.nc.html" ];
+    TimerM [URL="tos.system.TimerM.nc.html"];
+    ClockC [URL="tos.system.ClockC.nc.html"];
+    TimerM -> ClockC [ label="Clock" URL="tos.interfaces.Clock.nc.html" ];
+    TimerM [URL="tos.system.TimerM.nc.html"];
+    HPLPowerManagementM [URL="tos.platform.mica2.HPLPowerManagementM.nc.html"];
+    TimerM -> HPLPowerManagementM [ label="PowerManagement" URL="tos.interfaces.PowerManagement.nc.html" ];
+}

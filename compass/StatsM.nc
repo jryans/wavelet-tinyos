@@ -49,8 +49,11 @@ implementation {
   result_t populatePack();
   void clearStats();
   
-  /*** Stats: reports sent by applications and erase support ***/
+  // Stats: reports sent by applications
   
+  /**
+   * Submits a new report.
+   */
   command void Stats.file(StatsReport report) {
     switch (report.type) {
     case WT_CACHE: {
@@ -60,11 +63,14 @@ implementation {
     }
   }
   
+  /**
+   * Clears current stats data.
+   */
   command void Stats.clear() {
     clearStats();
   }
   
-  /*** Snoop: pretends to be Transceiver so it can listen to packets ***/
+  // Snoop: pretends to be Transceiver so it can listen to packets
   
   /**
    * Stores details for each packet sent.
@@ -122,7 +128,7 @@ implementation {
     return m;
   }
   
-  /*** Message: listens to Message events ***/
+  // Message: listens to Message events
   
   event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
     if (checkMsg(msg)) {
@@ -152,11 +158,11 @@ implementation {
     }
   }
   
-  /*** BigPack: sends and receives multi-packet data ***/
+  // BigPack: sends and receives multi-packet data
   
   /**
-   * Once the request is complete, the requester is given a pointer to the main
-   * data block.
+   * Stores wavelet node configuration to packets sent for each
+   * neighbor separately.
    */
   event void WaveletPack.requestDone(void *mainBlock, result_t result) {
     if (result == SUCCESS) {
@@ -192,13 +198,22 @@ implementation {
     call WaveletPack.free();
   }
   
+  /**
+   * Begins assembling the requested pack by reading a new
+   * voltage value.  When this completes, the pack itself
+   * will actually be assembled.
+   */
   event void StatsPack.buildPack() {
     // Update voltage value
     call SensorData.readSensors();
   }
   
-  /*** SensorData: reads current voltage ***/
+  // SensorData: reads current voltage
   
+  /**
+   * Once a new voltage value has been read in, the rest of the
+   * stats data is gathered and the pack is built.
+   */
   event void SensorData.readDone(float *newVals) {
     data.voltage = newVals[VOLT];
     // Fill in RSSI
@@ -215,8 +230,12 @@ implementation {
     call StatsPack.packBuilt(populatePack());
   }
   
-  /*** Internal Functions ***/
+  // Internal Functions
   
+  /**
+   * Fills in all the data structure descriptors needed by
+   * the BigPack protocol.
+   */
   result_t populatePack() {
     BigPackEnvelope *env;
     // Find the number of blocks and pointers needed
@@ -271,6 +290,9 @@ implementation {
     return SUCCESS;
   }
   
+  /**
+   * Deallocates the wavelet configuration data.
+   */
   void waveletFree() {
     StatsWT *w = &data.wavelet;
     // If there is retry data, free it
@@ -283,6 +305,9 @@ implementation {
     }
   }
   
+  /**
+   * Clears all stats data.
+   */
   void clearStats() {
     data.pRcvd = 0; // Packets received (2)
     data.rssiMin = 0; // Min RSSI over all packets (1)
@@ -303,6 +328,10 @@ implementation {
     data.mRetriesSum = 0; // Sum of retries over all messages (2)
   }
   
+  /**
+   * Filters out some message types from being counted in stats data.
+   * Returns TRUE if the message should be counted and FALSE if not.
+   */
   bool checkMsg(msgData msg) {
     switch (msg.type) {
     case BIGPACKHEADER: {
@@ -326,7 +355,7 @@ implementation {
     return TRUE;
   }
   
-  /*** StdControl ***/
+  // StdControl
   
   command result_t StdControl.init() {
     // Clear alloc tracker

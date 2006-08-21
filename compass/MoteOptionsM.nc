@@ -42,8 +42,12 @@ implementation {
   bool startup;
   bool stayAwake;
 
-  /*** Message ***/
+  // Message
     
+  /**
+   * Processes various options as they are received over
+   * the network.
+   */
   event void Message.receive(msgData msg) {
     switch (msg.type) {
     case MOTEOPTIONS: {
@@ -119,7 +123,7 @@ implementation {
     return SUCCESS;
   }
   
-  /*** MoteOptions ***/
+  // MoteOptions
   
   /**
    * Signaled when an option affecting other applications is received.
@@ -137,8 +141,11 @@ implementation {
     }
   }
   
-  /*** Timer ***/
+  // Power Control
   
+  /**
+   * Checks with the sink for the latest power control settings.
+   */
   void checkSink() {
     msgData msg;
     msg.dest = 0;
@@ -148,6 +155,9 @@ implementation {
     call Sleep.start(TIMER_ONE_SHOT, pCntl.sleepInterval);
   }
   
+  /**
+   * Wakes up to check for updated power control settings.
+   */
   event result_t Wake.fired() {
     dbg(DBG_USR1, "MoteOptions: Reached next wake up interval");
     call Wake.start(TIMER_ONE_SHOT, pCntl.wakeUpInterval);
@@ -158,6 +168,9 @@ implementation {
     return SUCCESS;
   }
   
+  /**
+   * Moves to sleep mode until the next wake up interval.
+   */
   void goToSleep() {
     dbg(DBG_USR1, "MoteOptions: Going to sleep until next wake up interval");
     sleeping = TRUE;
@@ -166,6 +179,10 @@ implementation {
     call TransControl.stop();
   }
   
+  /**
+   * Based on the active sleep mode, various actions are taken
+   * on each sleep interval.
+   */
   event result_t Sleep.fired() {
     switch (pCntl.pmMode) {
     case PM_CHECK_SINK: {
@@ -180,6 +197,10 @@ implementation {
     return SUCCESS;
   }
   
+  /**
+   * Delays Deluge startup to give other systems time
+   * to start first.
+   */
   event result_t Deluge.fired() {
     if (startup && TOS_LOCAL_ADDRESS != 0) {
       startup = FALSE;
@@ -197,7 +218,7 @@ implementation {
     return SUCCESS;
   }
   
-  /*** StdControl ***/
+  // StdControl
   
   command result_t StdControl.init() {
     rRet = 5;

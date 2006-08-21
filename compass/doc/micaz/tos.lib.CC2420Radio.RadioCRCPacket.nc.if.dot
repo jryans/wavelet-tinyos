@@ -1,0 +1,22 @@
+digraph "RadioCRCPacket_if" {
+    rankdir=LR;
+    ratio=compress;
+    margin="0,0";
+    ranksep=0.0005; 
+    nodesep=0.1; 
+    node [shape=ellipse style=filled fillcolor="#e0e0e0"];
+    node [fontsize=10 height=.1 width=.1];
+    edge [fontsize=9 arrowsize=.8];
+    node [fontcolor=blue];
+    edge [fontcolor=blue];
+
+    RadioCRCPacket [URL="tos.lib.CC2420Radio.RadioCRCPacket.nc.html"];
+    CC2420RadioC [URL="tos.lib.CC2420Radio.CC2420RadioC.nc.html"];
+    RadioCRCPacket -> CC2420RadioC [ style=dashed label="BareSendMsg" URL="tos.interfaces.BareSendMsg.nc.html" ];
+    RadioCRCPacket [URL="tos.lib.CC2420Radio.RadioCRCPacket.nc.html"];
+    CC2420RadioC [URL="tos.lib.CC2420Radio.CC2420RadioC.nc.html"];
+    RadioCRCPacket -> CC2420RadioC [ style=dashed label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+    RadioCRCPacket [URL="tos.lib.CC2420Radio.RadioCRCPacket.nc.html"];
+    CC2420RadioC [URL="tos.lib.CC2420Radio.CC2420RadioC.nc.html"];
+    RadioCRCPacket -> CC2420RadioC [ style=dashed label="ReceiveMsg" URL="tos.interfaces.ReceiveMsg.nc.html" ];
+}

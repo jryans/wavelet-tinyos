@@ -1,0 +1,173 @@
+
+<html>
+<head>
+<title>Interface: HPLCC2420FIFO</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.CC2420Radio.HPLCC2420FIFO.nc.source">tos.lib.CC2420Radio.HPLCC2420FIFO.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: HPLCC2420FIFO</h1>
+<p>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Joe Polastre
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.platform.micaz.HPLCC2420C.nc.html">tos.platform.micaz.HPLCC2420C</a><br>
+    <a href="tos.platform.micaz.HPLCC2420FIFOM.nc.html">tos.platform.micaz.HPLCC2420FIFOM</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="tos.lib.CC2420Radio.CC2420RadioM.nc.html">tos.lib.CC2420Radio.CC2420RadioM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+          result_t     <a href="#  result_t readRXFIFO(uint8_t length, uint8_t *data)">
+<b>readRXFIFO</b>    </a>
+(uint8_t length, uint8_t *data)
+<menu>
+ Read from the RX FIFO queue. </menu><p>
+
+<li>
+          result_t     <a href="#  result_t writeTXFIFO(uint8_t length, uint8_t *data)">
+<b>writeTXFIFO</b>    </a>
+(uint8_t length, uint8_t *data)
+<menu>
+ Writes a series of bytes to the transmit FIFO.
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events</h3></td></tr></table>
+<ul>
+<li>
+          result_t     <a href="#  result_t RXFIFODone(uint8_t length, uint8_t *data)">
+<b>RXFIFODone</b>    </a>
+(uint8_t length, uint8_t *data)
+<menu>
+ Notification that a byte from the RX FIFO has been received.
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t TXFIFODone(uint8_t length, uint8_t *data)">
+<b>TXFIFODone</b>    </a>
+(uint8_t length, uint8_t *data)
+<menu>
+ Notification that the bytes have been written to the FIFO
+ and if the write was successful.
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name="  result_t readRXFIFO(uint8_t length, uint8_t *data)"></a>
+        <h4>readRXFIFO</h4>
+          result_t <b>readRXFIFO</b>(uint8_t length, uint8_t *data)<P><menu>
+ Read from the RX FIFO queue.  Will read bytes from the queue
+ until the length is reached (determined by the first byte read).
+ RXFIFODone() is signalled when all bytes have been read or the
+ end of the packet has been reached.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>length</b> -  number of bytes requested from the FIFO
+ </p><p STYLE="text-indent: -1cm"><b>data</b> -  buffer bytes should be placed into
+
+ </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the bus is free to read from the FIFO
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t writeTXFIFO(uint8_t length, uint8_t *data)"></a>
+        <h4>writeTXFIFO</h4>
+          result_t <b>writeTXFIFO</b>(uint8_t length, uint8_t *data)<P><menu>
+ Writes a series of bytes to the transmit FIFO.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>length</b> -  length of data to be written
+ </p><p STYLE="text-indent: -1cm"><b>data</b> -  the first byte of data
+
+ </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the bus is free to write to the FIFO
+</td></tr></table>
+</menu><table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events - Details</h3></td></tr></table>
+    <a name="  result_t RXFIFODone(uint8_t length, uint8_t *data)"></a>
+        <h4>RXFIFODone</h4>
+          result_t <b>RXFIFODone</b>(uint8_t length, uint8_t *data)<P><menu>
+ Notification that a byte from the RX FIFO has been received.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>length</b> -  number of bytes actually read from the FIFO
+ </p><p STYLE="text-indent: -1cm"><b>data</b> -  buffer the bytes were read into
+
+ </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS 
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t TXFIFODone(uint8_t length, uint8_t *data)"></a>
+        <h4>TXFIFODone</h4>
+          result_t <b>TXFIFODone</b>(uint8_t length, uint8_t *data)<P><menu>
+ Notification that the bytes have been written to the FIFO
+ and if the write was successful.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>length</b> -  number of bytes written to the fifo queue
+ </p><p STYLE="text-indent: -1cm"><b>data</b> -  the buffer written to the fifo queue
+
+ </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS
+</td></tr></table>
+</menu>

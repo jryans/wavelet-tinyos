@@ -1,0 +1,173 @@
+
+<html>
+<head>
+<title>Component: DelugeM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.Deluge.DelugeM.nc.source">tos.lib.Deluge.DelugeM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: DelugeM</h1>
+<p>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Jonathan Hui <<a href="mailto:jwhui@cs.berkeley.edu">jwhui@cs.berkeley.edu</a>>
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.Crc.nc.html">Crc</a> 
+<li>    <a href="tos.lib.Deluge.DelugeMetadata.nc.html">DelugeMetadata</a> Metadata
+<li>    <a href="tos.lib.Deluge.DelugePageTransfer.nc.html">DelugePageTransfer</a> PageTransfer
+<li>    <a href="tos.interfaces.Leds.nc.html">Leds</a> 
+<li>    <a href="tos.interfaces.InternalFlash.nc.html">InternalFlash</a> IFlash
+<li>    <a href="tos.lib.Deluge.NetProg.nc.html">NetProg</a> 
+<li>    <a href="tos.interfaces.Random.nc.html">Random</a> 
+<li>    <a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a> ReceiveAdvMsg
+<li>    <a href="tos.interfaces.SendMsg.nc.html">SendMsg</a> SendAdvMsg
+<li>    <a href="tos.lib.Deluge.SharedMsgBuf.nc.html">SharedMsgBuf</a> 
+<li>    <a href="tos.interfaces.SplitControl.nc.html">SplitControl</a> MetadataControl
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> PageTransferControl
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   uint8_t state
+<li>   uint8_t rebootDelay
+<li>   uint8_t curImage
+<li>   DelugeAdvTimer advTimers[DelugeM.DELUGE_NUM_TIMERS]
+<li>   DelugeNodeDesc nodeDesc
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        int <b>findMinTimer</b>(void)
+
+<li>
+        void <b>setupAdvTimer</b>(int timerNum)
+
+<li>
+        void <b>updateTimers</b>(int minTimer)
+
+<li>
+        void <b>resetTimer</b>(int i)
+
+<li>
+        void <b>checkReboot</b>(void)
+
+<li>
+        void <b>setNextPage</b>(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.init(void)">
+<b>StdControl.init</b>    </a>
+(void)
+
+<li>
+        void <b>realStart</b>(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.start(void)">
+<b>StdControl.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.stop(void)">
+<b>StdControl.stop</b>    </a>
+(void)
+
+<li>
+        event result_t     <a href="tos.interfaces.SplitControl.nc.html#event result_t MetadataControl.initDone(void)">
+<b>MetadataControl.initDone</b>    </a>
+(void)
+
+<li>
+        event result_t     <a href="tos.interfaces.SplitControl.nc.html#event result_t MetadataControl.startDone(void)">
+<b>MetadataControl.startDone</b>    </a>
+(void)
+
+<li>
+        event result_t     <a href="tos.interfaces.SplitControl.nc.html#event result_t MetadataControl.stopDone(void)">
+<b>MetadataControl.stopDone</b>    </a>
+(void)
+
+<li>
+        void <b>sendAdvMsg</b>(int imgNum, uint16_t addr)
+
+<li>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t Timer.fired(void)">
+<b>Timer.fired</b>    </a>
+(void)
+
+<li>
+        bool <b>isNodeDescValid</b>(DelugeNodeDesc *tmpNodeDesc)
+
+<li>
+        event TOS_MsgPtr     <a href="tos.interfaces.ReceiveMsg.nc.html#event TOS_MsgPtr ReceiveAdvMsg.receive(TOS_MsgPtr pMsg)">
+<b>ReceiveAdvMsg.receive</b>    </a>
+(TOS_MsgPtr pMsg)
+
+<li>
+        event result_t     <a href="tos.interfaces.SendMsg.nc.html#event result_t SendAdvMsg.sendDone(TOS_MsgPtr pMsg, result_t result)">
+<b>SendAdvMsg.sendDone</b>    </a>
+(TOS_MsgPtr pMsg, result_t result)
+
+<li>
+        event void     <a href="tos.lib.Deluge.DelugePageTransfer.nc.html#event void PageTransfer.receivedPage(imgnum_t imgNum, pgnum_t pgNum)">
+<b>PageTransfer.receivedPage</b>    </a>
+(imgnum_t imgNum, pgnum_t pgNum)
+
+<li>
+        event void     <a href="tos.lib.Deluge.DelugePageTransfer.nc.html#event void PageTransfer.suppressMsgs(imgnum_t imgNum)">
+<b>PageTransfer.suppressMsgs</b>    </a>
+(imgnum_t imgNum)
+
+<li>
+        event void     <a href="tos.lib.Deluge.DelugeMetadata.nc.html#event void Metadata.updateDone(result_t result)">
+<b>Metadata.updateDone</b>    </a>
+(result_t result)
+
+<li>
+        event void     <a href="tos.lib.Deluge.SharedMsgBuf.nc.html#event void SharedMsgBuf.bufFree(void)">
+<b>SharedMsgBuf.bufFree</b>    </a>
+(void)
+
+</ul>
+

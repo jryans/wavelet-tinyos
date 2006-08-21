@@ -1,0 +1,179 @@
+
+<html>
+<head>
+<title>Interface: HPLUART</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.interfaces.HPLUART.nc.source">tos.interfaces.HPLUART.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: HPLUART</h1>
+<p>
+
+ The byte-level interface to the UART, which can send and receive
+ simultaneously.
+
+ <p> This interface, as it directly abstracts hardware, follows the
+ hardware interface convention of not maintaining state. Therefore,
+ some conditions that could be understood by a higher layer to be
+ errors execute properly; for example, one can call
+ <code>txBit</code> when in receive mode. A higher level interface
+ must provide the checks for conditions such as this.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Jason Hill
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> David Gay
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> Philip Levis
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.platform.mica2.HPLUART0M.nc.html">tos.platform.mica2.HPLUART0M</a><br>
+    <a href="tos.platform.mica2.HPLUARTC.nc.html">tos.platform.mica2.HPLUARTC</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="tos.system.UARTM.nc.html">tos.system.UARTM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+          result_t     <a href="#  result_t init(void)">
+<b>init</b>    </a>
+(void)
+<menu>
+ Initialize the UART.
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t stop(void)">
+<b>stop</b>    </a>
+(void)
+<menu>
+ TUrn off the UART
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t put(uint8_t data)">
+<b>put</b>    </a>
+(uint8_t data)
+<menu>
+ Send one byte of data.</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events</h3></td></tr></table>
+<ul>
+<li>
+          result_t     <a href="#  result_t get(uint8_t data)">
+<b>get</b>    </a>
+(uint8_t data)
+<menu>
+ A byte of data has been received.
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t putDone(void)">
+<b>putDone</b>    </a>
+(void)
+<menu>
+ The previous call to <code>put</code> has completed; another byte
+ may now be sent.
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name="  result_t init(void)"></a>
+        <h4>init</h4>
+          result_t <b>init</b>(void)<P><menu>
+ Initialize the UART.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS always.
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t stop(void)"></a>
+        <h4>stop</h4>
+          result_t <b>stop</b>(void)<P><menu>
+ TUrn off the UART
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS always
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t put(uint8_t data)"></a>
+        <h4>put</h4>
+          result_t <b>put</b>(uint8_t data)<P><menu>
+ Send one byte of data. There should only one outstanding send at
+ any time; one must wait for the <code>putDone</code> event before
+ calling <code>put</code> again.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS always.
+</td></tr></table>
+</menu><table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events - Details</h3></td></tr></table>
+    <a name="  result_t get(uint8_t data)"></a>
+        <h4>get</h4>
+          result_t <b>get</b>(uint8_t data)<P><menu>
+ A byte of data has been received.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS always.
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t putDone(void)"></a>
+        <h4>putDone</h4>
+          result_t <b>putDone</b>(void)<P><menu>
+ The previous call to <code>put</code> has completed; another byte
+ may now be sent.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS always.
+</td></tr></table>
+</menu>

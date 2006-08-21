@@ -1,0 +1,209 @@
+
+<html>
+<head>
+<title>Component: PacketM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.Transceiver.PacketM.nc.source">tos.lib.Transceiver.PacketM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: PacketM</h1>
+<p>
+
+
+ This module provides the Packet interface 
+
+ with default packet information.
+
+ 
+
+ The packet interface can be overridden by
+
+ comm layers higher up in the stack, such as security
+
+ or bcast.  This allows application components that sit on
+
+ top to know how much of the payload belongs to them and
+
+ where it starts.
+
+
+
+ Although the Packet interface is new to TinyOS 2.0, 
+
+ its usefulness can be applied to existing problems
+
+ in TinyOS 1.x.  
+
+
+
+ By including it here, we make it optional to use.
+
+ Motes that implement SomeSec security through the 
+
+ SecurityTransceiver will need to actively use the 
+
+ Packet interface.  We allow applications to be 
+
+ compatible with any version of the Transceiver
+
+ by allowing access to Packet in the non-secure version.
+
+
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> David Moss - <a href="mailto:dmm@rincon.com">dmm@rincon.com</a>
+
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.lib.Transceiver.Packet.nc.html">Packet</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        command void     <a href="#command void Packet.clear(TOS_MsgPtr msg)">
+<b>Packet.clear</b>    </a>
+(TOS_MsgPtr msg)
+<menu>
+
+ Clear out this packet. </menu><p>
+
+<li>
+        command uint8_t     <a href="#command uint8_t Packet.payloadLength(TOS_MsgPtr msg)">
+<b>Packet.payloadLength</b>    </a>
+(TOS_MsgPtr msg)
+<menu>
+
+ Return the length of the payload of msg.</menu><p>
+
+<li>
+        command uint8_t     <a href="#command uint8_t Packet.maxPayloadLength(void)">
+<b>Packet.maxPayloadLength</b>    </a>
+(void)
+<menu>
+
+ Return the maximum payload length that this communication layer
+
+ can provide.</menu><p>
+
+<li>
+        command void     <a href="#command void Packet.getPayload(TOS_MsgPtr msg, uint8_t *len)">
+<b>Packet.getPayload</b>    </a>
+(TOS_MsgPtr msg, uint8_t *len)
+<menu>
+
+ Return point to a protocol's payload region in a packet.
+
+</menu><p>
+
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Descriptions</h3>
+</td></tr></table>
+    <a name="command void Packet.clear(TOS_MsgPtr msg)"></a>
+        <h4>Packet.clear</h4>
+        command void     <a href="tos.lib.Transceiver.Packet.nc.html#command void Packet.clear(TOS_MsgPtr msg)"><b>Packet.clear</b>    </a>
+(TOS_MsgPtr msg)<P><menu>
+
+ Clear out this packet.  Note that this is a deep operation and
+
+ total operation: calling clear() on any layer will completely
+
+ clear the packet for reuse.
+
+
+
+ Note that the Transceiver relies on the AM type to
+
+ be present throughout the lifetime of an allocated
+
+ packet. This means we cannot clear the entire
+
+ packet, or we'd erase the AM type and the allocated
+
+ message would never get sent.
+
+</menu><hr>
+    <a name="command uint8_t Packet.payloadLength(TOS_MsgPtr msg)"></a>
+        <h4>Packet.payloadLength</h4>
+        command uint8_t     <a href="tos.lib.Transceiver.Packet.nc.html#command uint8_t Packet.payloadLength(TOS_MsgPtr msg)"><b>Packet.payloadLength</b>    </a>
+(TOS_MsgPtr msg)<P><menu>
+
+ Return the length of the payload of msg. This value may be less
+
+ than what maxPayloadLength() returns, if the packet is smaller than
+
+ the MTU. If a communication component does not support variably
+
+ sized data regions, then payloadLength() will always return
+
+ the same value as maxPayloadLength(). 
+
+</menu><hr>
+    <a name="command uint8_t Packet.maxPayloadLength(void)"></a>
+        <h4>Packet.maxPayloadLength</h4>
+        command uint8_t     <a href="tos.lib.Transceiver.Packet.nc.html#command uint8_t Packet.maxPayloadLength(void)"><b>Packet.maxPayloadLength</b>    </a>
+(void)<P><menu>
+
+ Return the maximum payload length that this communication layer
+
+ can provide. Note that, depending on protocol fields, a
+
+ given request to send a packet may not be able to send the
+
+ maximum payload length (e.g., if there are variable length
+
+ fields). Protocols may provide specialized interfaces
+
+ for these circumstances.
+
+</menu><hr>
+    <a name="command void Packet.getPayload(TOS_MsgPtr msg, uint8_t *len)"></a>
+        <h4>Packet.getPayload</h4>
+        command void     <a href="tos.lib.Transceiver.Packet.nc.html#command void Packet.getPayload(TOS_MsgPtr msg, uint8_t *len)"><b>Packet.getPayload</b>    </a>
+(TOS_MsgPtr msg, uint8_t *len)<P><menu>
+
+ Return point to a protocol's payload region in a packet.
+
+ If len is not NULL, getPayload will return the length of
+
+ the payload in it, which is the same as the return value
+
+ from payloadLength(). If a protocol does not support
+
+ variable length packets, then *len is equal to 
+
+ maxPayloadLength().
+
+</menu>

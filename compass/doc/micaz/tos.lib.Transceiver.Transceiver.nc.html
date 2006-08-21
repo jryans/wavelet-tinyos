@@ -1,0 +1,398 @@
+
+<html>
+<head>
+<title>Interface: Transceiver</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.Transceiver.Transceiver.nc.source">tos.lib.Transceiver.Transceiver.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: Transceiver</h1>
+<p>
+
+
+ Transceiver Interface
+
+
+
+ Transceiver allocates a set number of TOS_Msg's per application,
+
+ reducing memory requirements and allowing modules to share
+
+ same TOS_Msg for sending messages.  It also provides a queue
+
+ of TOS_Msg's, the size of which is defined by the preprocessor
+
+ variable MAX_TOS_MSGS
+
+
+
+ Because each module in your application could have fault tolerance schemes
+
+ built in, Transceiver keeps track of whether or not the last
+
+ message is still valid.  If the module requests the last message
+
+ to be resent, TOS_Msg will resend if the message from that particular
+
+ AM type still exists, or return FAIL if it doesn't exist.
+
+
+
+ The implementation is meant to keep a queue of messages to send while
+
+ using the minimum amount of memory necessary.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> David Moss - <a href="mailto:dmm@rincon.com">dmm@rincon.com</a>
+
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.lib.Transceiver.TransceiverC.nc.html">tos.lib.Transceiver.TransceiverC</a><br>
+    <a href="tos.lib.Transceiver.TransceiverM.nc.html">tos.lib.Transceiver.TransceiverM</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="apps.compass.BroadcastM.nc.html">apps.compass.BroadcastM</a><br>
+    <a href="apps.compass.PingM.nc.html">apps.compass.PingM</a><br>
+    <a href="apps.compass.RouterStaticM.nc.html">apps.compass.RouterStaticM</a><br>
+    <a href="apps.compass.StatsM.nc.html">apps.compass.StatsM</a><br>
+    <a href="apps.compass.UnicastM.nc.html">apps.compass.UnicastM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+         TOS_MsgPtr     <a href="# TOS_MsgPtr requestWrite(void)">
+<b>requestWrite</b>    </a>
+(void)
+<menu>
+
+ Request a pointer to an empty TOS_Msg.data payload buffer.
+
+</menu><p>
+
+<li>
+         bool     <a href="# bool isWriteOpen(void)">
+<b>isWriteOpen</b>    </a>
+(void)
+<menu>
+
+ Check if a TOS_Msg has already been allocated by
+
+ the Transceiver from requestWrite().</menu><p>
+
+<li>
+         result_t     <a href="# result_t sendRadio(uint16_t dest, uint8_t payloadSize)">
+<b>sendRadio</b>    </a>
+(uint16_t dest, uint8_t payloadSize)
+<menu>
+
+ Release and send the current contents of the payload buffer over
+
+ the radio to the given address, with the given payload size.
+
+</menu><p>
+
+<li>
+         result_t     <a href="# result_t sendUart(uint8_t payloadSize)">
+<b>sendUart</b>    </a>
+(uint8_t payloadSize)
+<menu>
+
+ Release and send the current contents of the payload buffer over
+
+ UART with the given payload size. </menu><p>
+
+<li>
+         result_t     <a href="# result_t resendRadio(void)">
+<b>resendRadio</b>    </a>
+(void)
+<menu>
+
+ Attempt to resend the last message sent by this AM type.
+
+</menu><p>
+
+<li>
+         bool     <a href="# bool isSending(void)">
+<b>isSending</b>    </a>
+(void)
+<menu>
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events</h3></td></tr></table>
+<ul>
+<li>
+         result_t     <a href="# result_t radioSendDone(TOS_MsgPtr m, result_t result)">
+<b>radioSendDone</b>    </a>
+(TOS_MsgPtr m, result_t result)
+<menu>
+
+ A message was sent over radio.
+
+</menu><p>
+
+<li>
+         result_t     <a href="# result_t uartSendDone(TOS_MsgPtr m, result_t result)">
+<b>uartSendDone</b>    </a>
+(TOS_MsgPtr m, result_t result)
+<menu>
+
+ A message was sent over UART.
+
+</menu><p>
+
+<li>
+         TOS_MsgPtr     <a href="# TOS_MsgPtr receiveRadio(TOS_MsgPtr m)">
+<b>receiveRadio</b>    </a>
+(TOS_MsgPtr m)
+<menu>
+
+ Received a message over the radio
+
+</menu><p>
+
+<li>
+         TOS_MsgPtr     <a href="# TOS_MsgPtr receiveUart(TOS_MsgPtr m)">
+<b>receiveUart</b>    </a>
+(TOS_MsgPtr m)
+<menu>
+
+ Received a message over UART
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name=" TOS_MsgPtr requestWrite(void)"></a>
+        <h4>requestWrite</h4>
+         TOS_MsgPtr <b>requestWrite</b>(void)<P><menu>
+
+ Request a pointer to an empty TOS_Msg.data payload buffer.
+
+ This will allocate one TOS_Msg to the requesting AM type.
+
+ This message will be allocated to the requesting AM type until
+
+ it is sent.
+
+
+
+ You must call sendRadio(..) or sendUart(..) when finished 
+
+ to release the pointer and send the message.
+
+
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> a TOS_MsgPtr to an allocated TOS_Msg if available,
+
+         NULL if no buffer is available.
+
+</td></tr></table>
+</menu><hr>
+    <a name=" bool isWriteOpen(void)"></a>
+        <h4>isWriteOpen</h4>
+         bool <b>isWriteOpen</b>(void)<P><menu>
+
+ Check if a TOS_Msg has already been allocated by
+
+ the Transceiver from requestWrite(). Note that if a
+
+ TOS_Msg is already allocated to the requesting AM type,
+
+ calling requestWrite() again will return a pointer
+
+ to the TOS_Msg that is already allocated.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> TRUE if requestWrite has been called and a TOS_Msg 
+
+         has been allocated to the current AM type.
+
+</td></tr></table>
+</menu><hr>
+    <a name=" result_t sendRadio(uint16_t dest, uint8_t payloadSize)"></a>
+        <h4>sendRadio</h4>
+         result_t <b>sendRadio</b>(uint16_t dest, uint8_t payloadSize)<P><menu>
+
+ Release and send the current contents of the payload buffer over
+
+ the radio to the given address, with the given payload size.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>dest</b> -  - the destination address
+
+ </p><p STYLE="text-indent: -1cm"><b>size</b> -  - the size of the structure inside the TOS_Msg payload.
+
+ </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the buffer will be sent. FAIL if no buffer
+
+         had been allocated by requestWrite().
+
+</td></tr></table>
+</menu><hr>
+    <a name=" result_t sendUart(uint8_t payloadSize)"></a>
+        <h4>sendUart</h4>
+         result_t <b>sendUart</b>(uint8_t payloadSize)<P><menu>
+
+ Release and send the current contents of the payload buffer over
+
+ UART with the given payload size.  No address is needed.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>size</b> -  - the size of the structure inside the TOS_Msg payload.
+
+ </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the buffer will be sent. FAIL if no buffer
+
+         had been allocated by requestWrite().
+
+</td></tr></table>
+</menu><hr>
+    <a name=" result_t resendRadio(void)"></a>
+        <h4>resendRadio</h4>
+         result_t <b>resendRadio</b>(void)<P><menu>
+
+ Attempt to resend the last message sent by this AM type.
+
+ If the message still exists in the pool and the attempt 
+
+ proceeds, SUCCESS will be signaled.  Otherwise, FAIL will 
+
+ be signaled. In that case, the requesting module will have 
+
+ to reconstruct the message and try sending it again.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the attempt proceeds, and sendDone(..) will be signaled.
+
+</td></tr></table>
+</menu><hr>
+    <a name=" bool isSending(void)"></a>
+        <h4>isSending</h4>
+         bool <b>isSending</b>(void)<P><menu>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> TRUE if the requesting AM type is in the process of being sent.
+
+</td></tr></table>
+</menu><table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events - Details</h3></td></tr></table>
+    <a name=" result_t radioSendDone(TOS_MsgPtr m, result_t result)"></a>
+        <h4>radioSendDone</h4>
+         result_t <b>radioSendDone</b>(TOS_MsgPtr m, result_t result)<P><menu>
+
+ A message was sent over radio.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>m</b> -  - a pointer to the sent message, valid for the duration of the 
+
+     event.
+
+ </p><p STYLE="text-indent: -1cm"><b>result</b> -  - SUCCESS or FAIL.
+
+</menu></menu>
+</td></tr></table>
+</menu><hr>
+    <a name=" result_t uartSendDone(TOS_MsgPtr m, result_t result)"></a>
+        <h4>uartSendDone</h4>
+         result_t <b>uartSendDone</b>(TOS_MsgPtr m, result_t result)<P><menu>
+
+ A message was sent over UART.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>m</b> -  - a pointer to the sent message, valid for the duration of the 
+
+     event.
+
+ </p><p STYLE="text-indent: -1cm"><b>result</b> -  - SUCCESS or FAIL.
+
+</menu></menu>
+</td></tr></table>
+</menu><hr>
+    <a name=" TOS_MsgPtr receiveRadio(TOS_MsgPtr m)"></a>
+        <h4>receiveRadio</h4>
+         TOS_MsgPtr <b>receiveRadio</b>(TOS_MsgPtr m)<P><menu>
+
+ Received a message over the radio
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>m</b> -  - the receive message, valid for the duration of the 
+
+     event.
+
+</menu></menu>
+</td></tr></table>
+</menu><hr>
+    <a name=" TOS_MsgPtr receiveUart(TOS_MsgPtr m)"></a>
+        <h4>receiveUart</h4>
+         TOS_MsgPtr <b>receiveUart</b>(TOS_MsgPtr m)<P><menu>
+
+ Received a message over UART
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>m</b> -  - the receive message, valid for the duration of the 
+
+     event.
+
+</menu></menu>
+</td></tr></table>
+</menu>

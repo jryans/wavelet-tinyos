@@ -1,0 +1,102 @@
+
+<html>
+<head>
+<title>Component: UARTM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.system.UARTM.nc.source">tos.system.UARTM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: UARTM</h1>
+<p>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Jason Hill
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> David Gay
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> Philip Levis
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.HPLUART.nc.html">HPLUART</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.ByteComm.nc.html">ByteComm</a> 
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> Control
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   bool state
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t Control.init(void)">
+<b>Control.init</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t Control.start(void)">
+<b>Control.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t Control.stop(void)">
+<b>Control.stop</b>    </a>
+(void)
+
+<li>
+        async event result_t     <a href="tos.interfaces.HPLUART.nc.html#async event result_t HPLUART.get(uint8_t data)">
+<b>HPLUART.get</b>    </a>
+(uint8_t data)
+
+<li>
+        async event result_t     <a href="tos.interfaces.HPLUART.nc.html#async event result_t HPLUART.putDone(void)">
+<b>HPLUART.putDone</b>    </a>
+(void)
+
+<li>
+        async command result_t     <a href="tos.interfaces.ByteComm.nc.html#async command result_t ByteComm.txByte(uint8_t data)">
+<b>ByteComm.txByte</b>    </a>
+(uint8_t data)
+
+</ul>
+

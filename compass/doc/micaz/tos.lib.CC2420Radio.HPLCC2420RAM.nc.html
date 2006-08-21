@@ -1,0 +1,108 @@
+
+<html>
+<head>
+<title>Interface: HPLCC2420RAM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.CC2420Radio.HPLCC2420RAM.nc.source">tos.lib.CC2420Radio.HPLCC2420RAM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: HPLCC2420RAM</h1>
+<p>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Joe Polastre
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.platform.micaz.HPLCC2420C.nc.html">tos.platform.micaz.HPLCC2420C</a><br>
+    <a href="tos.platform.micaz.HPLCC2420M.nc.html">tos.platform.micaz.HPLCC2420M</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="tos.lib.CC2420Radio.CC2420ControlM.nc.html">tos.lib.CC2420Radio.CC2420ControlM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+          result_t     <a href="#  result_t write(uint16_t addr, uint8_t length, uint8_t *buffer)">
+<b>write</b>    </a>
+(uint16_t addr, uint8_t length, uint8_t *buffer)
+<menu>
+ Transmit data to RAM
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t read(uint16_t addr, uint8_t length, uint8_t *buffer)">
+<b>read</b>    </a>
+(uint16_t addr, uint8_t length, uint8_t *buffer)
+<menu>
+ Read data from RAM
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events</h3></td></tr></table>
+<ul>
+<li>
+          result_t <b>writeDone</b>(uint16_t addr, uint8_t length, uint8_t *buffer)
+
+<li>
+          result_t <b>readDone</b>(uint16_t addr, uint8_t length, uint8_t *buffer)
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name="  result_t write(uint16_t addr, uint8_t length, uint8_t *buffer)"></a>
+        <h4>write</h4>
+          result_t <b>write</b>(uint16_t addr, uint8_t length, uint8_t *buffer)<P><menu>
+ Transmit data to RAM
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the request was accepted
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t read(uint16_t addr, uint8_t length, uint8_t *buffer)"></a>
+        <h4>read</h4>
+          result_t <b>read</b>(uint16_t addr, uint8_t length, uint8_t *buffer)<P><menu>
+ Read data from RAM
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the request was accepted
+</td></tr></table>
+</menu>

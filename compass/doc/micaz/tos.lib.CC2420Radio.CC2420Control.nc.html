@@ -1,0 +1,425 @@
+
+<html>
+<head>
+<title>Interface: CC2420Control</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.CC2420Radio.CC2420Control.nc.source">tos.lib.CC2420Radio.CC2420Control.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: CC2420Control</h1>
+<p>
+  CC2420 Radio Control interface. 
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.lib.CC2420Radio.CC2420ControlM.nc.html">tos.lib.CC2420Radio.CC2420ControlM</a><br>
+    <a href="tos.lib.CC2420Radio.CC2420RadioC.nc.html">tos.lib.CC2420Radio.CC2420RadioC</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="apps.compass.MoteOptionsM.nc.html">apps.compass.MoteOptionsM</a><br>
+    <a href="tos.lib.CC2420Radio.CC2420RadioM.nc.html">tos.lib.CC2420Radio.CC2420RadioM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+         result_t     <a href="# result_t TunePreset(uint8_t channel)">
+<b>TunePreset</b>    </a>
+(uint8_t channel)
+<menu>
+ Tune the radio to one of the 802.15.4 present channels.
+</menu><p>
+
+<li>
+         result_t     <a href="# result_t TuneManual(uint16_t freq)">
+<b>TuneManual</b>    </a>
+(uint16_t freq)
+<menu>
+ Tune the radio to a given frequency.</menu><p>
+
+<li>
+         uint8_t     <a href="# uint8_t GetPreset(void)">
+<b>GetPreset</b>    </a>
+(void)
+<menu>
+ Get the current channel of the radio
+
+ WARNING: If running the CC2420 on a non-standard IEEE 802.15.4
+ frequency, this function will return the closest possible 
+ valid IEEE 802.15.4 channel even if the current frequency in use is not
+ a valid IEEE 802.15.4 frequency
+
+</menu><p>
+
+<li>
+         uint16_t     <a href="# uint16_t GetFrequency(void)">
+<b>GetFrequency</b>    </a>
+(void)
+<menu>
+ Get the current frequency of the radio
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t VREFOn(void)">
+<b>VREFOn</b>    </a>
+(void)
+<menu>
+ Turns on the 1.8V references on the CC2420.
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t VREFOff(void)">
+<b>VREFOff</b>    </a>
+(void)
+<menu>
+ Turns off the 1.8V references on the CC2420.
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t OscillatorOn(void)">
+<b>OscillatorOn</b>    </a>
+(void)
+<menu>
+ Turn on the crystal oscillator.
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t OscillatorOff(void)">
+<b>OscillatorOff</b>    </a>
+(void)
+<menu>
+ Turn off the crystal oscillator.
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t TxMode(void)">
+<b>TxMode</b>    </a>
+(void)
+<menu>
+ Shift the CC2420 Radio into transmit mode.
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t TxModeOnCCA(void)">
+<b>TxModeOnCCA</b>    </a>
+(void)
+<menu>
+ Shift the CC2420 Radio into transmit mode when the next clear channel
+ is detected.
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t RxMode(void)">
+<b>RxMode</b>    </a>
+(void)
+<menu>
+ Shift the CC2420 Radio in receive mode.
+
+</menu><p>
+
+<li>
+         result_t     <a href="# result_t SetRFPower(uint8_t power)">
+<b>SetRFPower</b>    </a>
+(uint8_t power)
+<menu>
+ Set the transmit RF power value.  
+</menu><p>
+
+<li>
+         uint8_t     <a href="# uint8_t GetRFPower(void)">
+<b>GetRFPower</b>    </a>
+(void)
+<menu>
+ Get the present RF power index.
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t enableAutoAck(void)">
+<b>enableAutoAck</b>    </a>
+(void)
+<menu>
+ Enables auto ack on the CC2420
+ 
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t disableAutoAck(void)">
+<b>disableAutoAck</b>    </a>
+(void)
+<menu>
+ Disables auto ack on the CC2420
+ 
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t enableAddrDecode(void)">
+<b>enableAddrDecode</b>    </a>
+(void)
+<menu>
+ Enables address decoding on the CC2420
+
+</menu><p>
+
+<li>
+          result_t     <a href="#  result_t disableAddrDecode(void)">
+<b>disableAddrDecode</b>    </a>
+(void)
+<menu>
+ Disables address decoding on the CC2420
+
+</menu><p>
+
+<li>
+         result_t     <a href="# result_t setShortAddress(uint16_t addr)">
+<b>setShortAddress</b>    </a>
+(uint16_t addr)
+<menu>
+ Set the 16-bit short address of the mote
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name=" result_t TunePreset(uint8_t channel)"></a>
+        <h4>TunePreset</h4>
+         result_t <b>TunePreset</b>(uint8_t channel)<P><menu>
+ Tune the radio to one of the 802.15.4 present channels.
+ Valid channel values are 11 through 26.
+ The channels are calculated by:
+  Freq = 2405 + 5(k-11) MHz for k = 11,12,...,26
+ 
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>freq</b> -  requested 802.15.4 channel
+ 
+ </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> Status of the tune operation
+</td></tr></table>
+</menu><hr>
+    <a name=" result_t TuneManual(uint16_t freq)"></a>
+        <h4>TuneManual</h4>
+         result_t <b>TuneManual</b>(uint16_t freq)<P><menu>
+ Tune the radio to a given frequency. Frequencies may be set in
+ 1 MHz steps between 2400 MHz and 2483 MHz
+ 
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>freq</b> -  The desired channel frequency, in MHz.
+ 
+ </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> Status of the tune operation
+</td></tr></table>
+</menu><hr>
+    <a name=" uint8_t GetPreset(void)"></a>
+        <h4>GetPreset</h4>
+         uint8_t <b>GetPreset</b>(void)<P><menu>
+ Get the current channel of the radio
+
+ WARNING: If running the CC2420 on a non-standard IEEE 802.15.4
+ frequency, this function will return the closest possible 
+ valid IEEE 802.15.4 channel even if the current frequency in use is not
+ a valid IEEE 802.15.4 frequency
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> The current CC2420 channel (k=11..26)
+</td></tr></table>
+</menu><hr>
+    <a name=" uint16_t GetFrequency(void)"></a>
+        <h4>GetFrequency</h4>
+         uint16_t <b>GetFrequency</b>(void)<P><menu>
+ Get the current frequency of the radio
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> The current CC2420 frequency in MHz
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t VREFOn(void)"></a>
+        <h4>VREFOn</h4>
+          result_t <b>VREFOn</b>(void)<P><menu>
+ Turns on the 1.8V references on the CC2420.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the VREF has been turned on
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t VREFOff(void)"></a>
+        <h4>VREFOff</h4>
+          result_t <b>VREFOff</b>(void)<P><menu>
+ Turns off the 1.8V references on the CC2420.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the VREF has been turned on
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t OscillatorOn(void)"></a>
+        <h4>OscillatorOn</h4>
+          result_t <b>OscillatorOn</b>(void)<P><menu>
+ Turn on the crystal oscillator.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the request for the crystal to start has been accepted
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t OscillatorOff(void)"></a>
+        <h4>OscillatorOff</h4>
+          result_t <b>OscillatorOff</b>(void)<P><menu>
+ Turn off the crystal oscillator.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS when the oscillator has started up
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t TxMode(void)"></a>
+        <h4>TxMode</h4>
+          result_t <b>TxMode</b>(void)<P><menu>
+ Shift the CC2420 Radio into transmit mode.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the radio was successfully switched to TX mode.
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t TxModeOnCCA(void)"></a>
+        <h4>TxModeOnCCA</h4>
+          result_t <b>TxModeOnCCA</b>(void)<P><menu>
+ Shift the CC2420 Radio into transmit mode when the next clear channel
+ is detected.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the transmit request has been accepted
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t RxMode(void)"></a>
+        <h4>RxMode</h4>
+          result_t <b>RxMode</b>(void)<P><menu>
+ Shift the CC2420 Radio in receive mode.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the radio was successfully switched to RX mode.
+</td></tr></table>
+</menu><hr>
+    <a name=" result_t SetRFPower(uint8_t power)"></a>
+        <h4>SetRFPower</h4>
+         result_t <b>SetRFPower</b>(uint8_t power)<P><menu>
+ Set the transmit RF power value.  
+ The input value is simply an arbitrary
+ index that is programmed into the CC2420 registers.  
+ The output power is set by programming the power amplifier.
+ Valid values are 1 through 31 with power of 1 equal to
+ -25dBm and 31 equal to max power (0dBm)
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>power</b> -  A power index between 1 and 31
+ 
+ @result SUCCESS if the radio power was adequately set.
+
+</menu></menu>
+</td></tr></table>
+</menu><hr>
+    <a name=" uint8_t GetRFPower(void)"></a>
+        <h4>GetRFPower</h4>
+         uint8_t <b>GetRFPower</b>(void)<P><menu>
+ Get the present RF power index.
+
+ @result The power index value.
+</menu><hr>
+    <a name="  result_t enableAutoAck(void)"></a>
+        <h4>enableAutoAck</h4>
+          result_t <b>enableAutoAck</b>(void)<P><menu>
+ Enables auto ack on the CC2420
+ 
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the mode of the CC2420 was successfully changed
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t disableAutoAck(void)"></a>
+        <h4>disableAutoAck</h4>
+          result_t <b>disableAutoAck</b>(void)<P><menu>
+ Disables auto ack on the CC2420
+ 
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the mode of the CC2420 was successfully changed
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t enableAddrDecode(void)"></a>
+        <h4>enableAddrDecode</h4>
+          result_t <b>enableAddrDecode</b>(void)<P><menu>
+ Enables address decoding on the CC2420
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the mode of the CC2420 was successfully changed
+</td></tr></table>
+</menu><hr>
+    <a name="  result_t disableAddrDecode(void)"></a>
+        <h4>disableAddrDecode</h4>
+          result_t <b>disableAddrDecode</b>(void)<P><menu>
+ Disables address decoding on the CC2420
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the mode of the CC2420 was successfully changed
+</td></tr></table>
+</menu><hr>
+    <a name=" result_t setShortAddress(uint16_t addr)"></a>
+        <h4>setShortAddress</h4>
+         result_t <b>setShortAddress</b>(uint16_t addr)<P><menu>
+ Set the 16-bit short address of the mote
+
+ @result SUCCESS if the request to set the address is being processed
+</menu>

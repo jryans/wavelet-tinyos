@@ -1,0 +1,19 @@
+digraph "HPLTimer2C_if" {
+    rankdir=LR;
+    ratio=compress;
+    margin="0,0";
+    ranksep=0.0005; 
+    nodesep=0.1; 
+    node [shape=ellipse style=filled fillcolor="#e0e0e0"];
+    node [fontsize=10 height=.1 width=.1];
+    edge [fontsize=9 arrowsize=.8];
+    node [fontcolor=blue];
+    edge [fontcolor=blue];
+
+    HPLTimer2C [URL="tos.platform.micaz.HPLTimer2C.nc.html"];
+    HPLTimer2 [URL="tos.platform.micaz.HPLTimer2.nc.html"];
+    HPLTimer2C -> HPLTimer2 [ style=dashed label="Clock" URL="tos.interfaces.Clock.nc.html" ];
+    HPLTimer2C [URL="tos.platform.micaz.HPLTimer2C.nc.html"];
+    HPLTimer2 [URL="tos.platform.micaz.HPLTimer2.nc.html"];
+    HPLTimer2C -> HPLTimer2 [ style=dashed label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+}

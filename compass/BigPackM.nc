@@ -1,5 +1,7 @@
 /**
- * Requests and rebuilds multi-packet data structures.
+ * Requests and rebuilds multi-packet data structures.  Can act as both
+ * a client that receives data from the sink, and as a server that sends
+ * data to the sink.
  * @author Ryan Stinnett
  */
  
@@ -27,7 +29,7 @@ implementation {
   typedef char BigPackEnvelope;
 #endif
 
-  /*** Variables and Function Prototypes ***/
+  // Internal Variables
   
   uint8_t numPacks;
   int8_t curPackNum;
@@ -54,6 +56,8 @@ implementation {
   
   uint8_t transState;
   
+  // Function Prototypes
+  
   result_t allocInc();
   void freeInc();
   result_t allocEnv();
@@ -67,13 +71,16 @@ implementation {
   void decomposeStruct();
   void sendNextPack();
   
-  /*** Outgoing ***/
+  // Outgoing only
   BigPackEnvelope env;
   
-  /*** Timers ***/
+  // Timers
   
   /**
-   * Helper function for stopping BigPack after a timeout
+   * Sends a message and activates a timeout timer that if fired
+   * will cancel the current BigPack data session.  Thus, whenever
+   * a response is received, the timer must explicitly be disabled
+   * to keep the session alive.
    */ 
   void timeoutSend(msgData msg) {
     call Message.send(msg);
@@ -81,7 +88,8 @@ implementation {
   }
   
   /**
-   * Stops BigPack when timeout is reached
+   * Cancels the current BigPack data session once the timeout timer
+   * has fired.
    */
   event result_t Timeout.fired() {
     if (activeRequest) {
@@ -97,7 +105,7 @@ implementation {
     return SUCCESS;
   }  
   
-  /*** StdControl ***/
+  // StdControl
   
   command result_t StdControl.init() 
   {
@@ -121,7 +129,7 @@ implementation {
     return SUCCESS;
   }
   
-  /*** BigPackClient ***/
+  // BigPackClient
   
   /**
    * Each module that listens to the requestDone event should call this method
@@ -158,7 +166,8 @@ implementation {
   }
   
   /**
-   * When an application is done with the data, it must call free.
+   * When an application is done with the data, it must call free so that internal
+   * structures can be deallocated.
    */
   command void BigPackClient.free[uint8_t type]() {
     uint8_t b;
@@ -182,7 +191,7 @@ implementation {
    */
   default event void BigPackClient.requestDone[uint8_t type](void *mb, result_t result) {}
   
-  /*** BigPackServer ***/
+  // BigPackServer
   
   /**
    * When the mote receives a big pack data request from the sink,
@@ -228,8 +237,11 @@ implementation {
     }
   }
   
-  /*** Internal Helpers ***/
+  // Internal Helpers
   
+  /**
+   * Sends the next packet to continue the data session.
+   */
   void sendNextPack() {
     if (curPackNum < numPacks) {
       msgData msg;
@@ -254,18 +266,16 @@ implementation {
 		  msg.data.bpData.data[i] = bigData[firstByte + i];
 		dbg(DBG_USR2, "Sent BP data (%i/%i) to sink\n", curPackNum + 1, numPacks);
 	  }
-	  //call Message.send(msg);
 	  timeoutSend(msg);
 	}
   }
   
   /**
-   * Sends standard ACK by returning the message that was sent
+   * Sends standard ACK by returning the message that was sent.
    */
   void sendAck(msgData msg) {
     msg.dest = NET_UART_ADDR;
-    timeoutSend(msg); 
-    //call Message.send(msg);
+    timeoutSend(msg);
   }
   
   /**
@@ -294,7 +304,7 @@ implementation {
   }
   
   /**
-   * Free the incoming temp data.
+   * Free the incoming temporary data.
    */ 
   void freeInc() {
     if (bdAlloc) {
@@ -311,6 +321,9 @@ implementation {
     }
   }
   
+  /**
+   * Allocates temporary data used to describe an outgoing struct.
+   */
   result_t allocEnv() {
     uint16_t bpbSize = numBlocks[curType] * sizeof(BigPackBlock);
     uint16_t bppSize = numPtrs * sizeof(BigPackPtr);
@@ -334,7 +347,7 @@ implementation {
   }
   
   /**
-   * Free the outgoing temp data.
+   * Free the outgoing temporary data.
    */ 
   void freeEnv() {
     if (bpbAlloc) {
@@ -352,7 +365,7 @@ implementation {
   }
   
   /**
-   * Free outgoing data stream.
+   * Free the outgoing data stream.
    */ 
   void freeOut() {
     if (bdAlloc) {
@@ -361,6 +374,9 @@ implementation {
     }
   }
   
+  /**
+   * Rebuild data structures from an incoming data stream.
+   */
   void rebuildBlocks() {
     uint16_t start;
     uint8_t b, i;
@@ -414,6 +430,10 @@ implementation {
     refs[curType] = numListeners[curType];
   }
   
+  /**
+   * Break down structures into a data stream that can be
+   * sent away.
+   */
   void decomposeStruct() {
     uint16_t start;
     uint8_t b, i;
@@ -484,7 +504,7 @@ implementation {
       numPacks++;
   }
   
-  /*** Other Commands and Events ***/
+  // Other Commands and Events
   
   /**
    * sendDone is signaled when the send has completed

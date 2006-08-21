@@ -1,9 +1,7 @@
-// Portions of this code created by The Moters (Fall 2005 - Spring 2006)
-
 /**
  * Manages the motes to perform a wavelet transform on incoming sensor data.
  * Uses the State library to manage graceful state transitions.
- * @author The Moters
+ * @author The Moters (Fall 2005 - Spring 2006)
  * @author Ryan Stinnett
  */
 
@@ -13,7 +11,7 @@ includes Wavelet;
 
 module WaveletM {
   uses {
-    /*** I/O and Hardware ***/
+    // I/O and Hardware
     interface Message;
     interface Router;
     interface Leds;
@@ -23,7 +21,7 @@ module WaveletM {
 #endif
     interface Stats;
     
-    /*** State Management ***/
+    // State Management
     interface State;
     interface Timer as TransmitTimer;
     interface Timer as SampleTimer;
@@ -34,7 +32,7 @@ module WaveletM {
 #endif
     interface Random;
     
-    /*** Wavelet Config ***/
+    // Wavelet Config
     interface BigPackClient;
   }
   provides interface StdControl;
@@ -48,7 +46,7 @@ implementation {
   typedef char ExtWaveletNeighbor;
 #endif
   
-  /*** Variables and Constants ***/ 
+  // Variables and Constants
   uint8_t curLevel; // The current wavelet transform level
   uint8_t dataSet; // Identifies the current data set number
   uint8_t curTime; // Index in time that the current sample will fill
@@ -58,7 +56,7 @@ implementation {
   WaveletLevel *level; // Array of WaveletLevels
   bool wlAlloc; // TRUE is level has been allocated, else FALSE.
   
-  /*** Compression ***/
+  // Compression
   bool predicted; // True if mote predicts
   uint8_t matchingBand; // Index of first band that this mote's values are above
   uint8_t numBands; // Number of bands in the following array
@@ -68,13 +66,13 @@ implementation {
   float rawVals[WT_SENSORS];
 #endif
 
-  /*** Transform Options ***/
+  // Transform Options
   uint32_t sampleTime; // Length of time between samples
   uint8_t transformType; // One of various transform types
   uint8_t resultType; // Controls data sent back to base
   uint8_t timeDomainLength; // Number of data points collected for TD transform
   
-  /*** State Management ***/
+  // State Management
   uint8_t nextState;
   bool forceNextState;
   bool sampleTimerRunning;
@@ -84,7 +82,7 @@ implementation {
 #endif
   msgData res;
     
-  /*** Functions Declarations ***/
+  // Function Declarations
   task void runState();
   void levelDone();
   void sendResultsToBase();
@@ -100,7 +98,7 @@ implementation {
   void sendDelayedMsg();
   uint32_t getTransmitTime();
   
-  /*** State Management ***/
+  // State Management
   
   /**
    * This is the heart of the wavelet algorithm's state management.
@@ -206,6 +204,9 @@ implementation {
     }
   }
   
+  /**
+   * Deallocates wavelet configuration data.
+   */
   void waveletFree() {
     // If there is config data, free it
     if (wlAlloc) {
@@ -286,7 +287,7 @@ implementation {
       call StateTimer.start(TIMER_ONE_SHOT, delay);
   }
   
-  /*** Helper Functions ***/
+  // Helper Functions
   
   /**
    * If this mote is not done, then it advances to the next wavelet 
@@ -443,6 +444,17 @@ implementation {
     }
   }
   
+  /**
+   * Calculates timing information for raw and result messages,
+   * and activates timers accordingly.  Bands are determined by
+   * compression target values from the sink.  If compression is
+   * not used, all messsages are sent in band 0.  If raw messages
+   * are to be sent, they are always sent in band 0, even when
+   * compression is active.  Within each band, messages are
+   * randomly assigned slots.  This serves as a simple, 
+   * application-level, MAC-like technique to improve data
+   * reception.
+   */
   void sendDelayedMsg() {
     uint8_t slot = call Random.rand() & (WT_SLOTS - 1);
     uint32_t delay = slot * WT_SLOT_TIME;
@@ -469,6 +481,9 @@ implementation {
     }
   }
   
+  /**
+   * Returns the length of the transmit stage.
+   */
   uint32_t getTransmitTime() {
     if (resultType & WC_RT_COMP) {        
       return WT_BAND_TIME * numBands;
@@ -476,7 +491,7 @@ implementation {
     return WT_SLOT_STAGE_TIME;
   }
 
-  /*** Commands and Events ***/
+  // Commands and Events
   
   command result_t StdControl.init() {
     wlAlloc = FALSE;
@@ -495,6 +510,10 @@ implementation {
     return SUCCESS;
   }
   
+  /**
+   * After new sensor data has been read, it is stored locally
+   * for later use.
+   */
   event void SensorData.readDone(float *newVals) {
     uint8_t i;
     for (i = 0; i < WT_SENSORS; i++) {
@@ -696,8 +715,8 @@ implementation {
     }
   }
   
-  /*** Timers ***/
-  
+  // Timers
+
   /**
    * Enforces a synchronized transmit time by moving to the transmit
    * stage when the timer fires.
@@ -756,6 +775,9 @@ implementation {
     return SUCCESS;
   }
   
+  /**
+   * Sends the results message once its delay period has ended.
+   */
   event result_t DelayResults.fired() {   
     call Message.send(res);
     dbg(DBG_USR2, "Transmit: Results sent!\n");
@@ -763,6 +785,9 @@ implementation {
   }
 #ifdef RAW
 
+  /**
+   * Sends the raw data message once its delay period has ended.
+   */
   event result_t DelayRaw.fired() {   
     call Message.send(raw);   
     dbg(DBG_USR2, "Transmit: Raw sent!\n");

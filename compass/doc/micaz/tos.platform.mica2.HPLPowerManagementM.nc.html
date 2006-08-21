@@ -1,0 +1,92 @@
+
+<html>
+<head>
+<title>Component: HPLPowerManagementM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.platform.mica2.HPLPowerManagementM.nc.source">tos.platform.mica2.HPLPowerManagementM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: HPLPowerManagementM</h1>
+<p>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Robert Szewczyk
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.PowerManagement.nc.html">PowerManagement</a> 
+<li>
+         result_t <b>Enable</b>(void)
+
+<li>
+         result_t <b>Disable</b>(void)
+
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   norace int8_t disableCount = 1
+<li>   uint8_t powerLevel
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        uint8_t <b>getPowerLevel</b>(void)
+
+<li>
+        task void <b>doAdjustment</b>(void)
+
+<li>
+        async command uint8_t     <a href="tos.interfaces.PowerManagement.nc.html#async command uint8_t PowerManagement.adjustPower(void)">
+<b>PowerManagement.adjustPower</b>    </a>
+(void)
+
+<li>
+        async command result_t     <a href="tos.interfaces.PowerManagement.nc.html#async command result_t PowerManagement.enable(void)">
+<b>PowerManagement.enable</b>    </a>
+(void)
+
+<li>
+        async command result_t     <a href="tos.interfaces.PowerManagement.nc.html#async command result_t PowerManagement.disable(void)">
+<b>PowerManagement.disable</b>    </a>
+(void)
+
+<li>
+        command result_t <b>Enable</b>(void)
+
+<li>
+        command result_t <b>Disable</b>(void)
+
+</ul>
+

@@ -1,0 +1,69 @@
+
+<html>
+<head>
+<title>Interface: PowerManagement</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.interfaces.PowerManagement.nc.source">tos.interfaces.PowerManagement.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: PowerManagement</h1>
+<p>
+
+ Adjust the power state of a component.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Robert Szewczyk
+
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.platform.mica2.HPLPowerManagementM.nc.html">tos.platform.mica2.HPLPowerManagementM</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="apps.compass.MoteOptionsM.nc.html">apps.compass.MoteOptionsM</a><br>
+    <a href="tos.system.AMStandard.nc.html">tos.system.AMStandard</a><br>
+    <a href="tos.system.TimerM.nc.html">tos.system.TimerM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+          uint8_t <b>adjustPower</b>(void)
+
+<li>
+          result_t <b>enable</b>(void)
+
+<li>
+          result_t <b>disable</b>(void)
+
+</ul>

@@ -1,0 +1,174 @@
+
+<html>
+<head>
+<title>Component: PageEEPROMShare</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.Flash.AT45DB.PageEEPROMShare.nc.source">tos.lib.Flash.AT45DB.PageEEPROMShare.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: PageEEPROMShare</h1>
+<p>
+  Provide simple multi-client access to a PageEEPROM interface  (just request-response matching) 
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html">PageEEPROM</a> ActualEEPROM
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html">PageEEPROM</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   uint8_t lastClient
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        int <b>setClient</b>(uint8_t client)
+
+<li>
+        uint8_t <b>getClient</b>(void)
+
+<li>
+        result_t <b>check</b>(result_t requestOk)
+
+<li>
+        __inline command result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline command result_t PageEEPROM.write(uint8_t client, eeprompage_t page, eeprompageoffset_t offset, void *data, eeprompageoffset_t n)">
+<b>PageEEPROM.write</b>    </a>
+(uint8_t client, eeprompage_t page, eeprompageoffset_t offset, void *data, eeprompageoffset_t n)
+
+<li>
+        __inline event result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline event result_t ActualEEPROM.writeDone(result_t result)">
+<b>ActualEEPROM.writeDone</b>    </a>
+(result_t result)
+
+<li>
+        __inline command result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline command result_t PageEEPROM.erase(uint8_t client, eeprompage_t page, uint8_t eraseKind)">
+<b>PageEEPROM.erase</b>    </a>
+(uint8_t client, eeprompage_t page, uint8_t eraseKind)
+
+<li>
+        __inline event result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline event result_t ActualEEPROM.eraseDone(result_t result)">
+<b>ActualEEPROM.eraseDone</b>    </a>
+(result_t result)
+
+<li>
+        __inline command result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline command result_t PageEEPROM.sync(uint8_t client, eeprompage_t page)">
+<b>PageEEPROM.sync</b>    </a>
+(uint8_t client, eeprompage_t page)
+
+<li>
+        __inline command result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline command result_t PageEEPROM.syncAll(uint8_t client)">
+<b>PageEEPROM.syncAll</b>    </a>
+(uint8_t client)
+
+<li>
+        __inline event result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline event result_t ActualEEPROM.syncDone(result_t result)">
+<b>ActualEEPROM.syncDone</b>    </a>
+(result_t result)
+
+<li>
+        __inline command result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline command result_t PageEEPROM.flush(uint8_t client, eeprompage_t page)">
+<b>PageEEPROM.flush</b>    </a>
+(uint8_t client, eeprompage_t page)
+
+<li>
+        __inline command result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline command result_t PageEEPROM.flushAll(uint8_t client)">
+<b>PageEEPROM.flushAll</b>    </a>
+(uint8_t client)
+
+<li>
+        __inline event result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline event result_t ActualEEPROM.flushDone(result_t result)">
+<b>ActualEEPROM.flushDone</b>    </a>
+(result_t result)
+
+<li>
+        __inline command result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline command result_t PageEEPROM.read(uint8_t client, eeprompage_t page, eeprompageoffset_t offset, void *data, eeprompageoffset_t n)">
+<b>PageEEPROM.read</b>    </a>
+(uint8_t client, eeprompage_t page, eeprompageoffset_t offset, void *data, eeprompageoffset_t n)
+
+<li>
+        __inline event result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline event result_t ActualEEPROM.readDone(result_t result)">
+<b>ActualEEPROM.readDone</b>    </a>
+(result_t result)
+
+<li>
+        __inline command result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline command result_t PageEEPROM.computeCrc(uint8_t client, eeprompage_t page, eeprompageoffset_t offset, eeprompageoffset_t n)">
+<b>PageEEPROM.computeCrc</b>    </a>
+(uint8_t client, eeprompage_t page, eeprompageoffset_t offset, eeprompageoffset_t n)
+
+<li>
+        __inline event result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline event result_t ActualEEPROM.computeCrcDone(result_t result, uint16_t crc)">
+<b>ActualEEPROM.computeCrcDone</b>    </a>
+(result_t result, uint16_t crc)
+
+<li>
+        __inline command result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html#__inline command result_t PageEEPROM.computeCrcContinue(uint8_t client, eeprompage_t page, eeprompageoffset_t offset, eeprompageoffset_t n, uint16_t crc)">
+<b>PageEEPROM.computeCrcContinue</b>    </a>
+(uint8_t client, eeprompage_t page, eeprompageoffset_t offset, eeprompageoffset_t n, uint16_t crc)
+
+<li>
+         event result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html# event result_t PageEEPROM.writeDone(uint8_t client, result_t result)">
+<b>PageEEPROM.writeDone</b>    </a>
+(uint8_t client, result_t result)
+
+<li>
+         event result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html# event result_t PageEEPROM.eraseDone(uint8_t client, result_t result)">
+<b>PageEEPROM.eraseDone</b>    </a>
+(uint8_t client, result_t result)
+
+<li>
+         event result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html# event result_t PageEEPROM.syncDone(uint8_t client, result_t result)">
+<b>PageEEPROM.syncDone</b>    </a>
+(uint8_t client, result_t result)
+
+<li>
+         event result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html# event result_t PageEEPROM.flushDone(uint8_t client, result_t result)">
+<b>PageEEPROM.flushDone</b>    </a>
+(uint8_t client, result_t result)
+
+<li>
+         event result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html# event result_t PageEEPROM.readDone(uint8_t client, result_t result)">
+<b>PageEEPROM.readDone</b>    </a>
+(uint8_t client, result_t result)
+
+<li>
+         event result_t     <a href="tos.lib.Flash.AT45DB.PageEEPROM.nc.html# event result_t PageEEPROM.computeCrcDone(uint8_t client, result_t result, uint16_t crc)">
+<b>PageEEPROM.computeCrcDone</b>    </a>
+(uint8_t client, result_t result, uint16_t crc)
+
+</ul>
+

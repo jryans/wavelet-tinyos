@@ -1,0 +1,167 @@
+
+<html>
+<head>
+<title>Interface: Packet</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.Transceiver.Packet.nc.source">tos.lib.Transceiver.Packet.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: Packet</h1>
+<p>
+ The basic message data type accessors. Protocols may add
+
+ additional packet interfaces for their protocol specific
+
+ data/metadata.
+
+
+
+ Modified for use in TinyOS-1.x dmm
+
+
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Philip Levis
+
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> David Moss
+
+ @date   Feb 16 2005
+
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.lib.Transceiver.PacketM.nc.html">tos.lib.Transceiver.PacketM</a><br>
+    <a href="tos.lib.Transceiver.TransceiverC.nc.html">tos.lib.Transceiver.TransceiverC</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+         void     <a href="# void clear(TOS_MsgPtr msg)">
+<b>clear</b>    </a>
+(TOS_MsgPtr msg)
+<menu>
+
+ Clear out this packet. </menu><p>
+
+<li>
+         uint8_t     <a href="# uint8_t payloadLength(TOS_MsgPtr msg)">
+<b>payloadLength</b>    </a>
+(TOS_MsgPtr msg)
+<menu>
+
+ Return the length of the payload of msg.</menu><p>
+
+<li>
+         uint8_t     <a href="# uint8_t maxPayloadLength(void)">
+<b>maxPayloadLength</b>    </a>
+(void)
+<menu>
+
+ Return the maximum payload length that this communication layer
+
+ can provide.</menu><p>
+
+<li>
+         void     <a href="# void getPayload(TOS_MsgPtr msg, uint8_t *len)">
+<b>getPayload</b>    </a>
+(TOS_MsgPtr msg, uint8_t *len)
+<menu>
+
+ Return point to a protocol's payload region in a packet.
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name=" void clear(TOS_MsgPtr msg)"></a>
+        <h4>clear</h4>
+         void <b>clear</b>(TOS_MsgPtr msg)<P><menu>
+
+ Clear out this packet.  Note that this is a deep operation and
+
+ total operation: calling clear() on any layer will completely
+
+ clear the packet for reuse.
+
+</menu><hr>
+    <a name=" uint8_t payloadLength(TOS_MsgPtr msg)"></a>
+        <h4>payloadLength</h4>
+         uint8_t <b>payloadLength</b>(TOS_MsgPtr msg)<P><menu>
+
+ Return the length of the payload of msg. This value may be less
+
+ than what maxPayloadLength() returns, if the packet is smaller than
+
+ the MTU. If a communication component does not support variably
+
+ sized data regions, then payloadLength() will always return
+
+ the same value as maxPayloadLength(). 
+
+</menu><hr>
+    <a name=" uint8_t maxPayloadLength(void)"></a>
+        <h4>maxPayloadLength</h4>
+         uint8_t <b>maxPayloadLength</b>(void)<P><menu>
+
+ Return the maximum payload length that this communication layer
+
+ can provide. Note that, depending on protocol fields, a
+
+ given request to send a packet may not be able to send the
+
+ maximum payload length (e.g., if there are variable length
+
+ fields). Protocols may provide specialized interfaces
+
+ for these circumstances.
+
+</menu><hr>
+    <a name=" void getPayload(TOS_MsgPtr msg, uint8_t *len)"></a>
+        <h4>getPayload</h4>
+         void <b>getPayload</b>(TOS_MsgPtr msg, uint8_t *len)<P><menu>
+
+ Return point to a protocol's payload region in a packet.
+
+ If len is not NULL, getPayload will return the length of
+
+ the payload in it, which is the same as the return value
+
+ from payloadLength(). If a protocol does not support
+
+ variable length packets, then *len is equal to 
+
+ maxPayloadLength().
+
+</menu>

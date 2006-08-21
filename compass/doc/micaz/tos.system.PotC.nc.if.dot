@@ -1,0 +1,19 @@
+digraph "PotC_if" {
+    rankdir=LR;
+    ratio=compress;
+    margin="0,0";
+    ranksep=0.0005; 
+    nodesep=0.1; 
+    node [shape=ellipse style=filled fillcolor="#e0e0e0"];
+    node [fontsize=10 height=.1 width=.1];
+    edge [fontsize=9 arrowsize=.8];
+    node [fontcolor=blue];
+    edge [fontcolor=blue];
+
+    PotC [URL="tos.system.PotC.nc.html"];
+    PotM [URL="tos.system.PotM.nc.html"];
+    PotC -> PotM [ style=dashed label="Pot" URL="tos.interfaces.Pot.nc.html" ];
+    PotM [URL="tos.system.PotM.nc.html"];
+    HPLPotC [URL="tos.platform.mica2.HPLPotC.nc.html"];
+    PotM -> HPLPotC [ label="HPLPot" URL="tos.interfaces.HPLPot.nc.html" ];
+}

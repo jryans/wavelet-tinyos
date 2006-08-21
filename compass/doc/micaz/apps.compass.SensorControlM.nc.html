@@ -1,0 +1,177 @@
+
+<html>
+<head>
+<title>Component: SensorControlM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="apps.compass.SensorControlM.nc.source">apps.compass.SensorControlM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: SensorControlM</h1>
+<p>
+
+ This application takes data readings from various sensors,
+ caches their values, and sends out the most recent set of data when requested.
+ IMPORTANT: Temp and Light must start and stop with each request. If
+ they are not stopped, the radio will not be able to receive.
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> The Moters (Fall 2005 - Spring 2006)
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> Ryan Stinnett
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.ADC.nc.html">ADC</a> TempADC
+<li>    <a href="tos.interfaces.ADC.nc.html">ADC</a> LightADC
+<li>    <a href="tos.interfaces.ADC.nc.html">ADC</a> VoltADC
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> TempControl
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> LightControl
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> VoltControl
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+<li>    <a href="apps.compass.SensorData.nc.html">SensorData</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   uint8_t sensToGo
+<li>   uint8_t curType
+<li>   float curData[NUM_SENSORS]
+<li>   task void readData(void)
+        <br><menu>
+ Each time an application requests new measurements, this task
+ is posted to start the dormant sensors and read their values.
+</menu>
+<li>   task void dataDone(void)
+        <br><menu>
+ When the last sensor finished sampling, it posts this task
+ which pass the new data up to applications.
+</menu>
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.init(void)">
+<b>StdControl.init</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.start(void)">
+<b>StdControl.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.stop(void)">
+<b>StdControl.stop</b>    </a>
+(void)
+
+<li>
+        task void <b>readData</b>(void)
+<menu>
+ Each time an application requests new measurements, this task
+ is posted to start the dormant sensors and read their values.
+</menu><p>
+
+<li>
+        command void     <a href="apps.compass.SensorData.nc.html#command void SensorData.readSensors(uint8_t type)">
+<b>SensorData.readSensors</b>    </a>
+(uint8_t type)
+<menu>
+ Requests new data from the sensor system.
+</menu><p>
+
+<li>
+         event void     <a href="# event void SensorData.readDone(uint8_t type, float *data)">
+<b>SensorData.readDone</b>    </a>
+(uint8_t type, float *data)
+<menu>
+ When the sensors are done, this event returns the requested data
+ to applications.
+</menu><p>
+
+<li>
+        task void <b>dataDone</b>(void)
+<menu>
+ When the last sensor finished sampling, it posts this task
+ which pass the new data up to applications.
+</menu><p>
+
+<li>
+        async event result_t     <a href="tos.interfaces.ADC.nc.html#async event result_t TempADC.dataReady(uint16_t data)">
+<b>TempADC.dataReady</b>    </a>
+(uint16_t data)
+<menu>
+ Stores a new temperature data value.
+</menu><p>
+
+<li>
+        async event result_t     <a href="tos.interfaces.ADC.nc.html#async event result_t LightADC.dataReady(uint16_t data)">
+<b>LightADC.dataReady</b>    </a>
+(uint16_t data)
+<menu>
+ Stores a new light data value.
+</menu><p>
+
+<li>
+        async event result_t     <a href="tos.interfaces.ADC.nc.html#async event result_t VoltADC.dataReady(uint16_t data)">
+<b>VoltADC.dataReady</b>    </a>
+(uint16_t data)
+<menu>
+ Stores a new voltage data value.
+</menu><p>
+
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Descriptions</h3>
+</td></tr></table>
+    <a name=" event void SensorData.readDone(uint8_t type, float *data)"></a>
+        <h4>SensorData.readDone</h4>
+         event void     <a href="apps.compass.SensorData.nc.html# event void SensorData.readDone(uint8_t type, float *data)"><b>SensorData.readDone</b>    </a>
+(uint8_t type, float *data)<P><menu>
+ When the sensors are done, this event returns the requested data
+ to applications.
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>data</b> -  pointer to the requested values
+</menu></menu>
+</td></tr></table>
+</menu>

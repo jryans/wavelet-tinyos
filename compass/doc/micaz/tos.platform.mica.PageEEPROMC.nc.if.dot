@@ -1,0 +1,40 @@
+digraph "PageEEPROMC_if" {
+    rankdir=LR;
+    ratio=compress;
+    margin="0,0";
+    ranksep=0.0005; 
+    nodesep=0.1; 
+    node [shape=ellipse style=filled fillcolor="#e0e0e0"];
+    node [fontsize=10 height=.1 width=.1];
+    edge [fontsize=9 arrowsize=.8];
+    node [fontcolor=blue];
+    edge [fontcolor=blue];
+
+    PageEEPROMC [URL="tos.platform.mica.PageEEPROMC.nc.html"];
+    PageEEPROMShare [URL="tos.lib.Flash.AT45DB.PageEEPROMShare.nc.html"];
+    PageEEPROMC -> PageEEPROMShare [ style=dashed label="PageEEPROM" URL="tos.lib.Flash.AT45DB.PageEEPROM.nc.html" ];
+    PageEEPROMC [URL="tos.platform.mica.PageEEPROMC.nc.html"];
+    PageEEPROMM [URL="tos.platform.mica.PageEEPROMM.nc.html"];
+    PageEEPROMC -> PageEEPROMM [ style=dashed label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+    PageEEPROMShare [URL="tos.lib.Flash.AT45DB.PageEEPROMShare.nc.html"];
+    PageEEPROMM [URL="tos.platform.mica.PageEEPROMM.nc.html"];
+    PageEEPROMShare -> PageEEPROMM [ label="PageEEPROM" URL="tos.lib.Flash.AT45DB.PageEEPROM.nc.html" ];
+    PageEEPROMM [URL="tos.platform.mica.PageEEPROMM.nc.html"];
+    HPLFlash [URL="tos.platform.mica2.HPLFlash.nc.html"];
+    PageEEPROMM -> HPLFlash [ label="FastSPI" URL="tos.interfaces.FastSPI.nc.html" ];
+    PageEEPROMM [URL="tos.platform.mica.PageEEPROMM.nc.html"];
+    HPLFlash [URL="tos.platform.mica2.HPLFlash.nc.html"];
+    PageEEPROMM -> HPLFlash [ label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+    PageEEPROMM [URL="tos.platform.mica.PageEEPROMM.nc.html"];
+    HPLFlash [URL="tos.platform.mica2.HPLFlash.nc.html"];
+    PageEEPROMM -> HPLFlash [ label="Resource" URL="tos.interfaces.Resource.nc.html" ];
+    PageEEPROMM [URL="tos.platform.mica.PageEEPROMM.nc.html"];
+    HPLFlash [URL="tos.platform.mica2.HPLFlash.nc.html"];
+    PageEEPROMM -> HPLFlash [ label="func:getCompareStatus" fontcolor=black ];
+    PageEEPROMM [URL="tos.platform.mica.PageEEPROMM.nc.html"];
+    HPLFlash [URL="tos.platform.mica2.HPLFlash.nc.html"];
+    PageEEPROMM -> HPLFlash [ label="SlavePin" URL="tos.platform.mica.SlavePin.nc.html" ];
+    PageEEPROMM [URL="tos.platform.mica.PageEEPROMM.nc.html"];
+    NoLeds [URL="tos.system.NoLeds.nc.html"];
+    PageEEPROMM -> NoLeds [ label="Leds" URL="tos.interfaces.Leds.nc.html" ];
+}

@@ -1,0 +1,125 @@
+
+<html>
+<head>
+<title>Interface: TokenReceiveMsg</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.interfaces.TokenReceiveMsg.nc.source">tos.interfaces.TokenReceiveMsg.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: TokenReceiveMsg</h1>
+<p>
+
+ Receive messages with an identifying token that can be used for
+ acknowledgement.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Phil Buonadonna
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.platform.micaz.FramerM.nc.html">tos.platform.micaz.FramerM</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="tos.system.FramerAckM.nc.html">tos.system.FramerAckM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+         result_t     <a href="# result_t ReflectToken(uint8_t Token)">
+<b>ReflectToken</b>    </a>
+(uint8_t Token)
+<menu>
+ Sends a one byte token down the original channel that received the token.
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events</h3></td></tr></table>
+<ul>
+<li>
+         TOS_MsgPtr     <a href="# TOS_MsgPtr receive(TOS_MsgPtr Msg, uint8_t Token)">
+<b>receive</b>    </a>
+(TOS_MsgPtr Msg, uint8_t Token)
+<menu> 
+ A packet and an associated token have been recieved. 
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name=" result_t ReflectToken(uint8_t Token)"></a>
+        <h4>ReflectToken</h4>
+         result_t <b>ReflectToken</b>(uint8_t Token)<P><menu>
+ Sends a one byte token down the original channel that received the token.
+ This function can be used as an acknowledgement mechanism.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>Token</b> -   A one byte token.
+
+ </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the provider was able to queue the token for 
+ transmission.
+
+</td></tr></table>
+</menu><table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events - Details</h3></td></tr></table>
+    <a name=" TOS_MsgPtr receive(TOS_MsgPtr Msg, uint8_t Token)"></a>
+        <h4>receive</h4>
+         TOS_MsgPtr <b>receive</b>(TOS_MsgPtr Msg, uint8_t Token)<P><menu> 
+ A packet and an associated token have been recieved. 
+ The one-byte token is a unique value linked to the message received.
+ This interface is designed for use by modules like HDLCM which 
+ may pass a token up that is later used as part of an acknowledgement
+ process.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>Msg</b> -  A pointer to the received TOS_Msg
+ </p><p STYLE="text-indent: -1cm"><b>Token</b> -  A one byte token associated with the recieved message.
+
+ </menu>
+</td></tr>
+<tr valign="top"><td><b>Returns:</b></td>
+<td> A buffer for the provider to use for the next packet.
+ 
+</td></tr></table>
+</menu>

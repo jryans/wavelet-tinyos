@@ -1,0 +1,76 @@
+
+<html>
+<head>
+<title>Interface: DelugeMetadata</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.Deluge.DelugeMetadata.nc.source">tos.lib.Deluge.DelugeMetadata.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: DelugeMetadata</h1>
+<p>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Jonathan Hui <<a href="mailto:jwhui@cs.berkeley.edu">jwhui@cs.berkeley.edu</a>>
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.lib.Deluge.DelugeMetadataC.nc.html">tos.lib.Deluge.DelugeMetadataC</a><br>
+    <a href="tos.lib.Deluge.DelugeMetadataM.nc.html">tos.lib.Deluge.DelugeMetadataM</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="tos.lib.Deluge.DelugeM.nc.html">tos.lib.Deluge.DelugeM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+         bool <b>isImgDescValid</b>(DelugeImgDesc *tmpImgDesc)
+
+<li>
+         DelugeImgDesc <b>getImgDesc</b>(imgnum_t imgNum)
+
+<li>
+         result_t <b>setupNewImage</b>(DelugeImgDesc *imgDesc)
+
+<li>
+         result_t <b>receivedPage</b>(imgnum_t imgNum, pgnum_t pgNum)
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events</h3></td></tr></table>
+<ul>
+<li>
+         void <b>updateDone</b>(result_t result)
+
+</ul>

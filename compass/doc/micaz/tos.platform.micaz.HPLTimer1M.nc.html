@@ -1,0 +1,233 @@
+
+<html>
+<head>
+<title>Component: HPLTimer1M</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.platform.micaz.HPLTimer1M.nc.source">tos.platform.micaz.HPLTimer1M.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: HPLTimer1M</h1>
+<p>
+************************************************************************** ATmega128 TIMER1 Services  **************************************************************************
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+<li>    <a href="tos.platform.micaz.Clock16.nc.html">Clock16</a> Timer1
+<li>    <a href="tos.platform.micaz.TimerCapture.nc.html">TimerCapture</a> CaptureT1
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   uint8_t set_flag
+<li>   uint8_t mscale
+<li>   uint8_t nextScale
+<li>   uint16_t minterval
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.init(void)">
+<b>StdControl.init</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.start(void)">
+<b>StdControl.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.stop(void)">
+<b>StdControl.stop</b>    </a>
+(void)
+
+<li>
+        async command void     <a href="tos.platform.micaz.Clock16.nc.html#async command void Timer1.setInterval(uint16_t value)">
+<b>Timer1.setInterval</b>    </a>
+(uint16_t value)
+
+<li>
+        async command void     <a href="tos.platform.micaz.Clock16.nc.html#async command void Timer1.setNextInterval(uint16_t value)">
+<b>Timer1.setNextInterval</b>    </a>
+(uint16_t value)
+
+<li>
+        async command uint16_t     <a href="tos.platform.micaz.Clock16.nc.html#async command uint16_t Timer1.getInterval(void)">
+<b>Timer1.getInterval</b>    </a>
+(void)
+
+<li>
+        async command uint8_t     <a href="tos.platform.micaz.Clock16.nc.html#async command uint8_t Timer1.getScale(void)">
+<b>Timer1.getScale</b>    </a>
+(void)
+
+<li>
+        async command void     <a href="tos.platform.micaz.Clock16.nc.html#async command void Timer1.setNextScale(uint8_t scale)">
+<b>Timer1.setNextScale</b>    </a>
+(uint8_t scale)
+
+<li>
+        async command result_t     <a href="tos.platform.micaz.Clock16.nc.html#async command result_t Timer1.setIntervalAndScale(uint16_t interval, uint8_t scale)">
+<b>Timer1.setIntervalAndScale</b>    </a>
+(uint16_t interval, uint8_t scale)
+
+<li>
+        async command result_t     <a href="tos.platform.micaz.Clock16.nc.html#async command result_t Timer1.setRate(uint16_t interval, char scale)">
+<b>Timer1.setRate</b>    </a>
+(uint16_t interval, char scale)
+
+<li>
+        async command uint16_t     <a href="tos.platform.micaz.Clock16.nc.html#async command uint16_t Timer1.readCounter(void)">
+<b>Timer1.readCounter</b>    </a>
+(void)
+
+<li>
+        async command void     <a href="tos.platform.micaz.Clock16.nc.html#async command void Timer1.setCounter(uint16_t n)">
+<b>Timer1.setCounter</b>    </a>
+(uint16_t n)
+
+<li>
+        async command void     <a href="tos.platform.micaz.Clock16.nc.html#async command void Timer1.intEnable(void)">
+<b>Timer1.intEnable</b>    </a>
+(void)
+
+<li>
+        async command void     <a href="tos.platform.micaz.Clock16.nc.html#async command void Timer1.intDisable(void)">
+<b>Timer1.intDisable</b>    </a>
+(void)
+
+<li>
+         async event result_t     <a href="tos.platform.micaz.Clock16.nc.html# async event result_t Timer1.fire(void)">
+<b>Timer1.fire</b>    </a>
+(void)
+
+<li>
+        void    __attribute((interrupt)) <b>__vector_12</b>(void)
+
+<li>
+         async event void     <a href="tos.platform.micaz.TimerCapture.nc.html# async event void CaptureT1.captured(uint16_t time)">
+<b>CaptureT1.captured</b>    </a>
+(uint16_t time)
+
+<li>
+        async command void     <a href="tos.platform.micaz.TimerCapture.nc.html#async command void CaptureT1.setEdge(uint8_t LowToHigh)">
+<b>CaptureT1.setEdge</b>    </a>
+(uint8_t LowToHigh)
+<menu>
+ Set the edge that the capture should occur
+**************************************************************</menu><p>
+
+<li>
+        async command void     <a href="tos.platform.micaz.TimerCapture.nc.html#async command void CaptureT1.setSynchronous(bool synch)">
+<b>CaptureT1.setSynchronous</b>    </a>
+(bool synch)
+<menu>
+Not applicable
+***************************************************************************</menu><p>
+
+<li>
+        async command bool     <a href="#async command bool CaptureT1.isOverflowPending(void)">
+<b>CaptureT1.isOverflowPending</b>    </a>
+(void)
+<menu>
+ Determine if a capture overflow is pending.</menu><p>
+
+<li>
+        async command uint16_t     <a href="tos.platform.micaz.TimerCapture.nc.html#async command uint16_t CaptureT1.getEvent(void)">
+<b>CaptureT1.getEvent</b>    </a>
+(void)
+<menu>
+ Reads the value of the last capture event in TxCCRx
+</menu><p>
+
+<li>
+        async command void     <a href="tos.platform.micaz.TimerCapture.nc.html#async command void CaptureT1.clearOverflow(void)">
+<b>CaptureT1.clearOverflow</b>    </a>
+(void)
+<menu>
+ Clear the capture overflow flag for when multiple captures occur
+***************************************************************************</menu><p>
+
+<li>
+        async command void     <a href="tos.platform.micaz.TimerCapture.nc.html#async command void CaptureT1.clearPendingInterrupt(void)">
+<b>CaptureT1.clearPendingInterrupt</b>    </a>
+(void)
+<menu>
+ Clear the capture interrupt flag for when multiple captures occur
+***************************************************************************</menu><p>
+
+<li>
+        async command void     <a href="tos.platform.micaz.TimerCapture.nc.html#async command void CaptureT1.enableEvents(void)">
+<b>CaptureT1.enableEvents</b>    </a>
+(void)
+<menu>
+Enable interrupt on capture
+***************************************************************************</menu><p>
+
+<li>
+        async command void     <a href="tos.platform.micaz.TimerCapture.nc.html#async command void CaptureT1.disableEvents(void)">
+<b>CaptureT1.disableEvents</b>    </a>
+(void)
+<menu>
+Disable interrupt on capture
+***************************************************************************</menu><p>
+
+<li>
+        async command bool     <a href="tos.platform.micaz.TimerCapture.nc.html#async command bool CaptureT1.areEventsEnabled(void)">
+<b>CaptureT1.areEventsEnabled</b>    </a>
+(void)
+<menu>
+***************************************************************************</menu><p>
+
+<li>
+        void    __attribute((signal))     <a href="#void    __attribute((signal)) __vector_11(void)">
+<b>__vector_11</b>    </a>
+(void)
+<menu>
+INPUT CAPTURE Interrupt Service Routine
+ Signal when an event is captured.</menu><p>
+
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Descriptions</h3>
+</td></tr></table>
+    <a name="async command bool CaptureT1.isOverflowPending(void)"></a>
+        <h4>CaptureT1.isOverflowPending</h4>
+        async command bool     <a href="tos.platform.micaz.TimerCapture.nc.html#async command bool CaptureT1.isOverflowPending(void)"><b>CaptureT1.isOverflowPending</b>    </a>
+(void)<P><menu>
+ Determine if a capture overflow is pending. ***************************************************************************</menu><hr>
+    <a name="void    __attribute((signal)) __vector_11(void)"></a>
+        <h4>__vector_11</h4>
+        void    __attribute((signal)) <b>__vector_11</b>(void)<P><menu>
+INPUT CAPTURE Interrupt Service Routine
+ Signal when an event is captured. ***************************************************************************</menu>

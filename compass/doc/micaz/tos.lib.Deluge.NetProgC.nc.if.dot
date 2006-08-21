@@ -1,0 +1,43 @@
+digraph "NetProgC_if" {
+    rankdir=LR;
+    ratio=compress;
+    margin="0,0";
+    ranksep=0.0005; 
+    nodesep=0.1; 
+    node [shape=ellipse style=filled fillcolor="#e0e0e0"];
+    node [fontsize=10 height=.1 width=.1];
+    edge [fontsize=9 arrowsize=.8];
+    node [fontcolor=blue];
+    edge [fontcolor=blue];
+
+    NetProgC [URL="tos.lib.Deluge.NetProgC.nc.html"];
+    NetProgM [URL="tos.lib.Deluge.NetProgM.nc.html"];
+    NetProgC -> NetProgM [ style=dashed label="NetProg" URL="tos.lib.Deluge.NetProg.nc.html" ];
+    NetProgC [URL="tos.lib.Deluge.NetProgC.nc.html"];
+    NetProgM [URL="tos.lib.Deluge.NetProgM.nc.html"];
+    NetProgC -> NetProgM [ style=dashed label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+    NetProgM [URL="tos.lib.Deluge.NetProgM.nc.html"];
+    InternalFlashC [URL="tos.platform.avrmote.InternalFlashC.nc.html"];
+    NetProgM -> InternalFlashC [ label="InternalFlash" URL="tos.interfaces.InternalFlash.nc.html" ];
+    Main [URL="tos.system.Main.nc.html"];
+    GenericComm [URL="tos.system.GenericComm.nc.html"];
+    Main -> GenericComm [ label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+    NetProgM [URL="tos.lib.Deluge.NetProgM.nc.html"];
+    CrcC [URL="tos.system.CrcC.nc.html"];
+    NetProgM -> CrcC [ label="Crc" URL="tos.interfaces.Crc.nc.html" ];
+    NetProgM [URL="tos.lib.Deluge.NetProgM.nc.html"];
+    DelugeMetadataC [URL="tos.lib.Deluge.DelugeMetadataC.nc.html"];
+    NetProgM -> DelugeMetadataC [ label="SplitControl" URL="tos.interfaces.SplitControl.nc.html" ];
+    NetProgM [URL="tos.lib.Deluge.NetProgM.nc.html"];
+    GenericComm [URL="tos.system.GenericComm.nc.html"];
+    NetProgM -> GenericComm [ label="ReceiveMsg" URL="tos.interfaces.ReceiveMsg.nc.html" ];
+    NetProgM [URL="tos.lib.Deluge.NetProgM.nc.html"];
+    GenericComm [URL="tos.system.GenericComm.nc.html"];
+    NetProgM -> GenericComm [ label="SendMsg" URL="tos.interfaces.SendMsg.nc.html" ];
+    NetProgM [URL="tos.lib.Deluge.NetProgM.nc.html"];
+    SharedMsgBufM [URL="tos.lib.Deluge.SharedMsgBufM.nc.html"];
+    NetProgM -> SharedMsgBufM [ label="SharedMsgBuf" URL="tos.lib.Deluge.SharedMsgBuf.nc.html" ];
+    NetProgM [URL="tos.lib.Deluge.NetProgM.nc.html"];
+    DelugeStorageC [URL="tos.lib.Deluge.DelugeStorageC.nc.html"];
+    NetProgM -> DelugeStorageC [ label="DelugeStorage" URL="tos.lib.Deluge.DelugeStorage.nc.html" ];
+}

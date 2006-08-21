@@ -1,0 +1,117 @@
+
+<html>
+<head>
+<title>Interface: HPLCC2420</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.CC2420Radio.HPLCC2420.nc.source">tos.lib.CC2420Radio.HPLCC2420.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: HPLCC2420</h1>
+<p>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Joe Polastre
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.platform.micaz.HPLCC2420C.nc.html">tos.platform.micaz.HPLCC2420C</a><br>
+    <a href="tos.platform.micaz.HPLCC2420M.nc.html">tos.platform.micaz.HPLCC2420M</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="tos.lib.CC2420Radio.CC2420ControlM.nc.html">tos.lib.CC2420Radio.CC2420ControlM</a><br>
+    <a href="tos.lib.CC2420Radio.CC2420RadioM.nc.html">tos.lib.CC2420Radio.CC2420RadioM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+          uint8_t     <a href="#  uint8_t cmd(uint8_t addr)">
+<b>cmd</b>    </a>
+(uint8_t addr)
+<menu>
+ Send a command strobe
+ 
+</menu><p>
+
+<li>
+          uint8_t     <a href="#  uint8_t write(uint8_t addr, uint16_t data)">
+<b>write</b>    </a>
+(uint8_t addr, uint16_t data)
+<menu>
+ Transmit 16-bit data
+
+</menu><p>
+
+<li>
+          uint16_t     <a href="#  uint16_t read(uint8_t addr)">
+<b>read</b>    </a>
+(uint8_t addr)
+<menu>
+ Read 16-bit data
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name="  uint8_t cmd(uint8_t addr)"></a>
+        <h4>cmd</h4>
+          uint8_t <b>cmd</b>(uint8_t addr)<P><menu>
+ Send a command strobe
+ 
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> status byte from the chipcon
+</td></tr></table>
+</menu><hr>
+    <a name="  uint8_t write(uint8_t addr, uint16_t data)"></a>
+        <h4>write</h4>
+          uint8_t <b>write</b>(uint8_t addr, uint16_t data)<P><menu>
+ Transmit 16-bit data
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> status byte from the chipcon.  0xff is return of command failed.
+</td></tr></table>
+</menu><hr>
+    <a name="  uint16_t read(uint8_t addr)"></a>
+        <h4>read</h4>
+          uint16_t <b>read</b>(uint8_t addr)<P><menu>
+ Read 16-bit data
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> 16-bit register value
+</td></tr></table>
+</menu>

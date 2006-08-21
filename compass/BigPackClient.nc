@@ -22,12 +22,13 @@ interface BigPackClient {
   
   /**
    * Once the request is complete, the requester is given a pointer to the main
-   * data block.
+   * data block.  This pointer is only valid when result is SUCCESS.
    */
   event void requestDone(void *mainBlock, result_t result);
   
   /**
-   * When an application is done with the data, it must call free.
+   * When an application is done with the data, it must call free so that internal
+   * structures can be deallocated.
    */
   command void free();
 }

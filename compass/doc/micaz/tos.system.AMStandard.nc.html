@@ -1,0 +1,163 @@
+
+<html>
+<head>
+<title>Component: AMStandard</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.system.AMStandard.nc.source">tos.system.AMStandard.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: AMStandard</h1>
+<p>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Jason Hill
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> David Gay
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> Philip Levis
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Require Interfaces</h3></td></tr></table>
+<ul>
+<li>
+         result_t <b>sendDone</b>(void)
+
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> UARTControl
+<li>    <a href="tos.interfaces.BareSendMsg.nc.html">BareSendMsg</a> UARTSend
+<li>    <a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a> UARTReceive
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> RadioControl
+<li>    <a href="tos.interfaces.BareSendMsg.nc.html">BareSendMsg</a> RadioSend
+<li>    <a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a> RadioReceive
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> TimerControl
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> ActivityTimer
+<li>    <a href="tos.interfaces.PowerManagement.nc.html">PowerManagement</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> Control
+<li>    <a href="tos.interfaces.SendMsg.nc.html">SendMsg</a> 
+<li>    <a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a> 
+<li>
+         uint16_t <b>activity</b>(void)
+
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   bool state
+<li>   TOS_MsgPtr buffer
+<li>   uint16_t lastCount
+<li>   uint16_t counter
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        command bool     <a href="tos.interfaces.StdControl.nc.html#command bool Control.init(void)">
+<b>Control.init</b>    </a>
+(void)
+
+<li>
+        command bool     <a href="tos.interfaces.StdControl.nc.html#command bool Control.start(void)">
+<b>Control.start</b>    </a>
+(void)
+
+<li>
+        command bool     <a href="tos.interfaces.StdControl.nc.html#command bool Control.stop(void)">
+<b>Control.stop</b>    </a>
+(void)
+
+<li>
+        command uint16_t <b>activity</b>(void)
+
+<li>
+        void <b>dbgPacket</b>(TOS_MsgPtr data)
+
+<li>
+        result_t <b>reportSendDone</b>(TOS_MsgPtr msg, result_t success)
+
+<li>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t ActivityTimer.fired(void)">
+<b>ActivityTimer.fired</b>    </a>
+(void)
+
+<li>
+         event result_t     <a href="tos.interfaces.SendMsg.nc.html# event result_t SendMsg.sendDone(uint8_t id, TOS_MsgPtr msg, result_t success)">
+<b>SendMsg.sendDone</b>    </a>
+(uint8_t id, TOS_MsgPtr msg, result_t success)
+
+<li>
+         event result_t <b>sendDone</b>(void)
+
+<li>
+        task void <b>sendTask</b>(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.SendMsg.nc.html#command result_t SendMsg.send(uint8_t id, uint16_t addr, uint8_t length, TOS_MsgPtr data)">
+<b>SendMsg.send</b>    </a>
+(uint8_t id, uint16_t addr, uint8_t length, TOS_MsgPtr data)
+
+<li>
+        event result_t     <a href="tos.interfaces.BareSendMsg.nc.html#event result_t UARTSend.sendDone(TOS_MsgPtr msg, result_t success)">
+<b>UARTSend.sendDone</b>    </a>
+(TOS_MsgPtr msg, result_t success)
+
+<li>
+        event result_t     <a href="tos.interfaces.BareSendMsg.nc.html#event result_t RadioSend.sendDone(TOS_MsgPtr msg, result_t success)">
+<b>RadioSend.sendDone</b>    </a>
+(TOS_MsgPtr msg, result_t success)
+
+<li>
+        TOS_MsgPtr    <b>received</b>(TOS_MsgPtr packet)
+
+<li>
+         event TOS_MsgPtr     <a href="tos.interfaces.ReceiveMsg.nc.html# event TOS_MsgPtr ReceiveMsg.receive(uint8_t id, TOS_MsgPtr msg)">
+<b>ReceiveMsg.receive</b>    </a>
+(uint8_t id, TOS_MsgPtr msg)
+
+<li>
+        event TOS_MsgPtr     <a href="tos.interfaces.ReceiveMsg.nc.html#event TOS_MsgPtr UARTReceive.receive(TOS_MsgPtr packet)">
+<b>UARTReceive.receive</b>    </a>
+(TOS_MsgPtr packet)
+
+<li>
+        event TOS_MsgPtr     <a href="tos.interfaces.ReceiveMsg.nc.html#event TOS_MsgPtr RadioReceive.receive(TOS_MsgPtr packet)">
+<b>RadioReceive.receive</b>    </a>
+(TOS_MsgPtr packet)
+
+</ul>
+

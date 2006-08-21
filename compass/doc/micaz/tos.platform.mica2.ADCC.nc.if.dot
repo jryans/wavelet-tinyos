@@ -1,0 +1,31 @@
+digraph "ADCC_if" {
+    rankdir=LR;
+    ratio=compress;
+    margin="0,0";
+    ranksep=0.0005; 
+    nodesep=0.1; 
+    node [shape=ellipse style=filled fillcolor="#e0e0e0"];
+    node [fontsize=10 height=.1 width=.1];
+    edge [fontsize=9 arrowsize=.8];
+    node [fontcolor=blue];
+    edge [fontcolor=blue];
+
+    ADCC [URL="tos.platform.mica2.ADCC.nc.html"];
+    ADCREFM [URL="tos.platform.mica2.ADCREFM.nc.html"];
+    ADCC -> ADCREFM [ style=dashed label="ADC" URL="tos.interfaces.ADC.nc.html" ];
+    ADCC [URL="tos.platform.mica2.ADCC.nc.html"];
+    ADCREFM [URL="tos.platform.mica2.ADCREFM.nc.html"];
+    ADCC -> ADCREFM [ style=dashed label="ADCControl" URL="tos.platform.mica2.ADCControl.nc.html" ];
+    ADCC [URL="tos.platform.mica2.ADCC.nc.html"];
+    ADCREFM [URL="tos.platform.mica2.ADCREFM.nc.html"];
+    ADCC -> ADCREFM [ style=dashed label="ADC" URL="tos.interfaces.ADC.nc.html" ];
+    Main [URL="tos.system.Main.nc.html"];
+    TimerC [URL="tos.system.TimerC.nc.html"];
+    Main -> TimerC [ label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+    ADCREFM [URL="tos.platform.mica2.ADCREFM.nc.html"];
+    TimerC [URL="tos.system.TimerC.nc.html"];
+    ADCREFM -> TimerC [ label="Timer" URL="tos.interfaces.Timer.nc.html" ];
+    ADCREFM [URL="tos.platform.mica2.ADCREFM.nc.html"];
+    HPLADCM [URL="tos.platform.micaz.HPLADCM.nc.html"];
+    ADCREFM -> HPLADCM [ label="HPLADC" URL="tos.interfaces.HPLADC.nc.html" ];
+}

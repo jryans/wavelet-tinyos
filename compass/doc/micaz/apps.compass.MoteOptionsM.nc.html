@@ -1,0 +1,188 @@
+
+<html>
+<head>
+<title>Component: MoteOptionsM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="apps.compass.MoteOptionsM.nc.source">apps.compass.MoteOptionsM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: MoteOptionsM</h1>
+<p>
+
+
+ Sets options sent in a MoteOptions message.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Ryan Stinnett
+
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.lib.CC2420Radio.CC2420Control.nc.html">CC2420Control</a> 
+<li>    <a href="tos.lib.CC2420Radio.MacControl.nc.html">MacControl</a> 
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> TransControl
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> DelugeControl
+<li>    <a href="apps.compass.Stats.nc.html">Stats</a> 
+<li>    <a href="apps.compass.Message.nc.html">Message</a> 
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> Wake
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> Sleep
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> Deluge
+<li>    <a href="tos.interfaces.PowerManagement.nc.html">PowerManagement</a> PM
+<li>    <a href="tos.interfaces.Leds.nc.html">Leds</a> 
+<li>    <a href="apps.compass.PingB.nc.html">PingB</a> 
+<li>    <a href="tos.lib.Deluge.NetProg.nc.html">NetProg</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="apps.compass.MoteOptions.nc.html">MoteOptions</a> 
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   uint8_t rRet
+<li>   PwrControl pCntl
+<li>   bool sleeping
+<li>   bool startup
+<li>   bool stayAwake
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        event void     <a href="apps.compass.Message.nc.html#event void Message.receive(msgData msg)">
+<b>Message.receive</b>    </a>
+(msgData msg)
+<menu>
+
+ Processes various options as they are received over
+
+ the network.
+
+</menu><p>
+
+<li>
+        event result_t     <a href="apps.compass.Message.nc.html#event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries)">
+<b>Message.sendDone</b>    </a>
+(msgData msg, result_t result, uint8_t retries)
+
+<li>
+         event void     <a href="apps.compass.MoteOptions.nc.html# event void MoteOptions.receive(uint8_t optMask, uint8_t optValue)">
+<b>MoteOptions.receive</b>    </a>
+(uint8_t optMask, uint8_t optValue)
+<menu>
+
+ Signaled when an option affecting other applications is received.
+
+</menu><p>
+
+<li>
+        command void     <a href="apps.compass.MoteOptions.nc.html#command void MoteOptions.resetSleep(void)">
+<b>MoteOptions.resetSleep</b>    </a>
+(void)
+<menu>
+
+ Reset sleep countdown.
+
+</menu><p>
+
+<li>
+        void <b>checkSink</b>(void)
+<menu>
+
+ Checks with the sink for the latest power control settings.
+
+</menu><p>
+
+<li>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t Wake.fired(void)">
+<b>Wake.fired</b>    </a>
+(void)
+<menu>
+
+ Wakes up to check for updated power control settings.
+
+</menu><p>
+
+<li>
+        void <b>goToSleep</b>(void)
+<menu>
+
+ Moves to sleep mode until the next wake up interval.
+
+</menu><p>
+
+<li>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t Sleep.fired(void)">
+<b>Sleep.fired</b>    </a>
+(void)
+<menu>
+
+ Based on the active sleep mode, various actions are taken
+
+ on each sleep interval.
+
+</menu><p>
+
+<li>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t Deluge.fired(void)">
+<b>Deluge.fired</b>    </a>
+(void)
+<menu>
+
+ Delays Deluge startup to give other systems time
+
+ to start first.
+
+</menu><p>
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.init(void)">
+<b>StdControl.init</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.start(void)">
+<b>StdControl.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.stop(void)">
+<b>StdControl.stop</b>    </a>
+(void)
+
+</ul>
+

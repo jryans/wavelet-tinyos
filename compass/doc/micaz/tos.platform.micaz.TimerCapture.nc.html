@@ -1,0 +1,164 @@
+
+<html>
+<head>
+<title>Interface: TimerCapture</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.platform.micaz.TimerCapture.nc.source">tos.platform.micaz.TimerCapture.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: TimerCapture</h1>
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.platform.micaz.HPLTimer1M.nc.html">tos.platform.micaz.HPLTimer1M</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="tos.platform.micaz.HPLCC2420InterruptM.nc.html">tos.platform.micaz.HPLCC2420InterruptM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+          uint16_t <b>getEvent</b>(void)
+<menu>
+ Reads the value of the last capture event in TxCCRx
+</menu><p>
+
+<li>
+          void     <a href="#  void setEdge(uint8_t cm)">
+<b>setEdge</b>    </a>
+(uint8_t cm)
+<menu>
+ Set the edge that the capture should occur
+
+</menu><p>
+
+<li>
+          bool     <a href="#  bool isOverflowPending(void)">
+<b>isOverflowPending</b>    </a>
+(void)
+<menu>
+ Determine if a capture overflow is pending.
+
+</menu><p>
+
+<li>
+          void <b>clearOverflow</b>(void)
+<menu>
+ Clear the capture overflow flag for when multiple captures occur
+</menu><p>
+
+<li>
+          void     <a href="#  void setSynchronous(bool synchronous)">
+<b>setSynchronous</b>    </a>
+(bool synchronous)
+<menu>
+ Set whether the capture should occur synchronously or asynchronously.
+</menu><p>
+
+<li>
+          void <b>enableEvents</b>(void)
+
+<li>
+          void <b>disableEvents</b>(void)
+
+<li>
+          void <b>clearPendingInterrupt</b>(void)
+
+<li>
+          bool <b>areEventsEnabled</b>(void)
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events</h3></td></tr></table>
+<ul>
+<li>
+          void     <a href="#  void captured(uint16_t time)">
+<b>captured</b>    </a>
+(uint16_t time)
+<menu>
+ Signalled when an event is captured.
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name="  void setEdge(uint8_t cm)"></a>
+        <h4>setEdge</h4>
+          void <b>setEdge</b>(uint8_t cm)<P><menu>
+ Set the edge that the capture should occur
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>cm</b> -  Capture Mode for edge capture.
+FALSE high-to-low edge
+TRUE  low-to-high edge
+</menu></menu>
+</td></tr></table>
+</menu><hr>
+    <a name="  bool isOverflowPending(void)"></a>
+        <h4>isOverflowPending</h4>
+          bool <b>isOverflowPending</b>(void)<P><menu>
+ Determine if a capture overflow is pending.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> TRUE if the capture register has overflowed
+</td></tr></table>
+</menu><hr>
+    <a name="  void setSynchronous(bool synchronous)"></a>
+        <h4>setSynchronous</h4>
+          void <b>setSynchronous</b>(bool synchronous)<P><menu>
+ Set whether the capture should occur synchronously or asynchronously.
+ TinyOS default is synchronous captures.
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>synchronous</b> -  TRUE to synchronize the timer capture with the
+        next timer clock instead of occurring asynchronously.
+</menu></menu>
+</td></tr></table>
+</menu><table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events - Details</h3></td></tr></table>
+    <a name="  void captured(uint16_t time)"></a>
+        <h4>captured</h4>
+          void <b>captured</b>(uint16_t time)<P><menu>
+ Signalled when an event is captured.
+
+ <table border="0" cellpadding="0">
+</td></tr>
+<tr valign="top"><td><br><b>Parameters:</b></td>
+<td><menu><p STYLE="text-indent: -1cm"><b>time</b> -  The time of the capture event
+</menu></menu>
+</td></tr></table>
+</menu>

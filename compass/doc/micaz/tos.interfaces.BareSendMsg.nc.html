@@ -1,0 +1,122 @@
+
+<html>
+<head>
+<title>Interface: BareSendMsg</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.interfaces.BareSendMsg.nc.source">tos.interfaces.BareSendMsg.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: BareSendMsg</h1>
+<p>
+
+ Functionality for sending a raw packet buffer; unaware of message
+ structure (besides length). This is in contrast to SendMsg, which
+ takes parameters for message headers.
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Jason Hill
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> David Gay
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> Philip Levis
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.lib.CC2420Radio.CC2420RadioC.nc.html">tos.lib.CC2420Radio.CC2420RadioC</a><br>
+    <a href="tos.lib.CC2420Radio.CC2420RadioM.nc.html">tos.lib.CC2420Radio.CC2420RadioM</a><br>
+    <a href="tos.lib.CC2420Radio.RadioCRCPacket.nc.html">tos.lib.CC2420Radio.RadioCRCPacket</a><br>
+    <a href="tos.platform.micaz.FramerM.nc.html">tos.platform.micaz.FramerM</a><br>
+    <a href="tos.system.UARTFramedPacket.nc.html">tos.system.UARTFramedPacket</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="tos.lib.Transceiver.TransceiverM.nc.html">tos.lib.Transceiver.TransceiverM</a><br>
+    <a href="tos.system.AMStandard.nc.html">tos.system.AMStandard</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+         result_t     <a href="# result_t send(TOS_MsgPtr msg)">
+<b>send</b>    </a>
+(TOS_MsgPtr msg)
+<menu>
+ Send a message buffer over a communiation channel.
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events</h3></td></tr></table>
+<ul>
+<li>
+         result_t     <a href="# result_t sendDone(TOS_MsgPtr msg, result_t success)">
+<b>sendDone</b>    </a>
+(TOS_MsgPtr msg, result_t success)
+<menu>
+ Signals that a buffer was sent; success indicates whether the
+ send was successful or not.
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name=" result_t send(TOS_MsgPtr msg)"></a>
+        <h4>send</h4>
+         result_t <b>send</b>(TOS_MsgPtr msg)<P><menu>
+ Send a message buffer over a communiation channel.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS if the buffer will be sent, FAIL if not. If
+ SUCCESS, a sendDone should be expected, if FAIL, the event should
+ not be expected.
+</td></tr></table>
+</menu><table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events - Details</h3></td></tr></table>
+    <a name=" result_t sendDone(TOS_MsgPtr msg, result_t success)"></a>
+        <h4>sendDone</h4>
+         result_t <b>sendDone</b>(TOS_MsgPtr msg, result_t success)<P><menu>
+ Signals that a buffer was sent; success indicates whether the
+ send was successful or not.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> SUCCESS always.
+
+</td></tr></table>
+</menu>

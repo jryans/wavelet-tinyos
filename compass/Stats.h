@@ -1,4 +1,4 @@
- /**
+/**
  * Stats message that sends various details about the mote's
  * network packets on request.
  * @author Ryan Stinnett

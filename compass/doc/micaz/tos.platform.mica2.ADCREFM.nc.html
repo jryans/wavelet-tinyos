@@ -1,0 +1,134 @@
+
+<html>
+<head>
+<title>Component: ADCREFM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.platform.mica2.ADCREFM.nc.source">tos.platform.mica2.ADCREFM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: ADCREFM</h1>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.HPLADC.nc.html">HPLADC</a> 
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.ADC.nc.html">ADC</a> 
+<li>    <a href="tos.interfaces.ADC.nc.html">ADC</a> CalADC
+<li>    <a href="tos.platform.mica2.ADCControl.nc.html">ADCControl</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   uint16_t ReqPort
+<li>   uint16_t ReqVector
+<li>   uint16_t ContReqMask
+<li>   uint16_t CalReqMask
+<li>   uint32_t RefVal
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        task void <b>CalTask</b>(void)
+
+<li>
+        command result_t     <a href="tos.platform.mica2.ADCControl.nc.html#command result_t ADCControl.init(void)">
+<b>ADCControl.init</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.platform.mica2.ADCControl.nc.html#command result_t ADCControl.setSamplingRate(uint8_t rate)">
+<b>ADCControl.setSamplingRate</b>    </a>
+(uint8_t rate)
+
+<li>
+        command result_t     <a href="tos.platform.mica2.ADCControl.nc.html#command result_t ADCControl.bindPort(uint8_t port, uint8_t adcPort)">
+<b>ADCControl.bindPort</b>    </a>
+(uint8_t port, uint8_t adcPort)
+
+<li>
+         async event result_t     <a href="tos.interfaces.ADC.nc.html# async event result_t ADC.dataReady(uint8_t port, uint16_t data)">
+<b>ADC.dataReady</b>    </a>
+(uint8_t port, uint16_t data)
+
+<li>
+         async event result_t     <a href="tos.interfaces.ADC.nc.html# async event result_t CalADC.dataReady(uint8_t port, uint16_t data)">
+<b>CalADC.dataReady</b>    </a>
+(uint8_t port, uint16_t data)
+
+<li>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t Timer.fired(void)">
+<b>Timer.fired</b>    </a>
+(void)
+
+<li>
+        async event result_t     <a href="tos.interfaces.HPLADC.nc.html#async event result_t HPLADC.dataReady(uint16_t data)">
+<b>HPLADC.dataReady</b>    </a>
+(uint16_t data)
+
+<li>
+        result_t <b>startGet</b>(uint8_t port)
+
+<li>
+        async command result_t     <a href="tos.interfaces.ADC.nc.html#async command result_t ADC.getData(uint8_t port)">
+<b>ADC.getData</b>    </a>
+(uint8_t port)
+
+<li>
+        async command result_t     <a href="tos.interfaces.ADC.nc.html#async command result_t CalADC.getData(uint8_t port)">
+<b>CalADC.getData</b>    </a>
+(uint8_t port)
+
+<li>
+        async command result_t     <a href="tos.interfaces.ADC.nc.html#async command result_t ADC.getContinuousData(uint8_t port)">
+<b>ADC.getContinuousData</b>    </a>
+(uint8_t port)
+
+<li>
+        async command result_t     <a href="tos.interfaces.ADC.nc.html#async command result_t CalADC.getContinuousData(uint8_t port)">
+<b>CalADC.getContinuousData</b>    </a>
+(uint8_t port)
+
+<li>
+        async command result_t     <a href="tos.platform.mica2.ADCControl.nc.html#async command result_t ADCControl.manualCalibrate(void)">
+<b>ADCControl.manualCalibrate</b>    </a>
+(void)
+
+<li>
+        async command result_t     <a href="tos.platform.mica2.ADCControl.nc.html#async command result_t ADCControl.autoCalibrate(uint16_t interval)">
+<b>ADCControl.autoCalibrate</b>    </a>
+(uint16_t interval)
+
+</ul>
+

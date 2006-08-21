@@ -1,0 +1,65 @@
+
+<html>
+<head>
+<title>Interface: InternalFlash</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.interfaces.InternalFlash.nc.source">tos.interfaces.InternalFlash.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: InternalFlash</h1>
+<p>
+
+ InternalFlash.nc - A generic interface to read and store values in
+ the internal flash of a microcontroller.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Jonathan Hui <<a href="mailto:jwhui@cs.berkeley.edu">jwhui@cs.berkeley.edu</a>>
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.platform.avrmote.InternalFlashC.nc.html">tos.platform.avrmote.InternalFlashC</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="tos.lib.Deluge.DelugeM.nc.html">tos.lib.Deluge.DelugeM</a><br>
+    <a href="tos.lib.Deluge.NetProgM.nc.html">tos.lib.Deluge.NetProgM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+         result_t <b>write</b>(void *addr, void *buf, uint16_t size)
+
+<li>
+         result_t <b>read</b>(void *addr, void *buf, uint16_t size)
+
+</ul>

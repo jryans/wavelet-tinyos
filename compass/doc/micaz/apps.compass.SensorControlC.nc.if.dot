@@ -1,0 +1,37 @@
+digraph "SensorControlC_if" {
+    rankdir=LR;
+    ratio=compress;
+    margin="0,0";
+    ranksep=0.0005; 
+    nodesep=0.1; 
+    node [shape=ellipse style=filled fillcolor="#e0e0e0"];
+    node [fontsize=10 height=.1 width=.1];
+    edge [fontsize=9 arrowsize=.8];
+    node [fontcolor=blue];
+    edge [fontcolor=blue];
+
+    SensorControlC [URL="apps.compass.SensorControlC.nc.html"];
+    SensorControlM [URL="apps.compass.SensorControlM.nc.html"];
+    SensorControlC -> SensorControlM [ style=dashed label="SensorData" URL="apps.compass.SensorData.nc.html" ];
+    Main [URL="tos.system.Main.nc.html"];
+    SensorControlM [URL="apps.compass.SensorControlM.nc.html"];
+    Main -> SensorControlM [ label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+    SensorControlM [URL="apps.compass.SensorControlM.nc.html"];
+    PhotoTemp [URL="tos.sensorboards.micasb.PhotoTemp.nc.html"];
+    SensorControlM -> PhotoTemp [ label="ADC" URL="tos.interfaces.ADC.nc.html" ];
+    SensorControlM [URL="apps.compass.SensorControlM.nc.html"];
+    PhotoTemp [URL="tos.sensorboards.micasb.PhotoTemp.nc.html"];
+    SensorControlM -> PhotoTemp [ label="ADC" URL="tos.interfaces.ADC.nc.html" ];
+    SensorControlM [URL="apps.compass.SensorControlM.nc.html"];
+    VoltageC [URL="tos.system.VoltageC.nc.html"];
+    SensorControlM -> VoltageC [ label="ADC" URL="tos.interfaces.ADC.nc.html" ];
+    SensorControlM [URL="apps.compass.SensorControlM.nc.html"];
+    PhotoTemp [URL="tos.sensorboards.micasb.PhotoTemp.nc.html"];
+    SensorControlM -> PhotoTemp [ label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+    SensorControlM [URL="apps.compass.SensorControlM.nc.html"];
+    PhotoTemp [URL="tos.sensorboards.micasb.PhotoTemp.nc.html"];
+    SensorControlM -> PhotoTemp [ label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+    SensorControlM [URL="apps.compass.SensorControlM.nc.html"];
+    VoltageC [URL="tos.system.VoltageC.nc.html"];
+    SensorControlM -> VoltageC [ label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+}

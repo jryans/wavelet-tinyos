@@ -1,0 +1,413 @@
+
+<html>
+<head>
+<title>Component: BigPackM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="apps.compass.BigPackM.nc.source">apps.compass.BigPackM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: BigPackM</h1>
+<p>
+
+
+ Requests and rebuilds multi-packet data structures.  Can act as both
+
+ a client that receives data from the sink, and as a server that sends
+
+ data to the sink.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Ryan Stinnett
+
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="apps.compass.Message.nc.html">Message</a> 
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> Timeout
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="apps.compass.BigPackServer.nc.html">BigPackServer</a> 
+<li>    <a href="apps.compass.BigPackClient.nc.html">BigPackClient</a> 
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   uint8_t numPacks
+<li>   int8_t curPackNum
+<li>   uint8_t numBytes
+<li>   uint8_t *bigData
+<li>   bool bdAlloc = FALSE
+<li>   BigPackBlock *block
+<li>   uint8_t numBlocks[BP_MAX_REQUESTS]
+<li>   bool bpbAlloc = FALSE
+<li>   BigPackPtr *ptr
+<li>   uint8_t numPtrs
+<li>   bool bppAlloc = FALSE
+<li>   uint8_t curType
+<li>   bool activeRequest
+<li>   uint8_t **blockAddr[BP_MAX_REQUESTS]
+<li>   void *mainBlock[BP_MAX_REQUESTS]
+<li>   uint8_t refs[BP_MAX_REQUESTS]
+<li>   uint8_t numListeners[BP_MAX_REQUESTS]
+<li>   uint8_t transState
+<li>   result_t allocInc(void)
+        <br><menu>
+
+ Allocates temporary data used to rebuild an incoming
+
+ struct.
+
+</menu>
+<li>   void freeInc(void)
+        <br><menu>
+
+ Free the incoming temporary data.
+
+</menu>
+<li>   result_t allocEnv(void)
+        <br><menu>
+
+ Allocates temporary data used to describe an outgoing struct.
+
+</menu>
+<li>   void freeEnv(void)
+        <br><menu>
+
+ Free the outgoing temporary data.
+
+</menu>
+<li>   void freeOut(void)
+        <br><menu>
+
+ Free the outgoing data stream.
+
+</menu>
+<li>   void requestData(uint8_t type)
+<li>   void sendAck(msgData msg)
+        <br><menu>
+
+ Sends standard ACK by returning the message that was sent.
+
+</menu>
+<li>   void repeatSend(msgData msg, uint16_t bms)
+<li>   void rebuildBlocks(void)
+        <br><menu>
+
+ Rebuild data structures from an incoming data stream.
+
+</menu>
+<li>   result_t newRequest(uint8_t type)
+<li>   void decomposeStruct(void)
+        <br><menu>
+
+ Break down structures into a data stream that can be
+
+ sent away.
+
+</menu>
+<li>   void sendNextPack(void)
+        <br><menu>
+
+ Sends the next packet to continue the data session.
+
+</menu>
+<li>   BigPackEnvelope env
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        void     <a href="#void timeoutSend(msgData msg)">
+<b>timeoutSend</b>    </a>
+(msgData msg)
+<menu>
+
+ Sends a message and activates a timeout timer that if fired
+
+ will cancel the current BigPack data session. </menu><p>
+
+<li>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t Timeout.fired(void)">
+<b>Timeout.fired</b>    </a>
+(void)
+<menu>
+
+ Cancels the current BigPack data session once the timeout timer
+
+ has fired.
+
+</menu><p>
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.init(void)">
+<b>StdControl.init</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.start(void)">
+<b>StdControl.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.stop(void)">
+<b>StdControl.stop</b>    </a>
+(void)
+
+<li>
+        command void     <a href="apps.compass.BigPackClient.nc.html#command void BigPackClient.registerListener(uint8_t type)">
+<b>BigPackClient.registerListener</b>    </a>
+(uint8_t type)
+<menu>
+
+ Each module that listens to the requestDone event should call this method
+
+ during startup to ensure that no pointers are freed until all modules are
+
+ done with them.
+
+</menu><p>
+
+<li>
+        command result_t     <a href="#command result_t BigPackClient.request(uint8_t type)">
+<b>BigPackClient.request</b>    </a>
+(uint8_t type)
+<menu>
+
+ Requests big pack data of a certain type. </menu><p>
+
+<li>
+        command void     <a href="apps.compass.BigPackClient.nc.html#command void BigPackClient.free(uint8_t type)">
+<b>BigPackClient.free</b>    </a>
+(uint8_t type)
+<menu>
+
+ When an application is done with the data, it must call free so that internal
+
+ structures can be deallocated.
+
+</menu><p>
+
+<li>
+         event void     <a href="apps.compass.BigPackClient.nc.html# event void BigPackClient.requestDone(uint8_t type, void *mb, result_t result)">
+<b>BigPackClient.requestDone</b>    </a>
+(uint8_t type, void *mb, result_t result)
+<menu>
+
+ Once the request is complete, the requester is given a pointer to the main
+
+ data block.
+
+</menu><p>
+
+<li>
+         event void     <a href="apps.compass.BigPackServer.nc.html# event void BigPackServer.buildPack(uint8_t type)">
+<b>BigPackServer.buildPack</b>    </a>
+(uint8_t type)
+<menu>
+
+ When the mote receives a big pack data request from the sink,
+
+ this event is signaled triggering the application to assemble
+
+ the requested data.
+
+</menu><p>
+
+<li>
+        command BigPackEnvelope     <a href="#command BigPackEnvelope BigPackServer.createEnvelope(uint8_t type, uint8_t numB, uint8_t numP)">
+<b>BigPackServer.createEnvelope</b>    </a>
+(uint8_t type, uint8_t numB, uint8_t numP)
+<menu>
+
+ A helper function used when a module is building a big pack
+
+ in response to the buildPack event. </menu><p>
+
+<li>
+        command void     <a href="apps.compass.BigPackServer.nc.html#command void BigPackServer.packBuilt(uint8_t type, result_t result)">
+<b>BigPackServer.packBuilt</b>    </a>
+(uint8_t type, result_t result)
+<menu>
+
+ Once the new pack is complete, the application calls this command
+
+ to start transmission of the data.
+
+</menu><p>
+
+<li>
+        void <b>sendNextPack</b>(void)
+<menu>
+
+ Sends the next packet to continue the data session.
+
+</menu><p>
+
+<li>
+        void <b>sendAck</b>(msgData msg)
+<menu>
+
+ Sends standard ACK by returning the message that was sent.
+
+</menu><p>
+
+<li>
+        result_t <b>allocInc</b>(void)
+<menu>
+
+ Allocates temporary data used to rebuild an incoming
+
+ struct.
+
+</menu><p>
+
+<li>
+        void <b>freeInc</b>(void)
+<menu>
+
+ Free the incoming temporary data.
+
+</menu><p>
+
+<li>
+        result_t <b>allocEnv</b>(void)
+<menu>
+
+ Allocates temporary data used to describe an outgoing struct.
+
+</menu><p>
+
+<li>
+        void <b>freeEnv</b>(void)
+<menu>
+
+ Free the outgoing temporary data.
+
+</menu><p>
+
+<li>
+        void <b>freeOut</b>(void)
+<menu>
+
+ Free the outgoing data stream.
+
+</menu><p>
+
+<li>
+        void <b>rebuildBlocks</b>(void)
+<menu>
+
+ Rebuild data structures from an incoming data stream.
+
+</menu><p>
+
+<li>
+        void <b>decomposeStruct</b>(void)
+<menu>
+
+ Break down structures into a data stream that can be
+
+ sent away.
+
+</menu><p>
+
+<li>
+        event result_t     <a href="apps.compass.Message.nc.html#event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries)">
+<b>Message.sendDone</b>    </a>
+(msgData msg, result_t result, uint8_t retries)
+<menu>
+
+ sendDone is signaled when the send has completed
+
+</menu><p>
+
+<li>
+        event void     <a href="apps.compass.Message.nc.html#event void Message.receive(msgData msg)">
+<b>Message.receive</b>    </a>
+(msgData msg)
+<menu>
+
+ Receive is signaled when a new message arrives
+
+</menu><p>
+
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Descriptions</h3>
+</td></tr></table>
+    <a name="void timeoutSend(msgData msg)"></a>
+        <h4>timeoutSend</h4>
+        void <b>timeoutSend</b>(msgData msg)<P><menu>
+
+ Sends a message and activates a timeout timer that if fired
+
+ will cancel the current BigPack data session.  Thus, whenever
+
+ a response is received, the timer must explicitly be disabled
+
+ to keep the session alive.
+
+</menu><hr>
+    <a name="command result_t BigPackClient.request(uint8_t type)"></a>
+        <h4>BigPackClient.request</h4>
+        command result_t     <a href="apps.compass.BigPackClient.nc.html#command result_t BigPackClient.request(uint8_t type)"><b>BigPackClient.request</b>    </a>
+(uint8_t type)<P><menu>
+
+ Requests big pack data of a certain type.  If another request is already being
+
+ processed, this will return FAIL and do nothing.  Otherwise, it returns SUCCESS
+
+ and begins the request.
+
+</menu><hr>
+    <a name="command BigPackEnvelope BigPackServer.createEnvelope(uint8_t type, uint8_t numB, uint8_t numP)"></a>
+        <h4>BigPackServer.createEnvelope</h4>
+        command BigPackEnvelope     <a href="apps.compass.BigPackServer.nc.html#command BigPackEnvelope BigPackServer.createEnvelope(uint8_t type, uint8_t numB, uint8_t numP)"><b>BigPackServer.createEnvelope</b>    </a>
+(uint8_t type, uint8_t numB, uint8_t numP)<P><menu>
+
+ A helper function used when a module is building a big pack
+
+ in response to the buildPack event.  This allocates internal
+
+ BigPackM data structures for the given number of blocks and
+
+ pointers and returns pointers to these in a BigPackEnvelope.
+
+</menu>

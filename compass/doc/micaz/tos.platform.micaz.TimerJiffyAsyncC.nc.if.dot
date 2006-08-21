@@ -1,0 +1,22 @@
+digraph "TimerJiffyAsyncC_if" {
+    rankdir=LR;
+    ratio=compress;
+    margin="0,0";
+    ranksep=0.0005; 
+    nodesep=0.1; 
+    node [shape=ellipse style=filled fillcolor="#e0e0e0"];
+    node [fontsize=10 height=.1 width=.1];
+    edge [fontsize=9 arrowsize=.8];
+    node [fontcolor=blue];
+    edge [fontcolor=blue];
+
+    TimerJiffyAsyncC [URL="tos.platform.micaz.TimerJiffyAsyncC.nc.html"];
+    TimerJiffyAsyncM [URL="tos.platform.micaz.TimerJiffyAsyncM.nc.html"];
+    TimerJiffyAsyncC -> TimerJiffyAsyncM [ style=dashed label="TimerJiffyAsync" URL="tos.lib.CC2420Radio.TimerJiffyAsync.nc.html" ];
+    TimerJiffyAsyncC [URL="tos.platform.micaz.TimerJiffyAsyncC.nc.html"];
+    TimerJiffyAsyncM [URL="tos.platform.micaz.TimerJiffyAsyncM.nc.html"];
+    TimerJiffyAsyncC -> TimerJiffyAsyncM [ style=dashed label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+    TimerJiffyAsyncM [URL="tos.platform.micaz.TimerJiffyAsyncM.nc.html"];
+    HPLTimer2C [URL="tos.platform.micaz.HPLTimer2C.nc.html"];
+    TimerJiffyAsyncM -> HPLTimer2C [ label="Clock" URL="tos.interfaces.Clock.nc.html" ];
+}

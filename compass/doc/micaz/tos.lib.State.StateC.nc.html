@@ -1,0 +1,98 @@
+
+<html>
+<head>
+<title>Component: StateC</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.State.StateC.nc.source">tos.lib.State.StateC.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: StateC</h1>
+<p>
+
+
+ This is a parameterized state controller for any and every component's
+
+ state machine(s).
+
+
+
+ There are several compelling reasons to use the State module/interface
+
+ in all your components that have any kind of state associated with them:
+
+
+
+   1) It provides a unified interface to control any state, which makes
+
+      it easy for everyone to understand your code
+
+   2) You can easily keep track of multiple state machines in one component
+
+   3) You could have one state machine control several components
+
+
+
+ Connect your component's State interface to StateM.State[unique("State")]; 
+
+ when creating a new state machine. If two components share the same states, 
+
+ use one unique("State") for both.
+
+
+
+ Keep in mind, S_IDLE is always 0.
+
+ 
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> david moss -> <a href="mailto:dmm@rincon.com">dmm@rincon.com</a>
+
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.lib.State.State.nc.html">State</a> 
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Component Graph &nbsp;&nbsp;<font size=-1>(<a href="tos.lib.State.StateC.nc.text.html">text version</a>,&nbsp; &nbsp;<a href="cg_help.html">help</a>)</font> </h3>
+</td></tr></table>
+<br>
+<map name="comp">
+<area shape="rect" href="tos.lib.State.StateC.nc.html" title="StateC" alt="StateC" coords="11,21,67,51">
+<area shape="rect" href="tos.lib.State.StateM.nc.html" title="StateM" alt="StateM" coords="153,21,212,51">
+<area shape="rect" href="tos.lib.State.State.nc.html" title="State" alt="State" coords="94,17,125,34">
+<area shape="rect" href="tos.lib.State.State.nc.html" title="State" alt="State" coords="63,31,71,39">
+<area shape="rect" href="tos.lib.State.State.nc.html" title="State" alt="State" coords="148,31,156,39">
+<area shape="rect" href="tos.interfaces.StdControl.nc.html" title="StdControl" alt="StdControl" coords="81,37,138,54">
+<area shape="rect" href="tos.interfaces.StdControl.nc.html" title="StdControl" alt="StdControl" coords="52,44,60,52">
+<area shape="rect" href="tos.interfaces.StdControl.nc.html" title="StdControl" alt="StdControl" coords="160,44,168,52">
+</map>
+<center><image src="tos.lib.State.StateC.nc.if.gif" usemap="#comp" border=0></center>

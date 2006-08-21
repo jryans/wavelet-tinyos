@@ -1,0 +1,83 @@
+<html>
+<head><title>Text Connection Graph: DelugePageTransferC</title></head>
+<body>
+<h1 align="center">Text Connection Graph: DelugePageTransferC</h1>
+
+<center>
+<table border=0 cellpadding=2>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.lib.Deluge.SharedMsgBuf.nc.html">SharedMsgBuf</a></td>
+    <td align="center">&nbsp;=&nbsp;</td>
+    <td align="left"><a href="tos.lib.Deluge.DelugePageTransferC.nc.html">DelugePageTransferC</a>.<a href="tos.lib.Deluge.SharedMsgBuf.nc.html">SharedMsgBuf</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.interfaces.SendMsg.nc.html">SendMsg</a></td>
+    <td align="center">&nbsp;=&nbsp;</td>
+    <td align="left"><a href="tos.lib.Deluge.DelugePageTransferC.nc.html">DelugePageTransferC</a>.<a href="tos.interfaces.SendMsg.nc.html">SendMsg</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a></td>
+    <td align="center">&nbsp;=&nbsp;</td>
+    <td align="left"><a href="tos.lib.Deluge.DelugePageTransferC.nc.html">DelugePageTransferC</a>.<a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.interfaces.SendMsg.nc.html">SendMsg</a></td>
+    <td align="center">&nbsp;=&nbsp;</td>
+    <td align="left"><a href="tos.lib.Deluge.DelugePageTransferC.nc.html">DelugePageTransferC</a>.<a href="tos.interfaces.SendMsg.nc.html">SendMsg</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a></td>
+    <td align="center">&nbsp;=&nbsp;</td>
+    <td align="left"><a href="tos.lib.Deluge.DelugePageTransferC.nc.html">DelugePageTransferC</a>.<a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferC.nc.html">DelugePageTransferC</a>.<a href="tos.lib.Deluge.DelugePageTransfer.nc.html">DelugePageTransfer</a></td>
+    <td align="center">&nbsp;=&nbsp;</td>
+    <td align="left"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.lib.Deluge.DelugePageTransfer.nc.html">DelugePageTransfer</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferC.nc.html">DelugePageTransferC</a>.<a href="tos.interfaces.StdControl.nc.html">StdControl</a></td>
+    <td align="center">&nbsp;=&nbsp;</td>
+    <td align="left"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.interfaces.StdControl.nc.html">StdControl</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.interfaces.Leds.nc.html">Leds</a></td>
+    <td align="center">&nbsp;=&nbsp;</td>
+    <td align="left"><a href="tos.lib.Deluge.DelugePageTransferC.nc.html">DelugePageTransferC</a>.<a href="tos.interfaces.Leds.nc.html">Leds</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.lib.Deluge.BitVecUtils.nc.html">BitVecUtils</a></td>
+    <td align="center">&nbsp;->&nbsp;</td>
+    <td align="left"><a href="tos.lib.Deluge.BitVecUtilsC.nc.html">BitVecUtilsC</a>.<a href="tos.lib.Deluge.BitVecUtils.nc.html">BitVecUtils</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.lib.Deluge.DelugeDataRead.nc.html">DelugeDataRead</a></td>
+    <td align="center">&nbsp;->&nbsp;</td>
+    <td align="left"><a href="tos.lib.Deluge.DelugeStorageC.nc.html">DelugeStorageC</a>.<a href="tos.lib.Deluge.DelugeDataRead.nc.html">DelugeDataRead</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.lib.Deluge.DelugeDataWrite.nc.html">DelugeDataWrite</a></td>
+    <td align="center">&nbsp;->&nbsp;</td>
+    <td align="left"><a href="tos.lib.Deluge.DelugeStorageC.nc.html">DelugeStorageC</a>.<a href="tos.lib.Deluge.DelugeDataWrite.nc.html">DelugeDataWrite</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.lib.Deluge.DelugeStats.nc.html">DelugeStats</a></td>
+    <td align="center">&nbsp;->&nbsp;</td>
+    <td align="left"><a href="tos.lib.Deluge.DelugeMetadataC.nc.html">DelugeMetadataC</a>.<a href="tos.lib.Deluge.DelugeStats.nc.html">DelugeStats</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.interfaces.Random.nc.html">Random</a></td>
+    <td align="center">&nbsp;->&nbsp;</td>
+    <td align="left"><a href="tos.system.RandomLFSR.nc.html">RandomLFSR</a>.<a href="tos.interfaces.Random.nc.html">Random</a></td>
+</tr>
+<tr>
+    <td align="right"><a href="tos.lib.Deluge.DelugePageTransferM.nc.html">DelugePageTransferM</a>.<a href="tos.interfaces.Timer.nc.html">Timer</a></td>
+    <td align="center">&nbsp;->&nbsp;</td>
+    <td align="left"><a href="tos.system.TimerC.nc.html">TimerC</a>.<a href="tos.interfaces.Timer.nc.html">Timer</a></td>
+</tr>
+</table>
+</center>
+
+<hr>Generated by <a href="../../../nesc/doc/nesdoc.html">nesdoc</a><br>
+</body>
+</html>

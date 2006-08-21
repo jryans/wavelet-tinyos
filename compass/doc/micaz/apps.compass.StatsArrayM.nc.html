@@ -1,0 +1,194 @@
+
+<html>
+<head>
+<title>Component: StatsArrayM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="apps.compass.StatsArrayM.nc.source">apps.compass.StatsArrayM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: StatsArrayM</h1>
+<p>
+
+
+ Computes various statistics on a data stream without
+
+ storing the data itself.
+
+ Median algorithm based on:<br />
+
+ R. Jain and I. Chlamtac. The P^2 algorithm for dynamic
+
+ calculation of quantile and histograms without storing
+
+ observations. <i>Communications of the ACM</i>,
+
+ 28(10):1076-1085, October 1986.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Ryan Stinnett
+
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="apps.compass.StatsArray.nc.html">StatsArray</a> 
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   float p = 0.5
+<li>   float dnDes[StatsArrayM.numMarkers]
+<li>   typedef struct StatsArrayM.__nesc_unnamed4242 {
+  float q[StatsArrayM.numMarkers];
+  uint16_t n[StatsArrayM.numMarkers];
+  float nDes[StatsArrayM.numMarkers];
+  uint16_t numSeen;
+  float dataSum;
+} saInfo
+<li>   uint8_t numArrays = 2U
+<li>   StatsArrayM.saInfo sa[2U]
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        void <b>clearInfo</b>(uint8_t id)
+<menu>
+
+ Resets all internal structures for a given array.
+
+</menu><p>
+
+<li>
+        float <b>parabolaAdj</b>(uint8_t id, int8_t d, uint8_t i)
+<menu>
+
+ Adjusts markers by fitting them to a parabola.
+
+</menu><p>
+
+<li>
+        float <b>linearAdj</b>(uint8_t id, int8_t d, uint8_t i)
+<menu>
+
+ Adjusts markers by fitting them to a line.
+
+</menu><p>
+
+<li>
+        void <b>sort</b>(uint8_t id)
+<menu>
+
+ Sorts the initial data elements such that the markers
+
+ are in increasing order.
+
+</menu><p>
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.init(void)">
+<b>StdControl.init</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.start(void)">
+<b>StdControl.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.stop(void)">
+<b>StdControl.stop</b>    </a>
+(void)
+
+<li>
+        command void     <a href="apps.compass.StatsArray.nc.html#command void StatsArray.newData(uint8_t id, float newVal)">
+<b>StatsArray.newData</b>    </a>
+(uint8_t id, float newVal)
+<menu>
+
+ Adds a new data element to the array.
+
+</menu><p>
+
+<li>
+        command float     <a href="apps.compass.StatsArray.nc.html#command float StatsArray.min(uint8_t id)">
+<b>StatsArray.min</b>    </a>
+(uint8_t id)
+<menu>
+
+ Returns the array's minimum value.
+
+</menu><p>
+
+<li>
+        command float     <a href="apps.compass.StatsArray.nc.html#command float StatsArray.max(uint8_t id)">
+<b>StatsArray.max</b>    </a>
+(uint8_t id)
+<menu>
+
+ Returns the array's maximum value.
+
+</menu><p>
+
+<li>
+        command float     <a href="apps.compass.StatsArray.nc.html#command float StatsArray.mean(uint8_t id)">
+<b>StatsArray.mean</b>    </a>
+(uint8_t id)
+<menu>
+
+ Returns the mean of the array.
+
+</menu><p>
+
+<li>
+        command float     <a href="apps.compass.StatsArray.nc.html#command float StatsArray.median(uint8_t id)">
+<b>StatsArray.median</b>    </a>
+(uint8_t id)
+<menu>
+
+ Returns the <b>estimated</b> median of the array.
+
+</menu><p>
+
+<li>
+        command void     <a href="apps.compass.StatsArray.nc.html#command void StatsArray.clear(uint8_t id)">
+<b>StatsArray.clear</b>    </a>
+(uint8_t id)
+<menu>
+
+ Removes all data from the array.
+
+</menu><p>
+
+</ul>
+

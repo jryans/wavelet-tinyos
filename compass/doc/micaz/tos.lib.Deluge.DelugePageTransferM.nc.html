@@ -1,0 +1,195 @@
+
+<html>
+<head>
+<title>Component: DelugePageTransferM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.Deluge.DelugePageTransferM.nc.source">tos.lib.Deluge.DelugePageTransferM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: DelugePageTransferM</h1>
+<p>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Jonathan Hui <<a href="mailto:jwhui@cs.berkeley.edu">jwhui@cs.berkeley.edu</a>>
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.lib.Deluge.BitVecUtils.nc.html">BitVecUtils</a> 
+<li>    <a href="tos.lib.Deluge.DelugeDataRead.nc.html">DelugeDataRead</a> DataRead
+<li>    <a href="tos.lib.Deluge.DelugeDataWrite.nc.html">DelugeDataWrite</a> DataWrite
+<li>    <a href="tos.lib.Deluge.DelugeStats.nc.html">DelugeStats</a> 
+<li>    <a href="tos.interfaces.Leds.nc.html">Leds</a> 
+<li>    <a href="tos.interfaces.Random.nc.html">Random</a> 
+<li>    <a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a> ReceiveDataMsg
+<li>    <a href="tos.interfaces.ReceiveMsg.nc.html">ReceiveMsg</a> ReceiveReqMsg
+<li>    <a href="tos.interfaces.SendMsg.nc.html">SendMsg</a> SendDataMsg
+<li>    <a href="tos.interfaces.SendMsg.nc.html">SendMsg</a> SendReqMsg
+<li>    <a href="tos.lib.Deluge.SharedMsgBuf.nc.html">SharedMsgBuf</a> 
+<li>    <a href="tos.interfaces.Timer.nc.html">Timer</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+<li>    <a href="tos.lib.Deluge.DelugePageTransfer.nc.html">DelugePageTransfer</a> PageTransfer
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   uint8_t pktsToSend[DELUGE_PKT_BITVEC_SIZE]
+<li>   uint8_t pktsToReceive[DELUGE_PKT_BITVEC_SIZE]
+<li>   DelugeDataMsg rxQueue[DELUGE_QSIZE]
+<li>   uint8_t head
+<li>   uint8_t size
+<li>   uint8_t state
+<li>   imgnum_t workingImgNum
+<li>   pgnum_t workingPgNum
+<li>   uint16_t nodeAddr
+<li>   uint8_t remainingAttempts
+<li>   bool suppressReq
+<li>   uint8_t imgToSend
+<li>   uint8_t pageToSend
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        void <b>changeState</b>(uint8_t newState)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.init(void)">
+<b>StdControl.init</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.start(void)">
+<b>StdControl.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.stop(void)">
+<b>StdControl.stop</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.lib.Deluge.DelugePageTransfer.nc.html#command result_t PageTransfer.setWorkingPage(imgnum_t imgNum, pgnum_t pgNum)">
+<b>PageTransfer.setWorkingPage</b>    </a>
+(imgnum_t imgNum, pgnum_t pgNum)
+
+<li>
+        command bool     <a href="tos.lib.Deluge.DelugePageTransfer.nc.html#command bool PageTransfer.isTransferring(void)">
+<b>PageTransfer.isTransferring</b>    </a>
+(void)
+
+<li>
+        void <b>startReqTimer</b>(bool first)
+
+<li>
+        command result_t     <a href="tos.lib.Deluge.DelugePageTransfer.nc.html#command result_t PageTransfer.dataAvailable(uint16_t sourceAddr, imgnum_t imgNum)">
+<b>PageTransfer.dataAvailable</b>    </a>
+(uint16_t sourceAddr, imgnum_t imgNum)
+
+<li>
+        block_addr_t <b>calcOffset</b>(pgnum_t pgNum, uint8_t pktNum)
+
+<li>
+        void <b>setupReqMsg</b>(void)
+
+<li>
+        void <b>writeData</b>(void)
+
+<li>
+        void <b>suppressMsgs</b>(imgnum_t imgNum, pgnum_t pgNum)
+
+<li>
+        event TOS_MsgPtr     <a href="tos.interfaces.ReceiveMsg.nc.html#event TOS_MsgPtr ReceiveDataMsg.receive(TOS_MsgPtr pMsg)">
+<b>ReceiveDataMsg.receive</b>    </a>
+(TOS_MsgPtr pMsg)
+
+<li>
+        void <b>setupDataMsg</b>(void)
+
+<li>
+        event result_t     <a href="tos.interfaces.Timer.nc.html#event result_t Timer.fired(void)">
+<b>Timer.fired</b>    </a>
+(void)
+
+<li>
+        event TOS_MsgPtr     <a href="tos.interfaces.ReceiveMsg.nc.html#event TOS_MsgPtr ReceiveReqMsg.receive(TOS_MsgPtr pMsg)">
+<b>ReceiveReqMsg.receive</b>    </a>
+(TOS_MsgPtr pMsg)
+
+<li>
+        event void     <a href="tos.lib.Deluge.DelugeDataRead.nc.html#event void DataRead.readDone(storage_result_t result)">
+<b>DataRead.readDone</b>    </a>
+(storage_result_t result)
+
+<li>
+        event void     <a href="tos.lib.Deluge.DelugeDataWrite.nc.html#event void DataWrite.writeDone(storage_result_t result)">
+<b>DataWrite.writeDone</b>    </a>
+(storage_result_t result)
+
+<li>
+        event result_t     <a href="tos.interfaces.SendMsg.nc.html#event result_t SendReqMsg.sendDone(TOS_MsgPtr pMsg, result_t success)">
+<b>SendReqMsg.sendDone</b>    </a>
+(TOS_MsgPtr pMsg, result_t success)
+
+<li>
+        event result_t     <a href="tos.interfaces.SendMsg.nc.html#event result_t SendDataMsg.sendDone(TOS_MsgPtr pMsg, result_t success)">
+<b>SendDataMsg.sendDone</b>    </a>
+(TOS_MsgPtr pMsg, result_t success)
+
+<li>
+        event void     <a href="tos.lib.Deluge.SharedMsgBuf.nc.html#event void SharedMsgBuf.bufFree(void)">
+<b>SharedMsgBuf.bufFree</b>    </a>
+(void)
+
+<li>
+        event void     <a href="tos.lib.Deluge.DelugeDataRead.nc.html#event void DataRead.verifyDone(storage_result_t result, bool isValid)">
+<b>DataRead.verifyDone</b>    </a>
+(storage_result_t result, bool isValid)
+
+<li>
+        event void     <a href="tos.lib.Deluge.DelugeDataWrite.nc.html#event void DataWrite.eraseDone(storage_result_t result)">
+<b>DataWrite.eraseDone</b>    </a>
+(storage_result_t result)
+
+<li>
+        event void     <a href="tos.lib.Deluge.DelugeDataWrite.nc.html#event void DataWrite.commitDone(storage_result_t result)">
+<b>DataWrite.commitDone</b>    </a>
+(storage_result_t result)
+
+</ul>
+

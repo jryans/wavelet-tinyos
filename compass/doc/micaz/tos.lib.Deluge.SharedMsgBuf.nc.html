@@ -1,0 +1,127 @@
+
+<html>
+<head>
+<title>Interface: SharedMsgBuf</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.lib.Deluge.SharedMsgBuf.nc.source">tos.lib.Deluge.SharedMsgBuf.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Interface: SharedMsgBuf</h1>
+<p>
+
+ Simple component that allows sharing of message buffers through a
+ parameterized interface.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Jonathan Hui <<a href="mailto:jwhui@cs.berkeley.edu">jwhui@cs.berkeley.edu</a>>
+</td></tr></table>
+
+<p>
+
+<dl>
+<dt>Components providing this interface:
+<dd>
+    <a href="tos.lib.Deluge.SharedMsgBufM.nc.html">tos.lib.Deluge.SharedMsgBufM</a><br>
+</dl><p>
+
+<dl>
+<dt>Components requiring this interface:
+<dd>
+    <a href="tos.lib.Deluge.DelugeM.nc.html">tos.lib.Deluge.DelugeM</a><br>
+    <a href="tos.lib.Deluge.DelugePageTransferC.nc.html">tos.lib.Deluge.DelugePageTransferC</a><br>
+    <a href="tos.lib.Deluge.DelugePageTransferM.nc.html">tos.lib.Deluge.DelugePageTransferM</a><br>
+    <a href="tos.lib.Deluge.NetProgM.nc.html">tos.lib.Deluge.NetProgM</a><br>
+</dl><p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands</h3></td></tr></table>
+<ul>
+<li>
+         TOS_MsgPtr     <a href="# TOS_MsgPtr getMsgBuf(void)">
+<b>getMsgBuf</b>    </a>
+(void)
+<menu>
+ Get the pointer to a shared message buf.
+
+</menu><p>
+
+<li>
+         void <b>lock</b>(void)
+<menu>
+ Acquire lock on shared message buf.
+</menu><p>
+
+<li>
+         void <b>unlock</b>(void)
+<menu>
+ Release lock on shared message buf.
+</menu><p>
+
+<li>
+         bool     <a href="# bool isLocked(void)">
+<b>isLocked</b>    </a>
+(void)
+<menu>
+ Check if shared message buf is currently locked.
+
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Events</h3></td></tr></table>
+<ul>
+<li>
+         void <b>bufFree</b>(void)
+<menu>
+ Signal that the bus is free to allow other components waiting to
+ begin using it right away.
+</menu><p>
+
+</ul>
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Commands - Details</h3></td></tr></table>
+    <a name=" TOS_MsgPtr getMsgBuf(void)"></a>
+        <h4>getMsgBuf</h4>
+         TOS_MsgPtr <b>getMsgBuf</b>(void)<P><menu>
+ Get the pointer to a shared message buf.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> The pointer to the shared message buf.
+</td></tr></table>
+</menu><hr>
+    <a name=" bool isLocked(void)"></a>
+        <h4>isLocked</h4>
+         bool <b>isLocked</b>(void)<P><menu>
+ Check if shared message buf is currently locked.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Returns:</b></td>
+<td> <code>TRUE</code> if the shared message buf is locked;
+         <code>FALSE</code> otherwise.
+</td></tr></table>
+</menu>

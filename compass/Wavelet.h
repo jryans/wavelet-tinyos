@@ -1,7 +1,7 @@
 /**
  * Defines various datatypes and constants used by the wavelet
  * application, including packets for obtaining configuration
- * data over the network.  Getting to be a bit struct-crazy...
+ * data over the network.
  * @author Ryan Stinnett
  */
 

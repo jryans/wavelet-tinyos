@@ -1,0 +1,107 @@
+
+<html>
+<head>
+<title>Component: VoltageM</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.platform.micaz.VoltageM.nc.source">tos.platform.micaz.VoltageM.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: VoltageM</h1>
+<p>
+
+ Module for measuring supply voltage (Vcc) on micaz. Value returned
+ by dataReady() is in millivolts.
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Jonathan Hui <<a href="mailto:jwhui@cs.berkeley.edu">jwhui@cs.berkeley.edu</a>>
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Required Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.ADC.nc.html">ADC</a> 
+<li>    <a href="tos.platform.mica2.ADCControl.nc.html">ADCControl</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.ADC.nc.html">ADC</a> Voltage
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   uint8_t state
+<li>   uint16_t voltage
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.init(void)">
+<b>StdControl.init</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.start(void)">
+<b>StdControl.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.stop(void)">
+<b>StdControl.stop</b>    </a>
+(void)
+
+<li>
+        void <b>signalReady</b>(uint16_t v)
+
+<li>
+        task void <b>signalReadyTask</b>(void)
+
+<li>
+        async command result_t     <a href="tos.interfaces.ADC.nc.html#async command result_t Voltage.getData(void)">
+<b>Voltage.getData</b>    </a>
+(void)
+
+<li>
+        async command result_t     <a href="tos.interfaces.ADC.nc.html#async command result_t Voltage.getContinuousData(void)">
+<b>Voltage.getContinuousData</b>    </a>
+(void)
+
+<li>
+        async event result_t     <a href="tos.interfaces.ADC.nc.html#async event result_t ADC.dataReady(uint16_t data)">
+<b>ADC.dataReady</b>    </a>
+(uint16_t data)
+
+</ul>
+

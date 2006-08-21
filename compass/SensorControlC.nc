@@ -1,9 +1,7 @@
-// Portions of this code created by The Moters (Fall 2005 - Spring 2006)
-
 /**
  * This application takes data readings from various sensors when requested
  * and sends back the values when they arrive.
- * @author The Moters
+ * @author The Moters (Fall 2005 - Spring 2006)
  * @author Ryan Stinnett
  */
 

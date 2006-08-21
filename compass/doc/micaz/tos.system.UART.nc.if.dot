@@ -1,0 +1,22 @@
+digraph "UART_if" {
+    rankdir=LR;
+    ratio=compress;
+    margin="0,0";
+    ranksep=0.0005; 
+    nodesep=0.1; 
+    node [shape=ellipse style=filled fillcolor="#e0e0e0"];
+    node [fontsize=10 height=.1 width=.1];
+    edge [fontsize=9 arrowsize=.8];
+    node [fontcolor=blue];
+    edge [fontcolor=blue];
+
+    UART [URL="tos.system.UART.nc.html"];
+    UARTM [URL="tos.system.UARTM.nc.html"];
+    UART -> UARTM [ style=dashed label="ByteComm" URL="tos.interfaces.ByteComm.nc.html" ];
+    UART [URL="tos.system.UART.nc.html"];
+    UARTM [URL="tos.system.UARTM.nc.html"];
+    UART -> UARTM [ style=dashed label="StdControl" URL="tos.interfaces.StdControl.nc.html" ];
+    UARTM [URL="tos.system.UARTM.nc.html"];
+    HPLUARTC [URL="tos.platform.mica2.HPLUARTC.nc.html"];
+    UARTM -> HPLUARTC [ label="HPLUART" URL="tos.interfaces.HPLUART.nc.html" ];
+}

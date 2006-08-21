@@ -1,0 +1,146 @@
+
+<html>
+<head>
+<title>Component: HPLClock</title>
+</head>
+<body>
+<table BORDER="0" CELLPADDING="3" CELLSPACING="0" width="100%">
+<tr><td>
+<font size="-1">
+<b><font color="blue"><a href="apps_p.html">Apps</a></font></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="components_p.html">Components</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="interfaces_p.html">Interfaces</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="allfiles_p.html">All Files</a></b>
+&nbsp;&nbsp;&nbsp;
+<b><a href="index.html">Source Tree</a></b>
+&nbsp;&nbsp;&nbsp;
+</font>
+</td>
+<td align="right">
+<font size="-1">
+source: <b><a href="tos.platform.mica.HPLClock.nc.source">tos.platform.mica.HPLClock.nc</a></b>
+</font>
+</td></tr></table>
+<hr>
+
+<h1 align="center">Component: HPLClock</h1>
+<p>
+
+ <table border="0" cellpadding="0">
+<tr valign="top"><td><b>Author:</b>
+<td> Jason Hill
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> David Gay
+ </td></tr>
+<tr valign="top"><td>&nbsp;</td>
+<td> Philip Levis
+</td></tr></table>
+
+<p>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Provided Interfaces</h3></td></tr></table>
+<ul>
+<li>    <a href="tos.interfaces.Clock.nc.html">Clock</a> 
+<li>    <a href="tos.interfaces.StdControl.nc.html">StdControl</a> 
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Variables</h3></td></tr></table>
+<ul>
+<li>   uint8_t set_flag
+<li>   uint8_t mscale
+<li>   uint8_t nextScale
+<li>   uint8_t minterval
+</ul>
+
+<table BORDER="1" CELLPADDING="3" CELLSPACING="0" WIDTH="100%">
+<tr BGCOLOR="#CCCCFF"><td>
+<h3>Function Index</h3></td></tr></table>
+<ul>
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.init(void)">
+<b>StdControl.init</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.start(void)">
+<b>StdControl.start</b>    </a>
+(void)
+
+<li>
+        command result_t     <a href="tos.interfaces.StdControl.nc.html#command result_t StdControl.stop(void)">
+<b>StdControl.stop</b>    </a>
+(void)
+
+<li>
+        async command void     <a href="tos.interfaces.Clock.nc.html#async command void Clock.setInterval(uint8_t value)">
+<b>Clock.setInterval</b>    </a>
+(uint8_t value)
+
+<li>
+        async command void     <a href="tos.interfaces.Clock.nc.html#async command void Clock.setNextInterval(uint8_t value)">
+<b>Clock.setNextInterval</b>    </a>
+(uint8_t value)
+
+<li>
+        async command uint8_t     <a href="tos.interfaces.Clock.nc.html#async command uint8_t Clock.getInterval(void)">
+<b>Clock.getInterval</b>    </a>
+(void)
+
+<li>
+        async command uint8_t     <a href="tos.interfaces.Clock.nc.html#async command uint8_t Clock.getScale(void)">
+<b>Clock.getScale</b>    </a>
+(void)
+
+<li>
+        async command void     <a href="tos.interfaces.Clock.nc.html#async command void Clock.setNextScale(uint8_t scale)">
+<b>Clock.setNextScale</b>    </a>
+(uint8_t scale)
+
+<li>
+        async command result_t     <a href="tos.interfaces.Clock.nc.html#async command result_t Clock.setIntervalAndScale(uint8_t interval, uint8_t scale)">
+<b>Clock.setIntervalAndScale</b>    </a>
+(uint8_t interval, uint8_t scale)
+
+<li>
+        async command uint8_t     <a href="tos.interfaces.Clock.nc.html#async command uint8_t Clock.readCounter(void)">
+<b>Clock.readCounter</b>    </a>
+(void)
+
+<li>
+        async command void     <a href="tos.interfaces.Clock.nc.html#async command void Clock.setCounter(uint8_t n)">
+<b>Clock.setCounter</b>    </a>
+(uint8_t n)
+
+<li>
+        async command void     <a href="tos.interfaces.Clock.nc.html#async command void Clock.intDisable(void)">
+<b>Clock.intDisable</b>    </a>
+(void)
+
+<li>
+        async command void     <a href="tos.interfaces.Clock.nc.html#async command void Clock.intEnable(void)">
+<b>Clock.intEnable</b>    </a>
+(void)
+
+<li>
+        async command result_t     <a href="tos.interfaces.Clock.nc.html#async command result_t Clock.setRate(char interval, char scale)">
+<b>Clock.setRate</b>    </a>
+(char interval, char scale)
+
+<li>
+         async event result_t     <a href="tos.interfaces.Clock.nc.html# async event result_t Clock.fire(void)">
+<b>Clock.fire</b>    </a>
+(void)
+
+<li>
+        void    __attribute((interrupt)) <b>__vector_15</b>(void)
+
+</ul>
+
