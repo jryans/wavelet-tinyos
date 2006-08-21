@@ -92,7 +92,7 @@ public abstract class BigPack extends Message {
 				// throw new Exception("Static data block's length doesn't match.");
 				System.out.println("Static data block's length is " + blk.get_length()
 						+ ", but this class's length should be " + data_length);
-			data = byteRange(rawData, blk.get_start(), data_length);
+			dataSet(byteRange(rawData, blk.get_start(), data_length));
 			if (numChildTypes() > 0) {
 				// Initialize child storage
 				initChildren();
@@ -145,8 +145,8 @@ public abstract class BigPack extends Message {
 				// throw new Exception("Static data block's length doesn't match.");
 				System.out.println("Static data block does not seem to be large "
 						+ "enough to hold data for this class.");
-			data = byteRange(rawData, blk.get_start() + cOffset * data_length,
-					data_length);
+			dataSet(byteRange(rawData, blk.get_start() + cOffset * data_length,
+					data_length));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -211,7 +211,7 @@ public abstract class BigPack extends Message {
 		for (int i = 0; i < bp.length; i++) {
 			data_length += bp[i].dataLength();
 		}
-		data = new byte[data_length];
+		dataSet(new byte[data_length]);
 		// Combine each big pack
 		int offset = staticLen;
 		for (int i = 0; i < bp.length; i++) {
@@ -311,7 +311,7 @@ public abstract class BigPack extends Message {
 					BigPackPtr.DEFAULT_MESSAGE_SIZE);
 			offset += BigPackPtr.DEFAULT_MESSAGE_SIZE;
 		}
-		System.arraycopy(data, 0, stream, offset, data_length);
+		System.arraycopy(dataGet(), 0, stream, offset, data_length);
 		return stream;
 	}
 
