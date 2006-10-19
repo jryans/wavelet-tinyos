@@ -22,7 +22,7 @@ public class PackerMote extends Mote implements PackerHost {
 		curPacker.enable();
 	}
 
-	public void setPackerApp(short pType, PackerMoteApp app) {
+	public void addPackerApp(short pType, PackerMoteApp app) {
 		Short type = new Short(pType);
 		packApps.put(type, app);
 	}

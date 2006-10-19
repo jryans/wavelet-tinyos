@@ -41,7 +41,7 @@ public class WaveletController {
 	// Length of one slot (bms)
 	private static final long WT_SLOT_TIME = 50;
 	// Maximum number of compression bands
-	private static final short WT_MAX_BANDS = 5;
+	// private static final short WT_MAX_BANDS = 5;
 	// Length of entire slot stage (bms)
 	private static final long WT_SLOT_STAGE_TIME = WT_SLOTS * WT_SLOT_TIME;
 	// Length of wait time after sending one band of data in compressed mode (bms)
@@ -85,8 +85,9 @@ public class WaveletController {
 	}
 
 	public void runSets() {
-		new WaveletData(numSets, mote.size(),
-				CompassMote.BMStoMS(getDataCollectionTime()), new WaveletData.Notify() {
+		new WaveletDataStore(numSets, mote.size(),
+				CompassMote.BMStoMS(getDataCollectionTime()),
+				new WaveletDataStore.Notify() {
 					public void dataSetDone() {
 						if (compRes) {
 							System.out.println("Reached end of band " + maxBand
@@ -98,7 +99,7 @@ public class WaveletController {
 						}
 					}
 
-					public void transformDone(WaveletData data) {
+					public void transformDone(WaveletDataStore data) {
 						CompassMote.broadcast.sendStop();
 						CompassTools.saveResult(data, "waveletData.xml");
 					}
@@ -120,9 +121,30 @@ public class WaveletController {
 		if (compRes) {
 			WaveletControl ws = CompassMote.broadcast.makeWaveletControl();
 			setTransformOptions(ws);
+			CompassTools.debugPrintln("Sending transform options");
 			ws.send();
 		}
-		startSampling();
+		// startSampling() is delayed by 250 ms to prevent its broadcast from 
+		// being distributed before the one above during compression.
+		new Timer().schedule(new TimerTask() {
+			public void run() {
+				startSampling();
+			}
+		}, 250);
+	}
+
+	private void startSampling() {
+		System.out.println("Starting transform!");
+		WaveletControl ws = CompassMote.broadcast.makeWaveletControl();
+		ws.cmd(CompassMote.WC_START_TRANSFORM);
+		if (compRes) {
+			ws.compTarget(compTarget);
+			CompassTools.debugPrintln("Sending compression target array");
+		} else {
+			setTransformOptions(ws);
+			CompassTools.debugPrintln("Sending transform options");
+		}
+		ws.send();
 	}
 
 	/* Stage Length Functions (bms) */
@@ -162,18 +184,6 @@ public class WaveletController {
 			dcTime += getTransmitTime();
 		}
 		return dcTime;
-	}
-
-	private void startSampling() {
-		System.out.println("Starting transform!");
-		WaveletControl ws = CompassMote.broadcast.makeWaveletControl();
-		ws.cmd(CompassMote.WC_START_TRANSFORM);
-		if (compRes) {
-			ws.compTarget(compTarget);
-		} else {
-			setTransformOptions(ws);
-		}
-		ws.send();
 	}
 
 	private void setTransformOptions(WaveletControl ws) {

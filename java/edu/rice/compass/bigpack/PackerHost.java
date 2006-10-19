@@ -1,11 +1,11 @@
 package edu.rice.compass.bigpack;
 
 import java.io.*;
-import edu.rice.compass.comm.*;
+import net.tinyos.message.*;
 
 public interface PackerHost {
 	
-	public void sendPack(UnicastPack pack) throws IOException;
+	public void sendMsg(Message m) throws IOException;
 	
 	public int getID();
 	

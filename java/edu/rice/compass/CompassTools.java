@@ -205,9 +205,10 @@ public class CompassTools {
 			}
 		} else if (config.getBoolean("stats")) {
 			new CompassMote(destCheck()).getStats();
-			new Timer().schedule(new Timeout(), 5000);
+			if (!debug)
+				new Timer().schedule(new Timeout(), 5000);
 		} else if (config.getInt("ping", 0) != 0 && !config.getBoolean("opt")) {
-			new Timer().scheduleAtFixedRate(new Ping(config.getInt("ping"),
+			new Timer().scheduleAtFixedRate(new PingTimer(config.getInt("ping"),
 					new CompassMote(destCheck())), 100, 30);
 		} else if (config.getBoolean("opt")) {
 			CompassMote cm;
@@ -401,12 +402,12 @@ class Timeout extends TimerTask {
 
 }
 
-class Ping extends TimerTask {
+class PingTimer extends TimerTask {
 
 	private int numPings;
 	private CompassMote mote;
 
-	public Ping(int pings, CompassMote aMote) {
+	public PingTimer(int pings, CompassMote aMote) {
 		numPings = pings;
 		mote = aMote;
 	}

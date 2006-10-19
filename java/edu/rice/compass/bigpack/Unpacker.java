@@ -13,8 +13,53 @@ import edu.rice.compass.comm.*;
 
 public class Unpacker extends ProtoPacker {
 
-	public Unpacker(PackerHost owner) {
-		super(owner);
+	public Unpacker(PackerHost myOwner) {
+		super(myOwner);
+		MoteCom.singleton.addMsgReceiver(BigPackHeader.AM_TYPE,
+				new SrcReceiveMsg() {
+					public void receiveMsg(int src, Message m) {
+						if (!busy || src != owner.getID() || !enabled)
+							return;
+						BigPackHeader bph = (BigPackHeader) m;
+						if (curPackNum == HEADER_PACK_NUM && bph.get_requestType() == type) {
+							// Store specific details of the request
+							storeHeader(bph);
+							CompassTools.debugPrintln("Got BP header (0/" + numPacks
+									+ ") from mote " + src);
+							curPackNum++;
+							sendAck(bph); // Send an ACK
+						}
+					}
+				});
+		MoteCom.singleton.addMsgReceiver(BigPackData.AM_TYPE, new SrcReceiveMsg() {
+			public void receiveMsg(int src, Message m) {
+				if (!busy || src != owner.getID() || !enabled)
+					return;
+				BigPackData bpd = (BigPackData) m;
+				if (bpd.get_curPack() == curPackNum) {
+					storeMoreData(bpd); // Store new data
+					CompassTools.debugPrintln("Got BP data (" + (curPackNum + 1) + "/"
+							+ numPacks + ") from mote " + src);
+					sendAck(bpd); // Send an ACK
+					if (morePacksExist()) {
+						curPackNum++;
+					} else {
+						CompassTools.debugPrintln("BP rcvd from mote " + src + " complete");
+						busy = false; // Done!
+						// Find the right class, and make it.
+						try {
+							Class msgClass = BigPack.getClassFromType(type);
+							Constructor msgMake = msgClass.getConstructor(new Class[] {
+									byte[].class, int.class, int.class });
+							owner.unpackerDone((BigPack) msgMake.newInstance(new Object[] {
+									stream, new Integer(numBlocks), new Integer(numPtrs) }));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+		});
 	}
 
 	public void newRequest(short mType) {
@@ -27,83 +72,40 @@ public class Unpacker extends ProtoPacker {
 	}
 
 	private void sendRequest() {
-		UnicastPack req = new UnicastPack();
-		req.set_data_type(BigPack.BIGPACKHEADER);
-		req.set_data_data_bpHeader_requestType(type);
-		req.set_data_data_bpHeader_packTotal((short) 0);
+		BigPackHeader req = new BigPackHeader();
+		req.set_requestType(type);
+		req.set_packTotal((short) 0);
 		try {
-			owner.sendPack(req);
+			owner.sendMsg(req);
 			CompassTools.debugPrintln("Sent BP request to mote " + owner.getID());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private void storeRequestData(UnicastPack h) {
-		numPacks = h.get_data_data_bpHeader_packTotal();
-		numBlocks = h.get_data_data_bpHeader_numBlocks();
-		numPtrs = h.get_data_data_bpHeader_numPtrs();
-		stream = new byte[h.get_data_data_bpHeader_byteTotal()];
+	private void storeHeader(BigPackHeader h) {
+		numPacks = h.get_packTotal();
+		numBlocks = h.get_numBlocks();
+		numPtrs = h.get_numPtrs();
+		stream = new byte[h.get_byteTotal()];
 	}
 
-	private void sendAck(UnicastPack pack) {
+	private void sendAck(Message m) {
 		try {
-			owner.sendPack(pack);
+			owner.sendMsg(m);
 			CompassTools.debugPrintln("Sent ack to mote " + owner.getID());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private void newData(UnicastPack d) {
-		int firstByte = d.get_data_data_bpData_curPack() * BigPack.BP_DATA_LEN;
-		int length = BigPack.BP_DATA_LEN;
+	private void storeMoreData(BigPackData d) {
+		int firstByte = d.get_curPack() * BigPackData.totalSize_data();
+		int length = BigPackData.totalSize_data();
 		if ((firstByte + length) > stream.length)
 			length = stream.length - firstByte;
-		System.arraycopy(d.get_data_data_bpData_data(), 0, stream, firstByte,
-				length);
+		System.arraycopy(d.dataGet(), BigPackData.offset_data(0), stream,
+				firstByte, length);
 	}
 
-	public void messageReceived(int to, Message m) {
-		UnicastPack pack = (UnicastPack) m;
-		int id = pack.get_data_src();
-		if (!busy || id != owner.getID())
-			return;
-		switch (pack.get_data_type()) {
-		case CompassMote.BIGPACKHEADER:
-			if (curPackNum == HEADER_PACK_NUM
-					&& pack.get_data_data_bpHeader_requestType() == type) {
-				// Store specific details of the request
-				storeRequestData(pack);
-				CompassTools.debugPrintln("Got BP header (0/" + numPacks + ") from mote " + id);
-				curPackNum++;
-				sendAck(pack); // Send an ACK
-			}
-			break;
-		case CompassMote.BIGPACKDATA:
-			if (pack.get_data_data_bpData_curPack() == curPackNum) {
-				newData(pack); // Store new data
-				CompassTools.debugPrintln("Got BP data (" + (curPackNum + 1) + "/" + numPacks
-						+ ") from mote " + id);
-				sendAck(pack); // Send an ACK
-				if (morePacksExist()) {
-					curPackNum++;
-				} else {
-					CompassTools.debugPrintln("BP rcvd from mote " + id + " complete");
-					busy = false; // Done!
-					// Find the right class, and make it.
-					try {
-						Class msgClass = BigPack.getClassFromType(type);
-						Constructor msgMake = msgClass.getConstructor(new Class[] {
-								byte[].class, int.class, int.class });
-						owner.unpackerDone((BigPack) msgMake.newInstance(new Object[] {
-								stream, new Integer(numBlocks), new Integer(numPtrs) }));
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			break;
-		}
-	}
 }

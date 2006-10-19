@@ -12,17 +12,7 @@ import net.tinyos.message.*;
 import edu.rice.compass.bigpack.*;
 import edu.rice.compass.comm.*;
 
-public class CompassMote extends PackerMote implements MessageListener {
-
-	/* Message Types */
-	public static final short MOTEOPTIONS = 0;
-	public static final short WAVELETDATA = 1;
-	public static final short BIGPACKHEADER = 2;
-	public static final short BIGPACKDATA = 3;
-	public static final short WAVELETCONTROL = 4;
-	public static final short ROUTERDATA = 5;
-	public static final short PWRCONTROL = 6;
-	public static final short COMPTIME = 7;
+public class CompassMote extends PackerMote {
 
 	/* Wavelet Mote States */
 	static final short WS_IDLE = 0;
@@ -38,7 +28,7 @@ public class CompassMote extends PackerMote implements MessageListener {
 	static final short WS_OFFLINE = 11;
 	static final short WS_CLEAR_SENSORS = 12;
 	static final short WS_RAW = 13;
-	
+
 	/* Wavelet Commands */
 	static final short WC_CONFIGURE = 0;
 	static final short WC_START_TRANSFORM = 1;
@@ -48,25 +38,17 @@ public class CompassMote extends PackerMote implements MessageListener {
 	private WaveletConf wConf;
 	private boolean configDone = false;
 
-	public static CompassMote broadcast = new CompassMote(0) {
-		public MoteOptions makeOptions() {
-			return new MoteOptions(true);
-		}
-
-		public WaveletControl makeWaveletControl() {
-			return new WaveletControl(true);
-		}
-	};
+	public static CompassMote broadcast = new CompassMote(MoteCom.TOS_BCAST_ADDR);
 
 	public CompassMote(int mID, WaveletConfigData wc) {
 		this(mID);
 		wConf = dataTransform(wc);
-		setPackerApp(WaveletConf.getType(), makeWaveletConfApp(wConf));
+		addPackerApp(WaveletConf.getType(), makeWaveletConfApp(wConf));
 	}
 
 	public CompassMote(int mID) {
 		super(mID);
-		setPackerApp(MoteStats.getType(), makeStatsApp(mID));
+		addPackerApp(MoteStats.getType(), makeStatsApp(mID));
 	}
 
 	private PackerMoteApp makeStatsApp(final int mote) {
@@ -118,44 +100,40 @@ public class CompassMote extends PackerMote implements MessageListener {
 	}
 
 	public void sendPing() {
-		UnicastPack pack = new UnicastPack();
-		pack.set_data_type((short) 20);
+		Ping p = new Ping();
 		try {
-			sendPack(pack);
+			sendMsg(p);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public void sendRouterLink(int mote, boolean enable) {
-		UnicastPack pack = new UnicastPack();
-		pack.set_data_type(ROUTERDATA);
-		pack.set_data_data_rData_enable(b2Cs(enable));
-		pack.set_data_data_rData_mote(mote);
+		RouterData rd = new RouterData();
+		rd.set_enable(b2Cs(enable));
+		rd.set_mote(mote);
 		try {
-			sendPack(pack);
+			sendMsg(rd);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
 	public void getCompileTime() {
-		MoteCom.singleton.registerListener(new UnicastPack(), this);
-		UnicastPack pack = new UnicastPack();
-		pack.set_data_type(COMPTIME);
+		MoteCom.singleton.addMsgReceiver(CompTime.AM_TYPE, new SrcReceiveMsg() {
+			public void receiveMsg(int src, Message m) {
+				CompTime ct = (CompTime) m;
+				if (src == id) {
+					System.out.println("Compiled On: " + new Date(ct.get_time() * 1000));
+					System.exit(0);
+				}
+			}
+		});
+		CompTime ct = new CompTime();
 		try {
-			sendPack(pack);
+			sendMsg(ct);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-	}
-
-	public void messageReceived(int to, Message m) {
-		UnicastPack pack = (UnicastPack) m;
-		if (pack.get_data_type() == COMPTIME && pack.get_data_src() == id) {
-			System.out.println("Compiled On: "
-					+ new Date(pack.get_data_data_cTime() * 1000));
-			System.exit(0);
 		}
 	}
 
@@ -171,13 +149,13 @@ public class CompassMote extends PackerMote implements MessageListener {
 	}
 
 	public MoteOptions makeOptions() {
-		return new MoteOptions(false);
+		return new MoteOptions();
 	}
 
 	/**
 	 * Controls various mote-wide options
 	 */
-	public class MoteOptions {
+	public class MoteOptions extends edu.rice.compass.comm.MoteOptions {
 
 		/* Bitmasks */
 		private static final short MO_PINGNUM = 0x01;
@@ -189,66 +167,51 @@ public class CompassMote extends PackerMote implements MessageListener {
 		private static final short MO_RFCHAN = 0x40;
 		private static final short MO_RADIORETRIES = 0x80;
 
-		private OptionsPack pack;
-		boolean bcast;
-
-		private MoteOptions(boolean broadcast) {
-			bcast = broadcast;
-			if (bcast) {
-				pack = new BroadcastPack();
-			} else {
-				pack = new UnicastPack();
-			}
-			pack.set_data_type(MOTEOPTIONS);
-		}
+		private MoteOptions() {}
 
 		public void pingNum(int num, int dest) {
-			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_PINGNUM));
-			pack.set_data_data_opt_pingNum(num);
-			pack.set_data_data_opt_radioOffTime(dest);
+			set_mask((short) (get_mask() | MO_PINGNUM));
+			set_pingNum(num);
+			set_radioOffTime(dest);
 		}
 
 		public void txPower(int power) {
-			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_TXPOWER));
-			pack.set_data_data_opt_txPower((short) power);
+			set_mask((short) (get_mask() | MO_TXPOWER));
+			set_txPower((short) power);
 		}
 
 		public void clearStats() {
-			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_CLEARSTATS));
+			set_mask((short) (get_mask() | MO_CLEARSTATS));
 		}
 
 		public void rfAck(boolean ack) {
-			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RFACK));
-			pack.set_data_data_opt_rfAck(b2Cs(ack));
+			set_mask((short) (get_mask() | MO_RFACK));
+			set_rfAck(b2Cs(ack));
 		}
 
 		public void radioOffTime(int time) {
-			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RADIOOFFTIME));
-			pack.set_data_data_opt_radioOffTime(time);
+			set_mask((short) (get_mask() | MO_RADIOOFFTIME));
+			set_radioOffTime(time);
 		}
 
 		public void radioRetries(int retries) {
-			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RADIORETRIES));
-			pack.set_data_data_opt_radioRetries((short) retries);
+			set_mask((short) (get_mask() | MO_RADIORETRIES));
+			set_radioRetries((short) retries);
 		}
 
 		public void hplPM(boolean pm) {
-			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_HPLPM));
-			pack.set_data_data_opt_hplPM(b2Cs(pm));
+			set_mask((short) (get_mask() | MO_HPLPM));
+			set_hplPM(b2Cs(pm));
 		}
 
 		public void rfChan(int chan) {
-			pack.set_data_data_opt_mask((short) (pack.get_data_data_opt_mask() | MO_RFCHAN));
-			pack.set_data_data_opt_rfChan((short) chan);
+			set_mask((short) (get_mask() | MO_RFCHAN));
+			set_rfChan((short) chan);
 		}
 
 		public void send() {
 			try {
-				if (bcast) {
-					sendPack((BroadcastPack) pack);
-				} else {
-					sendPack((UnicastPack) pack);
-				}
+				sendMsg(this);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -263,7 +226,7 @@ public class CompassMote extends PackerMote implements MessageListener {
 	/**
 	 * Controls mote power cycle settings
 	 */
-	public class PwrControl {
+	public class PwrControl extends edu.rice.compass.comm.PwrControl {
 
 		/* PM Modes */
 		private static final short PM_SLEEP_ON_SILENCE = 0;
@@ -273,41 +236,38 @@ public class CompassMote extends PackerMote implements MessageListener {
 		private static final int MO_DEF_SLEEP = 2 * 1024;
 		private static final int MO_DEF_WAKE = 60 * 1024;
 
-		private UnicastPack pack = new UnicastPack();
-
 		private PwrControl() {
-			pack.set_data_type(PWRCONTROL);
-			pack.set_data_data_pCntl_sleepInterval(MO_DEF_SLEEP);
-			pack.set_data_data_pCntl_wakeUpInterval(MO_DEF_WAKE);
+			set_sleepInterval(MO_DEF_SLEEP);
+			set_wakeUpInterval(MO_DEF_WAKE);
 		}
 
 		public void pmMode(String mode) {
 			if (mode.equals("SOS")) {
-				pack.set_data_data_pCntl_pmMode(PM_SLEEP_ON_SILENCE);
+				set_pmMode(PM_SLEEP_ON_SILENCE);
 			} else if (mode.equals("CS")) {
-				pack.set_data_data_pCntl_pmMode(PM_CHECK_SINK);
+				set_pmMode(PM_CHECK_SINK);
 			}
 		}
 
 		public void awake(boolean awake) {
-			pack.set_data_data_pCntl_stayAwake(b2Cs(awake));
+			set_stayAwake(b2Cs(awake));
 		}
 
 		public void sleepInterval(int sleep) {
-			pack.set_data_data_pCntl_sleepInterval(MStoBMS(sleep));
+			set_sleepInterval(MStoBMS(sleep));
 		}
 
 		public void wakeInterval(int wake) {
-			pack.set_data_data_pCntl_wakeUpInterval(MStoBMS(wake));
+			set_wakeUpInterval(MStoBMS(wake));
 		}
 
 		public void reboot(boolean reboot) {
-			pack.set_data_data_pCntl_reboot(b2Cs(reboot));
+			set_reboot(b2Cs(reboot));
 		}
 
 		public void send() {
 			try {
-				sendPack(pack);
+				sendMsg(this);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -316,13 +276,13 @@ public class CompassMote extends PackerMote implements MessageListener {
 	}
 
 	public WaveletControl makeWaveletControl() {
-		return new WaveletControl(false);
+		return new WaveletControl();
 	}
 
 	/**
 	 * Controls wavelet transform state and options
 	 */
-	public class WaveletControl {
+	public class WaveletControl extends edu.rice.compass.comm.WaveletControl {
 
 		/* Bitmasks */
 		private static final short WC_CMD = 0x01;
@@ -336,32 +296,21 @@ public class CompassMote extends PackerMote implements MessageListener {
 		private static final short WC_RT_RAW = 0x01; // Raw values (off|on)
 		private static final short WC_RT_COMP = 0x02; // Compression (off|on)
 
-		private OptionsPack pack;
-		private boolean bcast;
-
-		private WaveletControl(boolean broadcast) {
-			bcast = broadcast;
-			if (bcast) {
-				pack = new BroadcastPack();
-			} else {
-				pack = new UnicastPack();
-			}
-			pack.set_data_type(WAVELETCONTROL);
-		}
+		private WaveletControl() {}
 
 		public void cmd(short cmd) {
-			pack.set_data_data_wCntl_mask((short) (pack.get_data_data_wCntl_mask() | WC_CMD));
-			pack.set_data_data_wCntl_cmd(cmd);
+			set_mask((short) (get_mask() | WC_CMD));
+			set_cmd(cmd);
 		}
 
 		public void sampleTime(long sampleTime) {
-			pack.set_data_data_wCntl_mask((short) (pack.get_data_data_wCntl_mask() | WC_SAMPLETIME));
-			pack.set_data_data_wCntl_data_opt_sampleTime(sampleTime);
+			set_mask((short) (get_mask() | WC_SAMPLETIME));
+			set_data_opt_sampleTime(sampleTime);
 		}
 
 		public void transformType(short transformType) {
-			pack.set_data_data_wCntl_mask((short) (pack.get_data_data_wCntl_mask() | WC_TRANSFORMTYPE));
-			pack.set_data_data_wCntl_data_opt_transformType(transformType);
+			set_mask((short) (get_mask() | WC_TRANSFORMTYPE));
+			set_data_opt_transformType(transformType);
 		}
 
 		public void resultType(boolean raw, boolean comp) {
@@ -374,20 +323,20 @@ public class CompassMote extends PackerMote implements MessageListener {
 		}
 
 		public void resultType(short resultType) {
-			pack.set_data_data_wCntl_mask((short) (pack.get_data_data_wCntl_mask() | WC_RESULTTYPE));
-			pack.set_data_data_wCntl_data_opt_resultType(resultType);
+			set_mask((short) (get_mask() | WC_RESULTTYPE));
+			set_data_opt_resultType(resultType);
 		}
 
 		public void timeDomainLength(short timeDomainLength) {
-			pack.set_data_data_wCntl_mask((short) (pack.get_data_data_wCntl_mask() | WC_TIMEDOMAINLENGTH));
-			pack.set_data_data_wCntl_data_opt_timeDomainLength(timeDomainLength);
+			set_mask((short) (get_mask() | WC_TIMEDOMAINLENGTH));
+			set_data_opt_timeDomainLength(timeDomainLength);
 		}
 
 		public void compTarget(float compTarget[]) {
 			if (compTarget.length <= 5) {
-				pack.set_data_data_wCntl_mask((short) (pack.get_data_data_wCntl_mask() | WC_COMPTARGET));
-				pack.set_data_data_wCntl_data_comp_numBands((short)compTarget.length);
-				pack.set_data_data_wCntl_data_comp_compTarget(compTarget);
+				set_mask((short) (get_mask() | WC_COMPTARGET));
+				set_data_comp_numBands((short) compTarget.length);
+				set_data_comp_compTarget(compTarget);
 			} else {
 				System.out.println("Compression target array too large!");
 				System.exit(1);
@@ -396,11 +345,7 @@ public class CompassMote extends PackerMote implements MessageListener {
 
 		public void send() {
 			try {
-				if (bcast) {
-					sendPack((BroadcastPack) pack);
-				} else {
-					sendPack((UnicastPack) pack);
-				}
+				sendMsg(this);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -1,6 +1,7 @@
-package edu.rice.compass;
+package edu.rice.compass.test;
 
 import net.tinyos.message.*;
+import edu.rice.compass.*;
 import edu.rice.compass.comm.*;
 
 public class PSSimRcv implements MessageListener {

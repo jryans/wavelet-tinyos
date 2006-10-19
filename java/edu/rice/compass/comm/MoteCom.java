@@ -35,8 +35,7 @@
 package edu.rice.compass.comm;
 
 import java.io.*;
-import java.util.Properties;
-
+import java.util.*;
 import edu.rice.compass.CompassTools;
 import net.tinyos.message.*;
 
@@ -46,9 +45,13 @@ public class MoteCom extends MoteIF {
 	private static Properties p = new Properties();
 	private static short sequenceNo;
 	public static MoteCom singleton = new MoteCom();
+	
+	private RoutingReceiver roRe;
 
 	private MoteCom() {
 		sequenceNo = 1;
+		source.deregisterPacketListener(receiver);
+		roRe = new RoutingReceiver(source);
 	}
 
 	public static void loadSeqNo() {
@@ -90,24 +93,32 @@ public class MoteCom extends MoteIF {
 		CompassTools.debugPrintln();
 	}
 
-	public void sendPack(BroadcastPack pack) throws IOException {
-		debugMsg(pack);
-		pack.set_data_src(NET_UART_ADDR);
-		pack.set_data_dest(TOS_BCAST_ADDR);
-		pack.set_seqno(sequenceNo);
-		try {
-			send(TOS_BCAST_ADDR, pack);
-			saveSequenceNo(++sequenceNo);
-		} catch (IOException e) {
-			throw e;
-		}
+	public void sendMsg(Message m, int dest) throws IOException {
+		UnicastPack p = new UnicastPack();
+		p.amTypeSet(m.amType()); // Copy AM type
+		// Copy data
+		p.dataSet(m.dataGet(), 0, UnicastPack.offset_data(0), m.dataLength());
+		// Set unicast parameters
+		p.set_h_attemptNum((short) 0);
+		p.set_h_src(NET_UART_ADDR);
+		p.set_h_dest(dest);
+		debugMsg(p);
+		send(0, p); // Send to base for further routing
 	}
 
-	public void sendPack(UnicastPack pack, int dest) throws IOException {
-		debugMsg(pack);
-		pack.set_data_src(NET_UART_ADDR);
-		pack.set_data_dest(dest);
-		send(0, pack);
+	public void broadcastMsg(Message m) throws IOException {
+		BroadcastPack p = new BroadcastPack();
+		p.amTypeSet(m.amType()); // Copy AM type
+		// Copy data
+		p.dataSet(m.dataGet(), 0, BroadcastPack.offset_data(0), m.dataLength());
+		// Set broadcast parameters
+		p.set_h_seqNo(sequenceNo);
+		debugMsg(p);
+		send(TOS_BCAST_ADDR, p); // Broadcast to all motes
+		saveSequenceNo(++sequenceNo); // Save updated seq. no
 	}
 
+	public void addMsgReceiver(int mType, SrcReceiveMsg r) {
+		roRe.addMsgReceiver(mType, r);
+	}
 }

@@ -5,7 +5,7 @@ import java.util.*;
 import edu.rice.compass.comm.*;
 import net.tinyos.message.*;
 
-public class WaveletData implements MessageListener {
+public class WaveletDataStore {
 
 	/* Sensors */
 	private static final short TEMP = 0;
@@ -25,37 +25,35 @@ public class WaveletData implements MessageListener {
 	private WaitTask curWaitTask;
 	private transient Notify host;
 
-	public WaveletData(int sets, int motes, long waitTime, Notify host) {
+	public WaveletDataStore(int sets, int motes, long waitTime, Notify host) {
 		this.host = host;
 		value = new float[sets][2 * WT_SENSORS][motes];
 		check = new DataCheck(sets, motes);
 		curSet = -1;
 		this.waitTime = waitTime;
-		MoteCom.singleton.registerListener(new UnicastPack(), this);
-	}
-
-	public void messageReceived(int to, Message m) {
-		UnicastPack pack = (UnicastPack) m;
-		if (pack.get_data_type() == CompassMote.WAVELETDATA) {
-			int msgSet = pack.get_data_data_wData_dataSet() - 1;
-			if (msgSet >= curSet) {
-				if (msgSet > curSet)
-					beginNewSet(msgSet);
-				// Store mote data
-				int id = pack.get_data_src();
-				if (pack.get_data_data_wData_state() == CompassMote.WS_TRANSMIT) {
-					value[curSet][TEMP * 2 + WT_OFFSET][id - 1] = pack.getElement_data_data_wData_value(TEMP);
-					value[curSet][LIGHT * 2 + WT_OFFSET][id - 1] = pack.getElement_data_data_wData_value(LIGHT);
-					System.out.println("Got wavelet data from mote " + id);
-					check.setWaveletDone(id);
-				} else if (pack.get_data_data_wData_state() == CompassMote.WS_RAW) {
-					value[curSet][TEMP * 2 + RAW_OFFSET][id - 1] = pack.getElement_data_data_wData_value(TEMP);
-					value[curSet][LIGHT * 2 + RAW_OFFSET][id - 1] = pack.getElement_data_data_wData_value(LIGHT);
-					System.out.println("Got raw data from mote " + id);
-					check.setRawDone(id);
-				}
-			}
-		}
+		MoteCom.singleton.addMsgReceiver(WaveletData.AM_TYPE,
+				new SrcReceiveMsg() {
+					public void receiveMsg(int src, Message m) {
+						WaveletData wd = (WaveletData) m;
+						int msgSet = wd.get_dataSet() - 1;
+						if (msgSet >= curSet) {
+							if (msgSet > curSet)
+								beginNewSet(msgSet);
+							// Store mote data
+							if (wd.get_state() == CompassMote.WS_TRANSMIT) {						
+								value[curSet][TEMP * 2 + WT_OFFSET][src - 1] = wd.getElement_value(TEMP);
+								value[curSet][LIGHT * 2 + WT_OFFSET][src - 1] = wd.getElement_value(LIGHT);
+								System.out.println("Got wavelet data from mote " + src);
+								check.setWaveletDone(src);
+							} else if (wd.get_state() == CompassMote.WS_RAW) {
+								value[curSet][TEMP * 2 + RAW_OFFSET][src - 1] = wd.getElement_value(TEMP);
+								value[curSet][LIGHT * 2 + RAW_OFFSET][src - 1] = wd.getElement_value(LIGHT);
+								System.out.println("Got raw data from mote " + src);
+								check.setRawDone(src);
+							}
+						}
+					}
+				});
 	}
 
 	private synchronized void finishSet() {
@@ -131,7 +129,7 @@ public class WaveletData implements MessageListener {
 	interface Notify {
 		void dataSetDone();
 
-		void transformDone(WaveletData data);
+		void transformDone(WaveletDataStore data);
 	}
 
 }

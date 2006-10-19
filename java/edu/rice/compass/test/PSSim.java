@@ -1,10 +1,11 @@
-package edu.rice.compass;
+package edu.rice.compass.test;
 
 import java.io.*;
 import java.util.*;
 
 import com.martiansoftware.jsap.*;
 
+import edu.rice.compass.*;
 import edu.rice.compass.comm.*;
 
 public class PSSim {

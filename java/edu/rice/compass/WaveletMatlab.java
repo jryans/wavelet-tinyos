@@ -46,10 +46,10 @@ public class WaveletMatlab {
 		URL pAddr = pClass.getResource("/" + mPackage.getName().replace('.', '/'));
 		// Add file name
 		String path = pAddr.getPath() + "/" + fileName;
-		WaveletData mData = null;
+		WaveletDataStore mData = null;
 		try {
 			FileInputStream fs = new FileInputStream(path);
-			mData = (WaveletData) xs.fromXML(fs);
+			mData = (WaveletDataStore) xs.fromXML(fs);
 			fs.close();
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -11,19 +11,9 @@ public abstract class BigPack extends Message {
 
 	/* Constants */
 
-	static final short TOSH_DATA_LENGTH = 29;
-	static final short UPACK_MSG_OFFSET = 1;
-	static final short UPACK_DATA_LEN = TOSH_DATA_LENGTH - UPACK_MSG_OFFSET;
-	static final short MSG_DATA_OFFSET = 5;
-	static final short UPACK_MSG_DATA_LEN = UPACK_DATA_LEN - MSG_DATA_OFFSET;
-	static final short BP_DATA_LEN = UPACK_MSG_DATA_LEN - 1;
-
 	public static final short BP_UNKNOWN = -1;
 	public static final short BP_WAVELETCONF = 0;
 	public static final short BP_STATS = 1;
-
-	public static final short BIGPACKHEADER = 2;
-	public static final short BIGPACKDATA = 3;
 
 	private static final short BPP_PTR = 0;
 	private static final short BPP_ARRAY = 1;
@@ -182,6 +172,14 @@ public abstract class BigPack extends Message {
 	protected int numChildTypes() {
 		return 0;
 	}
+	
+	private static int calcTotalDataLength(int staticLen, Message[] msg) {
+		int len = staticLen;
+		for (int i = 0; i < msg.length; i++) {
+			len += msg[i].dataLength();
+		}
+		return len;
+	}
 
 	/**
 	 * Creates a new big pack with initial static data, followed by data from an
@@ -191,7 +189,7 @@ public abstract class BigPack extends Message {
 	 * @param msg
 	 */
 	protected BigPack(int staticLen, Message[] msg) {
-		super(staticLen + msg[0].dataLength() * msg.length);
+		super(calcTotalDataLength(staticLen, msg));
 		for (int i = 0; i < msg.length; i++)
 			dataSet(msg[i], staticLen + msg[0].dataLength() * i);
 	}
@@ -205,13 +203,7 @@ public abstract class BigPack extends Message {
 	 */
 	protected BigPack(int staticLen, BigPack[] bp) {
 		// Initialize data storage
-		super(0);
-		base_offset = 0;
-		data_length = staticLen;
-		for (int i = 0; i < bp.length; i++) {
-			data_length += bp[i].dataLength();
-		}
-		dataSet(new byte[data_length]);
+		super(calcTotalDataLength(staticLen, bp));
 		// Combine each big pack
 		int offset = staticLen;
 		for (int i = 0; i < bp.length; i++) {

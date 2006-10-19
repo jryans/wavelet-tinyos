@@ -5,10 +5,7 @@
 
 package edu.rice.compass.bigpack;
 
-import net.tinyos.message.*;
-import edu.rice.compass.comm.*;
-
-abstract class ProtoPacker implements MessageListener {
+abstract class ProtoPacker {
 	
 	protected static final short HEADER_PACK_NUM = -1;
 
@@ -21,6 +18,7 @@ abstract class ProtoPacker implements MessageListener {
 	
 	protected PackerHost owner;
 	protected boolean busy = false;
+	protected boolean enabled = false;
 	
 	protected ProtoPacker(PackerHost mOwner) {
 		owner = mOwner;
@@ -37,11 +35,11 @@ abstract class ProtoPacker implements MessageListener {
 	}
 	
 	public void enable() {
-		MoteCom.singleton.registerListener(new UnicastPack(), this);
+		enabled = true;
 	}
 	
 	public void disable() {
-		MoteCom.singleton.deregisterListener(new UnicastPack(), this);
+		enabled = false;
 	}
 
 }
