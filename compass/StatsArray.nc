@@ -4,8 +4,6 @@
  * @author Ryan Stinnett
  */
  
-includes MessageData;
- 
 interface StatsArray {
   
   /**

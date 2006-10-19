@@ -5,6 +5,7 @@
  */
  
 includes BigPack;
+includes MessageType;
 
 configuration CompassC {}
 implementation {
@@ -20,12 +21,23 @@ implementation {
   
   /*** Network: provides broadcast and unicast I/O ***/
   Main.StdControl -> NetworkC.StdControl;
-  MoteOptionsC.Message -> NetworkC;
+  MoteOptionsC.CreateMsg -> NetworkC;
+  MoteOptionsC.SendMsg -> NetworkC;
+  MoteOptionsC.SrcReceiveMsg -> NetworkC;
   MoteOptionsC.TransControl -> NetworkC.TransControl;
-  WaveletM.Message -> NetworkC;
+  WaveletM.MakeData -> NetworkC.CreateMsg[AM_WAVELETDATA];
+  WaveletM.SendData -> NetworkC.SendMsg[AM_WAVELETDATA];
+  WaveletM.RcvData -> NetworkC.SrcReceiveMsg[AM_WAVELETDATA];
+  WaveletM.RcvCntl -> NetworkC.SrcReceiveMsg[AM_WAVELETCONTROL];
   WaveletM.Router -> NetworkC;
-  BigPackM.Message -> NetworkC;
-  StatsC.Message -> NetworkC;
+  BigPackM.MakeHeader -> NetworkC.CreateMsg[AM_BIGPACKHEADER];
+  BigPackM.MakeData -> NetworkC.CreateMsg[AM_BIGPACKDATA];
+  BigPackM.SendHeader -> NetworkC.SendMsg[AM_BIGPACKHEADER];
+  BigPackM.SendData -> NetworkC.SendMsg[AM_BIGPACKDATA];
+  BigPackM.RcvHeader -> NetworkC.SrcReceiveMsg[AM_BIGPACKHEADER];
+  BigPackM.RcvData -> NetworkC.SrcReceiveMsg[AM_BIGPACKDATA];
+  StatsC.SrcReceiveMsg -> NetworkC;
+  StatsC.ProtoStats -> NetworkC;
   NetworkC.MoteOptions -> MoteOptionsC;
   
   /*** Stats: sends packet and app stats when requested ***/

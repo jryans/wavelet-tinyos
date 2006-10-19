@@ -5,14 +5,16 @@
  * @author Ryan Stinnett
  */
  
-includes MessageData;
+includes MessageType;
 includes Sensors;
 includes Ping;
+includes BigPack;
 
 module StatsM {
   uses {
-    interface Transceiver as Snoop[uint8_t id];
-    interface Message;
+    interface Transceiver as Snoop[uint8_t type];
+    interface ProtoStats[uint8_t type];
+    interface SrcReceiveMsg[uint8_t type];
     interface BigPackClient as WaveletPack;
     interface BigPackServer as StatsPack;
     interface SensorData;
@@ -25,10 +27,7 @@ module StatsM {
   }
 }
 implementation {
-  
 #if 0 // TinyOS Plugin Workaround
-  typedef char uPack;
-  typedef char msgData;
   typedef char MoteStats;
   typedef char StatsReport;
   typedef char ExtWaveletConf;
@@ -36,6 +35,7 @@ implementation {
   typedef char StatsWT;
   typedef char StatsWTL;
   typedef char StatsWTNB;
+  typedef char WaveletData;
   typedef char BigPackEnvelope;
 #endif
   
@@ -44,12 +44,13 @@ implementation {
   
   bool statsBP = FALSE;
 
-  bool checkMsg(msgData msg);
+  bool checkMsg(uint8_t type, TOS_MsgPtr m);
+  bool checkProtoMsg(uint8_t type, TOS_MsgPtr m);
   void waveletFree();
   result_t populatePack();
   void clearStats();
   
-  // Stats: reports sent by applications
+  // Stats: reports sent by applications and erase support
   
   /**
    * Submits a new report.
@@ -75,13 +76,10 @@ implementation {
   /**
    * Stores details for each packet sent.
    */
-  event result_t Snoop.radioSendDone[uint8_t id](TOS_MsgPtr m, result_t result) {
-    if (id == AM_UNICASTPACK || id == AM_PINGMSG) {
-      if (id == AM_UNICASTPACK) {
-        uPack *pPack = (uPack *)m->data;
-        if (!checkMsg(pPack->data))
-          return SUCCESS;
-      }
+  event result_t Snoop.radioSendDone[uint8_t type](TOS_MsgPtr m, result_t result) {
+    if (m->addr != TOS_BCAST_ADDR) {
+      if (!checkProtoMsg(type, m))
+        return SUCCESS;
       data.pSent++;
       if (m->ack == 1)
         data.pAcked++;
@@ -92,23 +90,20 @@ implementation {
   /**
    * Stats doesn't track UART packets.
    */
-  event result_t Snoop.uartSendDone[uint8_t id](TOS_MsgPtr m, result_t result) {
+  event result_t Snoop.uartSendDone[uint8_t type](TOS_MsgPtr m, result_t result) {
     return SUCCESS;
   }
   
   /**
    * Stores details for each packet received.
    */
-  event TOS_MsgPtr Snoop.receiveRadio[uint8_t id](TOS_MsgPtr m) {
-    if (id == AM_UNICASTPACK || id == AM_PINGMSG) {
+  event TOS_MsgPtr Snoop.receiveRadio[uint8_t type](TOS_MsgPtr m) {
+    if (m->addr != TOS_BCAST_ADDR) {
 #ifdef PLATFORM_MICAZ
       int16_t rssi;
 #endif
-      if (id == AM_UNICASTPACK) {
-        uPack *pPack = (uPack *)m->data;
-        if (!checkMsg(pPack->data))
-          return m;
-      }
+      if (!checkProtoMsg(type, m))
+        return m;
 #ifdef PLATFORM_MICAZ
       rssi = m->strength;
       if (rssi > 127) 
@@ -124,38 +119,39 @@ implementation {
   /**
    * Stats doesn't track UART packets.
    */
-  event TOS_MsgPtr Snoop.receiveUart[uint8_t id](TOS_MsgPtr m) {
+  event TOS_MsgPtr Snoop.receiveUart[uint8_t type](TOS_MsgPtr m) {
     return m;
   }
   
-  // Message: listens to Message events
+  // ProtoStats: listens to events from the routing protocol subsystems
   
-  event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
-    if (checkMsg(msg)) {
+  event result_t ProtoStats.sendDone[uint8_t type](TOS_MsgPtr msg, result_t result, uint8_t attemptNum) {
+    if (checkMsg(type, msg)) {
       data.mSent++;
       if (result == SUCCESS)
         data.mDelivered++;
-      data.mRetriesSum += retries;
-      if (msg.type == WAVELETDATA) {
-        if (msg.data.wData.level < data.wavelet.numLevels) {
+      data.mRetriesSum += attemptNum;
+      if (type == AM_WAVELETDATA) {
+        WaveletData *wd = (WaveletData *)msg->data;
+        if (wd->level < data.wavelet.numLevels) {
           uint8_t i;
-          StatsWTL *level = &data.wavelet.level[msg.data.wData.level];
+          StatsWTL *level = &data.wavelet.level[wd->level];
           for (i = 0; i < level->nbCount; i++) {
-            if (msg.dest == level->nb[i].id)
+            if (msg->addr == level->nb[i].id)
               break;
           }
           if (i < level->nbCount)
-            level->nb[i].retries += retries;
+            level->nb[i].retries += attemptNum;
         }
       }
     }
     return SUCCESS;
   }
   
-  event void Message.receive(msgData msg) {
-    if (checkMsg(msg)) {
+  event TOS_MsgPtr SrcReceiveMsg.receive[uint8_t type](uint16_t src, TOS_MsgPtr m) {
+    if (checkMsg(type, m))
       data.mRcvd++;
-    }
+    return m;
   }
   
   // BigPack: sends and receives multi-packet data
@@ -332,27 +328,40 @@ implementation {
    * Filters out some message types from being counted in stats data.
    * Returns TRUE if the message should be counted and FALSE if not.
    */
-  bool checkMsg(msgData msg) {
-    switch (msg.type) {
-    case BIGPACKHEADER: {
-      if (msg.data.bpHeader.requestType == BP_STATS) {
+  bool checkMsg(uint8_t type, TOS_MsgPtr m) {
+    switch (type) {
+    case AM_BIGPACKHEADER: {
+      BigPackHeader *bph = (BigPackHeader *)m->data;
+      if (bph->requestType == BP_STATS) {
         statsBP = TRUE;
       } else {
         statsBP = FALSE;
       }
       return !statsBP;
       break; }
-    case BIGPACKDATA: {
+    case AM_BIGPACKDATA: {
       return !statsBP;
       break; }
-    case MOTEOPTIONS: {
+    case AM_MOTEOPTIONS: {
       return FALSE;
       break; }
-    case PWRCONTROL: {
+    case AM_PWRCONTROL: {
       return FALSE;
       break; }
     }
     return TRUE;
+  }
+  
+  bool checkProtoMsg(uint8_t type, TOS_MsgPtr m) {
+    // Copy message so we don't interfere with other receivers
+    TOS_Msg mNoHeader;
+    TOS_MsgPtr mnh = &mNoHeader;
+    memcpy(mnh, m, sizeof(TOS_Msg));
+    // Remove header
+    if (call ProtoStats.removeHeader[type](mnh) == FAIL)
+      return FALSE;
+    // Check this new message
+    return checkMsg(type, mnh);    
   }
   
   // StdControl
@@ -375,5 +384,4 @@ implementation {
   command result_t StdControl.stop() {
     return SUCCESS;
   }
-    
 }

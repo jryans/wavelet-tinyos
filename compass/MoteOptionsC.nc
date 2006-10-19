@@ -3,11 +3,13 @@
  * @author Ryan Stinnett
  */
  
-includes MoteOptions;
+includes MessageType;
 
 configuration MoteOptionsC {
   uses {
-    interface Message;
+    interface CreateMsg[uint8_t type];
+    interface SendMsg[uint8_t type];
+    interface SrcReceiveMsg[uint8_t type];
     interface Stats;
     interface StdControl as TransControl;
     interface StdControl as DelugeControl;
@@ -15,13 +17,15 @@ configuration MoteOptionsC {
   provides interface MoteOptions;
 }
 implementation {
-  components MoteOptionsM, Main, TimerC, HPLPowerManagementM, LedsC, TransceiverC, PingM, NetProgC;
+  components MoteOptionsM, Main, TimerC, HPLPowerManagementM, 
+             LedsC, TransceiverC, PingM, NetProgC;
 #ifdef PLATFORM_MICAZ
   components CC2420RadioC;
   MoteOptionsM.MacControl -> CC2420RadioC;
   MoteOptionsM.CC2420Control -> CC2420RadioC;
 #endif
 
+  /*** MO Internal ***/
   Main.StdControl -> TimerC;
   MoteOptionsM.Wake -> TimerC.Timer[unique("Timer")];
   MoteOptionsM.Sleep -> TimerC.Timer[unique("Timer")];
@@ -29,17 +33,24 @@ implementation {
   MoteOptionsM.Leds -> LedsC;
   MoteOptionsM.PM -> HPLPowerManagementM;
   MoteOptionsM.NetProg -> NetProgC;
-  TransControl = MoteOptionsM.TransControl;
-  DelugeControl = MoteOptionsM.DelugeControl;
+  
   
   /*** Ping ***/
-  PingM.PingTrans -> TransceiverC.Transceiver[AM_PINGMSG];
+  PingM.Trans -> TransceiverC.Transceiver[AM_PING];
   PingM.Timer -> TimerC.Timer[unique("Timer")];
-  Message = PingM;
+  PingM.CreateMsg = CreateMsg[AM_PING];
+  PingM.SendMsg = SendMsg[AM_PING];
   MoteOptionsM.PingB -> PingM;
   
-  Stats = MoteOptionsM;
+  /*** MO External ***/
+  MoteOptionsM = Stats;
+  MoteOptionsM = CreateMsg;
+  MoteOptionsM = SendMsg;
+  MoteOptionsM.RcvMO = SrcReceiveMsg[AM_MOTEOPTIONS];
+  MoteOptionsM.RcvPWR = SrcReceiveMsg[AM_PWRCONTROL];
+  MoteOptionsM.RcvCT = SrcReceiveMsg[AM_COMPTIME];
+  MoteOptionsM.TransControl = TransControl;
+  MoteOptionsM.DelugeControl = DelugeControl;
   MoteOptions = MoteOptionsM;
-  Message = MoteOptionsM;
   Main.StdControl -> MoteOptionsM;
 }

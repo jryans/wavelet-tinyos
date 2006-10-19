@@ -1,3 +1,12 @@
+/**
+ * I converted the TinyOS library Bcast to a version that makes use of the
+ * Transceiver library and makes use of its queue abilities, rather than
+ * implementing another one of its own.
+ * From Ray: If you know neighbors, repeat bcasts until neighbors repeat
+ * them back to you (prob give up after N tries or M ms)
+ * @author Ryan Stinnett
+ */
+ 
 /*
  * "Copyright (c) 2000-2003 The Regents of the University  of California.  
  * All rights reserved.
@@ -28,31 +37,21 @@
  */
  
 /**
- * Original code and concept
+ * Based on Bcast library written by
  * @author Philip Buonadonna
- */
- 
-/**
- * I converted the TinyOS library Bcast to a version that makes use of the
- * Transceiver library and makes use of its queue abilities, rather than
- * implementing another one of its own.
- * TODO: Remove back-to-back repeats.  Simple idea: save message,
- * repeat a few times with timers.  Use sounder if Tranceiver needs more
- * message slots.
- * From Ray: If you know neighbors, repeat bcasts until neighbors repeat
- * them back to you (prob give up after N tries or M ms)
- * @author Ryan Stinnett
  */
 
 includes AM;
-includes IOPack;
+includes Broadcast;
 
 module BroadcastM {
   provides {
-    interface Message;
+    interface SendMsg[uint8_t type];
+    interface SrcReceiveMsg[uint8_t type];
   }
   uses {
-    interface Transceiver as IO;
+    interface CreateMsg[uint8_t type];
+    interface Transceiver as IO[uint8_t type];
     interface Leds;
     interface Timer as Repeat;
     interface MoteOptions;
@@ -65,16 +64,15 @@ module BroadcastM {
 implementation {
   
 #if 0 // TinyOS Plugin Workaround
-  typedef uint8_t bPack;
-  #endif
+  typedef uint8_t bHeader;
+#endif
 
   int16_t bcastSeqno = 0;
-  TOS_MsgPtr tmpPtr;
-  bPack sendData;
+  TOS_Msg rptMsg;
   uint8_t curRepsLeft;
-  uint8_t len = sizeof(bPack);
+  uint8_t rptType;
 
-  /*** Internal Functions ***/
+  // Internal Functions
 
   /** 
    * This handles sequence space wrap-around. Overlow/Underflow makes
@@ -98,42 +96,41 @@ implementation {
    * may be rebroadcast multiple times to ensure reception.
    */
   void fwdBcast() {
-    bPack *pFwdMsg;
-    if ((tmpPtr = call IO.requestWrite()) != NULL) { // Gets a new TOS_MsgPtr
-      pFwdMsg = (bPack *)tmpPtr->data;
-    } else {
-      // If we're out of free messages, try increasing MAX_TOS_MSGS
-#ifdef BEEP
-      call Beep.play(3, 250);
-#endif
-      dbg(DBG_USR1, "Bcast: Couldn't get a new TOS_MsgPtr! (seqno 0x%x)\n", sendData.seqno);
+    bHeader *h = (bHeader *)rptMsg.data;
+    // Before resending, copy the message
+    TOS_MsgPtr nMsg = call CreateMsg.createCopy[rptType](&rptMsg);
+    if (nMsg == NULL) {
+      dbg(DBG_USR1, "Bcast: Type: %i, Seq: %i, unable to copy!\n", rptType, h->seqNo);
       return;
     }
-    curRepsLeft--;
-    *pFwdMsg = sendData; 
-    dbg(DBG_USR1, "Bcast: FwdMsg (seqno 0x%x) sending, %i repeats left...\n", 
-        pFwdMsg->seqno, curRepsLeft);
-    call IO.sendRadio(TOS_BCAST_ADDR, len); 
-    if (curRepsLeft > 0)
+    dbg(DBG_USR1, "Bcast: Type: %i, Seq: %i, fwding, %i repeat(s) left...\n", 
+        rptType, h->seqNo, curRepsLeft);
+    call IO.sendRadio[rptType](TOS_BCAST_ADDR, rptMsg.length); 
+    if (--curRepsLeft > 0)
       call Repeat.start(TIMER_ONE_SHOT, BCAST_REP_DELAY);
   }
   
   /**
    * All received messages come here, since the medium is unimportant.
    */
-  TOS_MsgPtr receive(TOS_MsgPtr pMsg) {
-    bPack *pBCMsg = (bPack *)pMsg->data;
-    if (newBcast(pBCMsg->seqno)) {
-      dbg(DBG_USR1, "Bcast: Msg rcvd, seq 0x%02x\n", pBCMsg->seqno);
-      sendData = *pBCMsg;
+  TOS_MsgPtr receive(uint8_t type, TOS_MsgPtr msg) {
+    bHeader *h = (bHeader *)msg->data;
+    if (newBcast(h->seqNo)) {
+      dbg(DBG_USR1, "Bcast: Type: %i, Seq: %i, rcvd\n", type, h->seqNo);
+      // Store received message to be repeated
+      memcpy(&rptMsg, msg, sizeof(TOS_Msg));
       curRepsLeft = BCAST_REPEATS;
+      rptType = type;
       fwdBcast();
-      signal Message.receive(pBCMsg->data);
+      // Remove broadcast header
+      msg->length -= sizeof(bHeader);
+      memmove(msg->data, msg->data + sizeof(bHeader), msg->length);
+      msg = signal SrcReceiveMsg.receive[type](TOS_BCAST_ADDR, msg);
     }
-    return pMsg;
+    return msg;
   }
 
-  /*** Commands and Events ***/
+  // Commands and Events
 
   /**
    * After a delay of BCAST_REP_DELAY bms, a broadcast message
@@ -148,8 +145,8 @@ implementation {
    * Sends message data to the network
    * TODO: Can't initiate broadcasts on a mote yet.
    */
-  command result_t Message.send(msgData msg) {
-    if (msg.dest == TOS_BCAST_ADDR)
+  command result_t SendMsg.send[uint8_t type](uint16_t dest, uint8_t len, TOS_MsgPtr msg) {
+    if (dest == TOS_BCAST_ADDR)
       return FAIL;
     return SUCCESS;
   }
@@ -160,12 +157,14 @@ implementation {
    *     event.
    * @param result - SUCCESS or FAIL.
    */
-  event result_t IO.radioSendDone(TOS_MsgPtr m, result_t result) {
-    bPack *pBCMsg = (bPack *)m->data;
+  event result_t IO.radioSendDone[uint8_t type](TOS_MsgPtr m, result_t result) {
+    bHeader *h = (bHeader *)m->data;
+    if (m->addr != TOS_BCAST_ADDR)
+      return SUCCESS;
     if (result == SUCCESS) {  
-      dbg(DBG_USR1, "Bcast: FwdMsg (seqno 0x%x) succeeded\n", pBCMsg->seqno);
+      dbg(DBG_USR1, "Bcast: Type: %i, Seq: %i, fwd succeeded\n", type, h->seqNo);
     } else {
-      dbg(DBG_USR1, "Bcast: FwdMsg (seqno 0x%x) failed!\n", pBCMsg->seqno);
+      dbg(DBG_USR1, "Bcast: Type: %i, Seq: %i, fwd failed!\n", type, h->seqNo);
     }
     return SUCCESS;
   }
@@ -176,7 +175,9 @@ implementation {
    *     event.
    * @param result - SUCCESS or FAIL.
    */
-  event result_t IO.uartSendDone(TOS_MsgPtr m, result_t result) {
+  event result_t IO.uartSendDone[uint8_t type](TOS_MsgPtr m, result_t result) {
+    if (m->addr != TOS_BCAST_ADDR)
+      return SUCCESS;
     return SUCCESS; // Broadcasts aren't sent via the UART  
   }
   
@@ -185,9 +186,11 @@ implementation {
    * @param m - the receive message, valid for the duration of the 
    *     event.
    */
-  event TOS_MsgPtr IO.receiveRadio(TOS_MsgPtr m) {
+  event TOS_MsgPtr IO.receiveRadio[uint8_t type](TOS_MsgPtr m) {
+    if (m->addr != TOS_BCAST_ADDR)
+      return m;
     call MoteOptions.resetSleep();
-    return receive(m);	
+    return receive(type, m);	
   }
   
   /**
@@ -195,8 +198,10 @@ implementation {
    * @param m - the receive message, valid for the duration of the 
    *     event.
    */
-  event TOS_MsgPtr IO.receiveUart(TOS_MsgPtr m) {
-    return receive(m);	
+  event TOS_MsgPtr IO.receiveUart[uint8_t type](TOS_MsgPtr m) {
+    if (m->addr != TOS_BCAST_ADDR)
+      return m;
+    return receive(type, m);	
   }
   
   /**

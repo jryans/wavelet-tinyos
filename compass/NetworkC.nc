@@ -4,11 +4,12 @@
  * @author Ryan Stinnett
  */
 
-includes IOPack;
-
 configuration NetworkC {
   provides {
-    interface Message;
+    interface CreateMsg[uint8_t type];
+    interface SendMsg[uint8_t type];
+    interface SrcReceiveMsg[uint8_t type];
+    interface ProtoStats[uint8_t type];
     interface Router;
     interface StdControl;
     interface StdControl as TransControl;
@@ -18,36 +19,47 @@ configuration NetworkC {
   }
 }
 implementation {
-  components BroadcastM, UnicastM, RouterC, 
+  components BroadcastM, UnicastM, RouterC, NetworkShimM,
              TransceiverC, LedsC, TimerC;
 #ifdef BEEP
   components BeepC;
 #endif
   
-  /*** Services ***/
-  TransControl = TransceiverC;
+  /*** Timer ***/
   StdControl = TimerC;
+  BroadcastM.Repeat -> TimerC.Timer[unique("Timer")];
+  
+  /*** Transceiver ***/
+  TransControl = TransceiverC;
+  BroadcastM.IO -> TransceiverC;
+  UnicastM.IO -> TransceiverC;
   
   /*** Broadcast ***/
-  BroadcastM.IO -> TransceiverC.Transceiver[AM_BROADCASTPACK];
+  SendMsg = BroadcastM;
+  SrcReceiveMsg = BroadcastM;
   MoteOptions = BroadcastM;
   BroadcastM.Leds -> LedsC;
-  BroadcastM.Repeat -> TimerC.Timer[unique("Timer")];
 #ifdef BEEP
   BroadcastM.Beep -> BeepC;
 #endif
-  Message = BroadcastM;
   
   /*** Unicast ***/
-  UnicastM.IO -> TransceiverC.Transceiver[AM_UNICASTPACK];
+  SendMsg = UnicastM;
+  SrcReceiveMsg = UnicastM;
+  ProtoStats = UnicastM;
   MoteOptions = UnicastM;
-  UnicastM.Router -> RouterC;
   UnicastM.Leds -> LedsC;
 #ifdef BEEP
   UnicastM.Beep -> BeepC;
 #endif
-  Message = UnicastM;
   
   /*** Routing ***/
   Router = RouterC;
+  UnicastM.Router -> RouterC;
+  
+  /*** Wrapper ***/
+  CreateMsg = NetworkShimM;
+  NetworkShimM.IO -> TransceiverC;
+  BroadcastM.CreateMsg -> NetworkShimM;
+  UnicastM.CreateMsg -> NetworkShimM;
 }

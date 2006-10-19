@@ -11,7 +11,6 @@ module RouterSimM {
     interface StdControl;
     interface Router; 
   }
-  uses interface Transceiver as IO;
 }
 implementation {
   uint8_t curState; // Holds the current state of the router.
@@ -41,24 +40,7 @@ implementation {
   /**
    * Gives the address of the next hop for a given destination.
    */
-  command int16_t Router.getNextAddr(int16_t dest) {
+  command uint16_t Router.getNextAddr(uint8_t type, uint16_t dest) {
     return dest;
-  }
-
-  /*** Not needed in RouterSimM ***/
-  event result_t IO.radioSendDone(TOS_MsgPtr m, result_t result) {
-    return SUCCESS;
-  }
-
-  event result_t IO.uartSendDone(TOS_MsgPtr m, result_t result) {
-    return SUCCESS;
-  }
-
-  event TOS_MsgPtr IO.receiveRadio(TOS_MsgPtr m) {
-    return m;
-  }
-
-  event TOS_MsgPtr IO.receiveUart(TOS_MsgPtr m) {
-    return m;
   }
 }

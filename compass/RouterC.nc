@@ -3,8 +3,8 @@
  * simple, tidy package to applications.
  * @author Ryan Stinnett
  */
-
-includes IOPack;
+ 
+includes MessageType;
 
 configuration RouterC {
   provides {
@@ -12,12 +12,20 @@ configuration RouterC {
   }
 }
 implementation {
-  components Main, RouterStaticM, 
-             TransceiverC, NetworkC;
+  components Main, NetworkC;
+#ifdef ROUTE_STATIC
+  components RouterStaticM;
+#else
+  components RouterSimM;
+#endif
   
   /*** Routing ***/
+#ifdef ROUTE_STATIC
   Main.StdControl -> RouterStaticM;
-  RouterStaticM.IO -> TransceiverC.Transceiver[AM_ROUTER];
-  RouterStaticM.Message -> NetworkC;
+  RouterStaticM.SrcReceiveMsg -> NetworkC.SrcReceiveMsg[AM_ROUTERDATA];
   Router = RouterStaticM;
+#else
+  Main.StdControl -> RouterSimM;
+  Router = RouterSimM;
+#endif
 }

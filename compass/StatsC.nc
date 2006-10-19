@@ -4,11 +4,10 @@
  * @author Ryan Stinnett
  */
  
-includes MessageData;
- 
 configuration StatsC {
   uses {
-    interface Message;
+    interface SrcReceiveMsg[uint8_t type];
+    interface ProtoStats[uint8_t type];
     interface BigPackClient as WaveletPack;
     interface BigPackServer as StatsPack;
     interface SensorData;
@@ -27,6 +26,7 @@ implementation {
   SensorData = StatsM;
   WaveletPack = StatsM;
   StatsPack = StatsM;
-  Message = StatsM;
+  SrcReceiveMsg = StatsM;
+  ProtoStats = StatsM;
   Stats = StatsM;
 }

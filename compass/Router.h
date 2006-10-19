@@ -7,10 +7,16 @@
 #ifndef _ROUTER_H
 #define _ROUTER_H
 
-typedef struct
-{
+#include "MessageType.h"
+
+typedef struct RouterData {
   bool enable; // TRUE: enable link FALSE: disable link
   uint16_t mote; // ID of mote whose link will be altered
 } __attribute__ ((packed)) RouterData;
+
+enum {
+  RO_INIT,
+  RO_READY
+};
 
 #endif // _ROUTER_H

@@ -14,4 +14,8 @@ CFLAGS += -DMAX_TOS_MSGS=20
 # Transmission still needs to be enabled at runtime
 CFLAGS += -DRAW
 
+# Selects either static or sim routing
+CFLAGS += -DROUTE_STATIC
+# CFLAGS += -DROUTE_SIM
+
 include $(TOSROOT)/apps/Makerules

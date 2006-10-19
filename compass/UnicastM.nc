@@ -6,14 +6,20 @@
  */
 
 includes AM;
-includes IOPack;
+includes Unicast;
+includes Router;
+includes MoteOptions;
+includes MessageType;
 
 module UnicastM {
   provides {
-    interface Message;
+    interface SendMsg[uint8_t type];
+    interface SrcReceiveMsg[uint8_t type];
+    interface ProtoStats[uint8_t type];
   }
   uses {
-    interface Transceiver as IO;
+    interface CreateMsg[uint8_t type];
+    interface Transceiver as IO[uint8_t type];
     interface Router;
     interface Leds;
     interface MoteOptions;
@@ -25,72 +31,39 @@ module UnicastM {
 
 implementation {
 #if 0 // TinyOS Plugin Workaround
-  typedef uint8_t uPack;
+  typedef char uHeader;
 #endif
-
-  TOS_MsgPtr tmpPtr;
-  uint8_t len = sizeof(uPack);
   
-  uint8_t RADIO_RETRIES = 5;
+  uint8_t maxSendAttempts = UCAST_DEF_MAX_SEND_ATTEMPTS;
 
   // Internal Functions
-
-  /**
-   * Requests a new TOS_MsgPtr.
-   */ 
-  result_t newMsg() {
-    if ((tmpPtr = call IO.requestWrite()) == NULL) {
-      return FAIL;
-#ifdef BEEP
-      call Beep.play(3, 250);
-#endif
-    }
-    return SUCCESS;
-  }
   
   /**
    * Forwards packets destined for the UART.
    */
-  void fwdUart(uPack *pRcvPack) {
-    uPack *pFwdPack;
-    if (newMsg() == SUCCESS) { 
-      pFwdPack = (uPack *)tmpPtr->data;
-    } else {
-      dbg(DBG_USR1, "Ucast: Couldn't get a new TOS_MsgPtr!\n");
-      return;
-    }
-    memcpy(pFwdPack,pRcvPack,len);  
-    dbg(DBG_USR1, "Ucast: Mote: Base, Src: %i, fwding to UART...\n", pFwdPack->data.src);
-    call IO.sendUart(len); 
+  void fwdUart(uint8_t type, uint8_t len, uHeader *h) {
+    dbg(DBG_USR1, "Ucast: Type: %i, Mote: 0, Src: %i, fwding to UART...\n", type, h->src);
+    call IO.sendUart[type](len); 
   }
   
   /**
    * Forwards packets for a different mote to their next hop.
    */
-  void fwdNextHop(uPack *pRcvPack, uint8_t retries) {
-    uPack *pFwdPack;
+  void fwdNextHop(uint8_t type, uint8_t len, uHeader *h, uint8_t aNum) {
     uint16_t nextHop;
-    if (pRcvPack->data.type != 20) {
-      nextHop = call Router.getNextAddr(&pRcvPack->data);
+    if (type != AM_PING) {
+      nextHop = call Router.getNextAddr(type, h->dest);
     } else {
-      nextHop = pRcvPack->data.dest;
+      nextHop = h->dest;
     }
     if (nextHop == NET_BAD_ROUTE) {
       dbg(DBG_USR1, "Ucast: Route disabled intentionally or is this mote\n");
       return;
     }
-    if (newMsg() == SUCCESS) { 
-      pFwdPack = (uPack *)tmpPtr->data;
-    } else {
-      dbg(DBG_USR1, "Ucast: Couldn't get a new TOS_MsgPtr!\n");
-      return;
-    }
-    memcpy(pFwdPack,pRcvPack,len);
-    //pFwdPack->hops++;
-    pFwdPack->retriesLeft = retries - 1;
-    dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwding to %i, %i retries left...\n", 
-        TOS_LOCAL_ADDRESS, pFwdPack->data.src, pFwdPack->data.dest, nextHop, retries);
-    if (call IO.sendRadio(nextHop, len) == FAIL) {
+    h->attemptNum = aNum;
+    dbg(DBG_USR1, "Ucast: Type: %i, Mote: %i, Src: %i, Dest: %i, fwding to %i, attempt %i/%i...\n", 
+        type, TOS_LOCAL_ADDRESS, h->src, h->dest, nextHop, aNum + 1, maxSendAttempts);
+    if (call IO.sendRadio[type](nextHop, len) == FAIL) {
       dbg(DBG_USR2, "Ucast: sendRadio failed!");
     } else {
       call Leds.greenOn(); 
@@ -100,41 +73,74 @@ implementation {
   /**
    * Delivers incoming radio and UART messages.
    */
-  TOS_MsgPtr deliver(TOS_MsgPtr pMsg) {
-    uPack *pPack =(uPack *)pMsg->data;
-    if (pPack->data.dest == TOS_LOCAL_ADDRESS) { // This packet is for us
+  TOS_MsgPtr deliver(uint8_t type, TOS_MsgPtr msg) {
+    uHeader *h = (uHeader *)msg->data;
+    if (h->dest == TOS_LOCAL_ADDRESS) { // This packet is for us
+      uint16_t src = h->src;
       // Send data on to applications
-      dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, rcvd\n", TOS_LOCAL_ADDRESS,
-          pPack->data.src, pPack->data.dest);
-      signal Message.receive(pPack->data);
-    } else if (pPack->data.dest == NET_UART_ADDR && TOS_LOCAL_ADDRESS == 0) {
-      fwdUart(pPack); // From normal motes to the sink
-    } else { // This message is not for us, forward it on.
-      fwdNextHop(pPack, RADIO_RETRIES);
+      dbg(DBG_USR1, "Ucast: Type: %i, Mote: %i, Src: %i, Dest: %i, rcvd\n", type,
+          TOS_LOCAL_ADDRESS, src, h->dest);
+      // Remove unicast header
+      msg->length -= sizeof(uHeader);
+      memmove(msg->data, msg->data + sizeof(uHeader), msg->length);
+      msg = signal SrcReceiveMsg.receive[type](src, msg);
+    } else {
+      // Before resending, copy the message
+      TOS_MsgPtr nMsg = call CreateMsg.createCopy[type](msg);
+      if (nMsg == NULL) {
+        dbg(DBG_USR1, "Ucast: Type: %i, Mote: %i, Src: %i, Dest: %i, unable to copy!\n", type,
+            TOS_LOCAL_ADDRESS, h->src, h->dest);
+        return msg;
+      }
+      h = (uHeader *)nMsg->data;
+      if (h->dest == NET_UART_ADDR && TOS_LOCAL_ADDRESS == 0) {
+        fwdUart(type, nMsg->length, h); // From normal motes to the sink
+      } else { // This message is not for us, forward it on.
+        fwdNextHop(type, nMsg->length, h, 0);
+      }
     }
-    return pMsg;
+    return msg;
   }
 
   // Commands and Events
   
   /**
-   * Builds a unicast pack from an input message and sends it on its way.
+   * Takes a message with only raw data, adds a unicast header, and sends it to
+   * the first hop towards its destination.
    */
-  command result_t Message.send(msgData msg) {
-    uPack newPack;
-    if (msg.dest == TOS_BCAST_ADDR)
+  command result_t SendMsg.send[uint8_t type](uint16_t dest, uint8_t len, TOS_MsgPtr msg) {
+    uHeader *h = (uHeader *)msg->data;
+    // Could check this in NetworkM shim
+    if (dest == TOS_BCAST_ADDR)
       return SUCCESS; // Ignore broadcase packets
-    if (msg.dest == TOS_LOCAL_ADDRESS)
+    if (dest == TOS_LOCAL_ADDRESS)
       return FAIL; // Don't send messages to yourself!
+    if (sizeof(uHeader) + len > TOSH_DATA_LENGTH)
+      return FAIL; // Header and data exceeds max data length
     if (call Router.getStatus() != RO_READY)
       return FAIL; // Router isn't ready, this should be checked before sending
-    msg.src = TOS_LOCAL_ADDRESS; // Set source mote ID
-    newPack.data = msg;
-    if (TOS_LOCAL_ADDRESS == 0 && msg.dest == NET_UART_ADDR) {
-      fwdUart(&newPack); // From UART bridge to the sink
+    // Add unicast header
+    memmove(msg->data + sizeof(uHeader), msg->data, len);
+    // Set source and destination mote IDs
+    h->src = TOS_LOCAL_ADDRESS;
+    h->dest = dest;
+    if (TOS_LOCAL_ADDRESS == 0 && dest == NET_UART_ADDR) {
+      fwdUart(type, len + sizeof(uHeader), h); // From UART bridge to the sink
     } else {
-      fwdNextHop(&newPack, RADIO_RETRIES); // Anything else goes on the radio
+      fwdNextHop(type, len + sizeof(uHeader), h, 0); // Anything else goes on the radio
     }
+    return SUCCESS;
+  }
+  
+  /**
+   * Helps other modules remove header data.
+   */
+  command result_t ProtoStats.removeHeader[uint8_t type](TOS_MsgPtr m) {
+    if (m == NULL || m->addr == TOS_BCAST_ADDR)
+      return FAIL;
+    // Remove unicast header
+    m->length -= sizeof(uHeader);
+    memmove(m->data, m->data + sizeof(uHeader), m->length);
     return SUCCESS;
   }
   
@@ -144,30 +150,49 @@ implementation {
    *     event.
    * @param result - SUCCESS or FAIL.
    */
-  event result_t IO.radioSendDone(TOS_MsgPtr m, result_t result) {
-    uPack *pPack = (uPack *)m->data;
-    uint8_t tmpRetries;
+  event result_t IO.radioSendDone[uint8_t type](TOS_MsgPtr m, result_t result) {
+    uHeader *h = (uHeader *)m->data;
+    if (m->addr == TOS_BCAST_ADDR)
+      return SUCCESS;
     call Leds.greenOff();
-    // Yes, ACKs work *currently*...  Stop checking them!
-    //(m->ack == 1) ? (call Leds.yellowOn()) : (call Leds.yellowOff());
     if ((result == SUCCESS) && (m->ack == 1)) {  
-      dbg(DBG_USR1, "Ucast: Mote: %i, Src: %i, Dest: %i, fwd to %i succeeded\n", 
-          TOS_LOCAL_ADDRESS, pPack->data.src, pPack->data.dest, m->addr);
-      if (pPack->data.src == TOS_LOCAL_ADDRESS)
-        signal Message.sendDone(pPack->data, SUCCESS, RADIO_RETRIES - pPack->retriesLeft - 1);
+      dbg(DBG_USR1, "Ucast: Type: %i, Mote: %i, Src: %i, Dest: %i, fwd to %i succeeded\n", 
+          type, TOS_LOCAL_ADDRESS, h->src, h->dest, m->addr);
+      if (h->src == TOS_LOCAL_ADDRESS) {
+        uint8_t aNum = h->attemptNum;
+        // Remove unicast header
+        m->length -= sizeof(uHeader);
+        memmove(m->data, m->data + sizeof(uHeader), m->length);
+        signal SendMsg.sendDone[type](m, SUCCESS);
+        signal ProtoStats.sendDone[type](m, SUCCESS, aNum);
+      }
     } else {
       // Either we got FAIL or there was no ACK
-      tmpRetries = pPack->retriesLeft;
-      if (tmpRetries > 0) {
-        fwdNextHop(pPack, tmpRetries);
+      uint8_t nextAttempt = h->attemptNum + 1;
+      if (nextAttempt < maxSendAttempts) {
+        TOS_MsgPtr nMsg = call CreateMsg.createCopy[type](m);
+        if (nMsg == NULL) {
+          dbg(DBG_USR1, "Ucast: Type: %i, Mote: %i, Src: %i, Dest: %i, unable to copy!\n", type, 
+              TOS_LOCAL_ADDRESS, h->src, h->dest);
+          return SUCCESS;
+        }
+        h = (uHeader *)nMsg->data;
+        // Begin the next attempt
+        fwdNextHop(type, nMsg->length, h, nextAttempt);
       } else {
 #ifdef BEEP
         //call Beep.play(2, 250);
 #endif
-        dbg(DBG_USR2, "Ucast: Mote: %i, Src: %i, Dest: %i, fwd to %i failed!\n", 
-          TOS_LOCAL_ADDRESS, pPack->data.src, pPack->data.dest, m->addr);
-        if (pPack->data.src == TOS_LOCAL_ADDRESS)
-          signal Message.sendDone(pPack->data, FAIL, RADIO_RETRIES - 1);
+        dbg(DBG_USR2, "Ucast: Type: %i, Mote: %i, Src: %i, Dest: %i, fwd to %i failed!\n", 
+          type, TOS_LOCAL_ADDRESS, h->src, h->dest, m->addr);
+        if (h->src == TOS_LOCAL_ADDRESS) {
+          uint8_t aNum = h->attemptNum;
+          // Remove unicast header
+          m->length -= sizeof(uHeader);
+          memmove(m->data, m->data + sizeof(uHeader), m->length);
+          signal SendMsg.sendDone[type](m, FAIL);
+          signal ProtoStats.sendDone[type](m, FAIL, aNum);
+        }
       }
     }
     return SUCCESS;
@@ -179,12 +204,14 @@ implementation {
    *     event.
    * @param result - SUCCESS or FAIL.
    */
-  event result_t IO.uartSendDone(TOS_MsgPtr m, result_t result) {
-    uPack *pPack = (uPack *)m->data;
+  event result_t IO.uartSendDone[uint8_t type](TOS_MsgPtr m, result_t result) {
+    uHeader *h = (uHeader *)m->data;
+    if (m->addr == TOS_BCAST_ADDR)
+      return SUCCESS;
     if (result == SUCCESS) {  
-      dbg(DBG_USR1, "Ucast: Mote: Base, Src: %i, fwd to UART succeeded\n", pPack->data.src);
+      dbg(DBG_USR1, "Ucast: Type: %i, Mote: 0, Src: %i, fwd to UART succeeded\n", type, h->src);
     } else {
-      dbg(DBG_USR1, "Ucast: Mote: Base, Src: %i, fwd to UART failed!\n", pPack->data.src);
+      dbg(DBG_USR1, "Ucast: Type: %i, Mote: 0, Src: %i, fwd to UART failed!\n", type, h->src);
     }
     return SUCCESS;
   }
@@ -194,9 +221,11 @@ implementation {
    * @param m - the receive message, valid for the duration of the 
    *     event.
    */
-  event TOS_MsgPtr IO.receiveRadio(TOS_MsgPtr m) {
+  event TOS_MsgPtr IO.receiveRadio[uint8_t type](TOS_MsgPtr m) {
+    if (m->addr == TOS_BCAST_ADDR)
+      return m;
     call MoteOptions.resetSleep();
-    return deliver(m);
+    return deliver(type, m);
   }
   
   /**
@@ -204,8 +233,10 @@ implementation {
    * @param m - the receive message, valid for the duration of the 
    *     event.
    */
-  event TOS_MsgPtr IO.receiveUart(TOS_MsgPtr m) {
-    return deliver(m);	
+  event TOS_MsgPtr IO.receiveUart[uint8_t type](TOS_MsgPtr m) {
+    if (m->addr == TOS_BCAST_ADDR)
+      return m;
+    return deliver(type, m);	
   }
   
   /**
@@ -213,6 +244,6 @@ implementation {
    */
   event void MoteOptions.receive(uint8_t optMask, uint8_t optValue) {
     if ((optMask & MO_RADIORETRIES) != 0)
-      RADIO_RETRIES = optValue;
+      maxSendAttempts = optValue;
   }
 }

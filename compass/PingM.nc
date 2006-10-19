@@ -3,15 +3,15 @@
  * @author Ryan Stinnett
  */
  
-includes Ping;
 includes AM;
-includes MessageData;
+includes Ping;
  
 module PingM {
   uses {
     interface Timer;
-    interface Transceiver as PingTrans;
-    interface Message as PingMsg;
+    interface Transceiver as Trans;
+    interface CreateMsg;
+    interface SendMsg;
   }
   provides {
     interface PingB;
@@ -21,29 +21,30 @@ implementation {
   
   bool trans;
   uint16_t numLeft;
-  msgData md;
+  uint16_t dest;
   TOS_MsgPtr tmpPtr;
   
   result_t sendPingTrans(uint16_t pingNum) {
     PingData *msg;
-    if ((tmpPtr = call PingTrans.requestWrite()) == NULL)
+    if ((tmpPtr = call Trans.requestWrite()) == NULL)
       return FAIL;
     msg = (PingData *) tmpPtr->data;
     msg->seqNum = pingNum;
-    if (call PingTrans.sendRadio(TOS_BCAST_ADDR, sizeof(PingData)) == FAIL)
+    if (call Trans.sendRadio(TOS_BCAST_ADDR, sizeof(PingData)) == FAIL)
       return FAIL;
     return SUCCESS;
   }
   
   // PingB
   
+  // Deprecated - Stats won't track this correctly in radioSendDone
   /**
    * Broadcasts a given number of ping messages.
    */
   command void PingB.send(uint16_t num) {
-    numLeft = num;
+    /* numLeft = num;
     trans = TRUE;
-    call Timer.start(TIMER_REPEAT, PING_INTERVAL);
+    call Timer.start(TIMER_REPEAT, PING_INTERVAL); */
   }
   
   /**
@@ -51,8 +52,7 @@ implementation {
    */
   command void PingB.sendTo(uint16_t num, uint16_t mDest, uint8_t rRet) {
     numLeft = num;
-    md.dest = mDest;
-    md.type = 20;
+    dest = mDest;
     trans = FALSE;
     call Timer.start(TIMER_REPEAT, PING_INTERVAL * rRet);
   }
@@ -66,7 +66,10 @@ implementation {
           dbg(DBG_USR2, "Ping: Unable to send message!");
         }
       } else {
-        call PingMsg.send(md); 
+        TOS_MsgPtr m = call CreateMsg.create();
+        PingData *p = (PingData *)m->data;
+        p->seqNum = numLeft;
+        call SendMsg.send(dest, sizeof(PingData), m); 
       }
       numLeft--;
     } else {
@@ -83,7 +86,7 @@ implementation {
    *     event.
    * @param result - SUCCESS or FAIL.
    */
-  event result_t PingTrans.radioSendDone(TOS_MsgPtr m, result_t result) {
+  event result_t Trans.radioSendDone(TOS_MsgPtr m, result_t result) {
     return SUCCESS;
   }
   
@@ -93,7 +96,7 @@ implementation {
    *     event.
    * @param result - SUCCESS or FAIL.
    */
-  event result_t PingTrans.uartSendDone(TOS_MsgPtr m, result_t result) {
+  event result_t Trans.uartSendDone(TOS_MsgPtr m, result_t result) {
     return SUCCESS;
   }
   
@@ -102,7 +105,7 @@ implementation {
    * @param m - the receive message, valid for the duration of the 
    *     event.
    */
-  event TOS_MsgPtr PingTrans.receiveRadio(TOS_MsgPtr m) {
+  event TOS_MsgPtr Trans.receiveRadio(TOS_MsgPtr m) {
     return m;
   }
   
@@ -111,7 +114,7 @@ implementation {
    * @param m - the receive message, valid for the duration of the 
    *     event.
    */
-  event TOS_MsgPtr PingTrans.receiveUart(TOS_MsgPtr m) {
+  event TOS_MsgPtr Trans.receiveUart(TOS_MsgPtr m) {
     return m;
   }
   
@@ -120,13 +123,8 @@ implementation {
   /**
    * sendDone is signaled when the send has completed
    */
-  event result_t PingMsg.sendDone(msgData msg, result_t result, uint8_t retries) {
+  event result_t SendMsg.sendDone(TOS_MsgPtr msg, result_t success) {
     return SUCCESS;
   }
-    
-  /**
-   * Receive is signaled when a new message arrives
-   */
-  event void PingMsg.receive(msgData msg) {}
   
 }

@@ -4,8 +4,6 @@
  * @author Ryan Stinnett
  */
  
-includes MessageData;
- 
 interface Router {
   
   /**
@@ -18,5 +16,5 @@ interface Router {
   /**
    * Gives the address of the next hop for a given message.
    */
-  command uint16_t getNextAddr(msgData *msg);
+  command uint16_t getNextAddr(uint8_t type, uint16_t dest);
 }

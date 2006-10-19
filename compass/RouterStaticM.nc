@@ -4,7 +4,7 @@
  * @author Ryan Stinnett
  */
  
-includes IOPack;
+includes MessageType;
  
 module RouterStaticM {
   provides {
@@ -12,12 +12,10 @@ module RouterStaticM {
     interface Router; 
   }
   uses {
-    interface Message;
-    interface Transceiver as IO;
+    interface SrcReceiveMsg;
   }
 }
 implementation {
-  
 #if 0
   typedef char RouterData;
 #endif
@@ -83,48 +81,22 @@ implementation {
   /**
    * Gives the address of the next hop for a given destination.
    */
-  command uint16_t Router.getNextAddr(msgData *msg) {
-    uint16_t dest = msg->dest;
+  command uint16_t Router.getNextAddr(uint8_t type, uint16_t dest) {
     if (dest == NET_UART_ADDR)
       dest = 0;
-    if ((msg->type == WAVELETDATA && !moteEnable[dest]) ||
+    if ((type == AM_WAVELETDATA && !moteEnable[dest]) ||
         cleanTable[TOS_LOCAL_ADDRESS][dest] == -1)
       return NET_BAD_ROUTE;
     return cleanTable[TOS_LOCAL_ADDRESS][dest];
-  }
-  
-  /**
-   * sendDone is signaled when the send has completed
-   */
-  event result_t Message.sendDone(msgData msg, result_t result, uint8_t retries) {
-    return SUCCESS;
   }
     
   /**
    * Receive is signaled when a new message arrives
    */
-  event void Message.receive(msgData msg) {
-    if (msg.type == ROUTERDATA) {
-      RouterData *r = &msg.data.rData;
-      dbg(DBG_USR1, "Router: Setting mote %i's link to %i\n", r->mote, r->enable);
-      moteEnable[r->mote] = r->enable;
-    }
-  }
-
-  /*** Not needed in RouterStaticM ***/
-  event result_t IO.radioSendDone(TOS_MsgPtr m, result_t result) {
-    return SUCCESS;
-  }
-
-  event result_t IO.uartSendDone(TOS_MsgPtr m, result_t result) {
-    return SUCCESS;
-  }
-
-  event TOS_MsgPtr IO.receiveRadio(TOS_MsgPtr m) {
-    return m;
-  }
-
-  event TOS_MsgPtr IO.receiveUart(TOS_MsgPtr m) {
+  event TOS_MsgPtr SrcReceiveMsg.receive(uint16_t src, TOS_MsgPtr m) {
+    RouterData *r = (RouterData *)m->data;
+    dbg(DBG_USR1, "Router: Setting mote %i's link to %i\n", r->mote, r->enable);
+    moteEnable[r->mote] = r->enable;
     return m;
   }
 }

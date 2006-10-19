@@ -6,13 +6,15 @@
 #ifndef _PING_H
 #define _PING_H
 
-typedef struct { // Broadcast Ping Msg
+#include "MessageType.h"
+
+typedef struct Ping { // Broadcast Ping Msg
   uint16_t seqNum; // Current sequence number
 } __attribute__ ((packed)) PingData;
 
 enum {
-  AM_PINGMSG = 100,
-  PING_INTERVAL = 30
+  //PING_INTERVAL = 30
+  PING_INTERVAL = 5
 };
 
 #endif // _PING_H

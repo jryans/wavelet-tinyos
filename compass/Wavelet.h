@@ -8,6 +8,8 @@
 #ifndef _WAVELET_H
 #define _WAVELET_H
 
+#include "MessageType.h"
+
 #include "Sensors.h"
 
 /*** Internal Wavelet Data ***/
@@ -26,7 +28,7 @@ typedef struct {
 
 /*** Transmitted Data ***/
 
-typedef struct {
+typedef struct WaveletData {
   uint8_t dataSet; // Data set this data belongs to
 	uint8_t level; // Wavelet level this data belongs to
 	uint8_t state; // State this mote has in this level
@@ -115,7 +117,7 @@ typedef struct {
   float compTarget[WT_MAX_BANDS]; // Array of compression target values for each band
 } __attribute__ ((packed)) WaveletComp;
 
-typedef struct { 
+typedef struct WaveletControl { 
   uint8_t mask; // Bit mask to mark what settings should be read
   uint8_t cmd; // One of the following commands
   union {
