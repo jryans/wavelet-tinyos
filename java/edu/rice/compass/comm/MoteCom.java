@@ -42,46 +42,13 @@ import net.tinyos.message.*;
 public class MoteCom extends MoteIF {
 	public static final int NET_UART_ADDR = 0xfffe;
 
-	private static Properties p = new Properties();
-	private static short sequenceNo;
 	public static MoteCom singleton = new MoteCom();
 	
 	private RoutingReceiver roRe;
 
 	private MoteCom() {
-		sequenceNo = 1;
 		source.deregisterPacketListener(receiver);
 		roRe = new RoutingReceiver(source);
-	}
-
-	public static void loadSeqNo() {
-		sequenceNo = restoreSequenceNo();
-	}
-
-	private static short restoreSequenceNo() {
-		try {
-			FileInputStream fis = new FileInputStream(CompassTools.packagePath
-					+ "bcast.properties");
-			p.load(fis);
-			short i = (short) Integer.parseInt(p.getProperty("sequenceNo", "1"));
-			fis.close();
-			return i;
-		} catch (IOException e) {
-			p.setProperty("sequenceNo", "1");
-			return 1;
-		}
-	}
-
-	private void saveSequenceNo(short i) {
-		try {
-			FileOutputStream fos = new FileOutputStream(CompassTools.packagePath
-					+ "bcast.properties");
-			p.setProperty("sequenceNo", Integer.toString(i));
-			p.store(fos, "#Properties for BcastInject\n");
-		} catch (IOException e) {
-			System.err.println("Exception while saving sequence number" + e);
-			e.printStackTrace();
-		}
 	}
 
 	private void debugMsg(Message msg) {
@@ -112,10 +79,10 @@ public class MoteCom extends MoteIF {
 		// Copy data
 		p.dataSet(m.dataGet(), 0, BroadcastPack.offset_data(0), m.dataLength());
 		// Set broadcast parameters
-		p.set_h_seqNo(sequenceNo);
+		p.set_h_seqNo(SeqNo.getNext());
 		debugMsg(p);
-		send(TOS_BCAST_ADDR, p); // Broadcast to all motes
-		saveSequenceNo(++sequenceNo); // Save updated seq. no
+		send(TOS_BCAST_ADDR, p); // Broadcast to all motes		
+		SeqNo.write(); // Save updated seq. no
 	}
 
 	public void addMsgReceiver(int mType, SrcReceiveMsg r) {

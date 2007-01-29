@@ -153,7 +153,7 @@ public class CompassTools {
 
 		// Load broadcast sequence number
 		if (!config.getBoolean("ignoreseqno"))
-			MoteCom.loadSeqNo();
+			SeqNo.read();
 
 		if (config.getBoolean("transform")) {
 			// Ensure the wavelet config file exists
