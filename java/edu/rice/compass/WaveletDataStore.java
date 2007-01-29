@@ -18,11 +18,11 @@ public class WaveletDataStore {
 
 	public float value[][][]; // value[dataset][sensor][mote]
 	private DataCheck check;
-	private int curSet;
-	private long waitTime;
-	private boolean timerRunning = false;
-	private static Timer waitTimer = new Timer();
-	private WaitTask curWaitTask;
+	private transient int curSet;
+	private transient long waitTime;
+	private transient boolean timerRunning = false;
+	private transient static Timer waitTimer = new Timer();
+	private transient WaitTask curWaitTask;
 	private transient Notify host;
 
 	public WaveletDataStore(int sets, int motes, long waitTime, Notify host) {
