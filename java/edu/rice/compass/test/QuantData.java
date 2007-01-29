@@ -1,4 +1,4 @@
-package edu.rice.compass;
+package edu.rice.compass.test;
 
 public class QuantData {
 
