@@ -21,9 +21,9 @@ public class WaveletMatlab {
 	 * file.
 	 */
 	public static void saveConfig(double[][] coords, double[] scales, Object[] predNB,
-			Object[] predCoeff, Object[] updCoeff) {
+			Object[] predCoeff, Object[] updNB, Object[] updCoeff) {
 		WaveletConfigData conf = new WaveletConfigData(coords, scales, predNB, predCoeff,
-				updCoeff);
+				updNB, updCoeff);
 		// Get package path
 		Class pClass = WaveletMatlab.class;
 		Package mPackage = pClass.getPackage();

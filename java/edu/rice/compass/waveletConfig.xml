@@ -42,16 +42,16 @@
     </double-array>
   </mCoords>
   <mScale>
+    <double>1.0</double>
+    <double>2.0</double>
+    <double>1.0</double>
     <double>3.0</double>
     <double>2.0</double>
-    <double>3.0</double>
     <double>1.0</double>
     <double>2.0</double>
     <double>3.0</double>
     <double>2.0</double>
     <double>1.0</double>
-    <double>3.0</double>
-    <double>3.0</double>
   </mScale>
   <mPredNB>
     <null/>
@@ -59,13 +59,11 @@
       <double>3.0</double>
       <double>1.0</double>
       <double>6.0</double>
-      <double>10.0</double>
     </double-array>
     <null/>
     <double-array>
       <double>1.0</double>
       <double>7.0</double>
-      <double>5.0</double>
       <double>10.0</double>
     </double-array>
     <double-array>
@@ -84,28 +82,30 @@
       <double>9.0</double>
       <double>5.0</double>
     </double-array>
-    <null/>
+    <double-array>
+      <double>6.0</double>
+      <double>10.0</double>
+      <double>3.0</double>
+    </double-array>
     <null/>
   </mPredNB>
   <mPredCoeff>
     <null/>
     <double-array>
-      <double>0.6081672870593385</double>
-      <double>0.2818042478651191</double>
-      <double>0.23319465732428285</double>
-      <double>-0.12316619224874087</double>
+      <double>0.7692307692307685</double>
+      <double>-0.05769230769230704</double>
+      <double>0.2884615384615383</double>
     </double-array>
     <null/>
     <double-array>
-      <double>0.3692327630896839</double>
-      <double>0.2016156903404181</double>
-      <double>0.1295576291688267</double>
-      <double>0.2995939174010715</double>
+      <double>0.2823529411764707</double>
+      <double>0.3647058823529409</double>
+      <double>0.35294117647058826</double>
     </double-array>
     <double-array>
-      <double>0.5245098039215681</double>
-      <double>0.06372549019607904</double>
-      <double>0.4117647058823526</double>
+      <double>0.5245098039215682</double>
+      <double>0.06372549019607915</double>
+      <double>0.4117647058823527</double>
     </double-array>
     <null/>
     <double-array>
@@ -114,45 +114,101 @@
       <double>-4.0245584642661925E-16</double>
     </double-array>
     <double-array>
-      <double>-4.440892098500627E-16</double>
+      <double>-5.551115123125784E-16</double>
       <double>0.5000000000000003</double>
       <double>0.5</double>
     </double-array>
-    <null/>
+    <double-array>
+      <double>1.3023255813953494</double>
+      <double>0.10232558139534853</double>
+      <double>-0.4046511627906981</double>
+    </double-array>
     <null/>
   </mPredCoeff>
+  <mUpdNB>
+    <double>NaN</double>
+    <object-array>
+      <double-array>
+        <double>2.0</double>
+        <double>5.0</double>
+        <double>7.0</double>
+      </double-array>
+      <null/>
+      <double-array>
+        <double>2.0</double>
+        <double>9.0</double>
+      </double-array>
+      <null/>
+      <null/>
+      <double-array>
+        <double>2.0</double>
+        <double>5.0</double>
+        <double>7.0</double>
+        <double>9.0</double>
+      </double-array>
+      <null/>
+      <null/>
+      <null/>
+      <double-array>
+        <double>5.0</double>
+        <double>7.0</double>
+        <double>9.0</double>
+      </double-array>
+    </object-array>
+    <object-array>
+      <double>4.0</double>
+      <null/>
+      <null/>
+      <null/>
+      <double>8.0</double>
+      <double>8.0</double>
+      <double>4.0</double>
+      <null/>
+      <double>8.0</double>
+      <double>4.0</double>
+    </object-array>
+  </mUpdNB>
   <mUpdCoeff>
-    <null/>
-    <double-array>
-      <double>0.0858558184446342</double>
-      <double>0.13110997144658987</double>
-      <double>0.13819783634164606</double>
-      <double>0.09862900010132249</double>
-    </double-array>
-    <null/>
-    <double-array>
-      <double>0.17867914423429265</double>
-      <double>0.15680581785382075</double>
-      <double>0.2126504495870564</double>
-      <double>0.16959156636694198</double>
-    </double-array>
-    <double-array>
-      <double>0.26127582756104023</double>
-      <double>0.24787556157193671</double>
-      <double>0.1864672726082711</double>
-    </double-array>
-    <null/>
-    <double-array>
-      <double>0.18278038082562548</double>
-      <double>0.19266157163411182</double>
-      <double>0.13749866619652343</double>
-    </double-array>
-    <double-array>
-      <double>0.1693348743977897</double>
-      <double>0.25400231159668474</double>
-      <double>0.2759409364592634</double>
-    </double-array>
-    <null/>
-    <null/>
+    <double>NaN</double>
+    <object-array>
+      <double-array>
+        <double>0.07848356272758494</double>
+        <double>0.10537345662429193</double>
+        <double>0.09586918406602245</double>
+      </double-array>
+      <null/>
+      <double-array>
+        <double>0.04310195151453384</double>
+        <double>0.06457423623651848</double>
+      </double-array>
+      <null/>
+      <null/>
+      <double-array>
+        <double>0.17049148517934617</double>
+        <double>0.2289049642243447</double>
+        <double>0.20825863411783513</double>
+        <double>0.2554259622461333</double>
+      </double-array>
+      <null/>
+      <null/>
+      <null/>
+      <double-array>
+        <double>0.1057593001986177</double>
+        <double>0.0962202260630561</double>
+        <double>0.1180126045376373</double>
+      </double-array>
+    </object-array>
+    <object-array>
+      <double>0.2402624345210311</double>
+      <null/>
+      <null/>
+      <null/>
+      <double>0.2727272727272727</double>
+      <double>0.1818181818181817</double>
+      <double>0.255692132150822</double>
+      <null/>
+      <double>0.2727272727272728</double>
+      <double>0.2534878896322805</double>
+    </object-array>
   </mUpdCoeff>
 </edu.rice.compass.WaveletConfigData>
