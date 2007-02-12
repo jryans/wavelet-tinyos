@@ -42,7 +42,12 @@ public class CompassMote extends PackerMote {
 
 	public CompassMote(int mID, WaveletConfigData wc) {
 		this(mID);
-		wConf = dataTransform(wc);
+		try {
+			wConf = dataTransform(wc);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
 		addPackerApp(WaveletConf.getType(), makeWaveletConfApp(wConf));
 	}
 
@@ -167,7 +172,8 @@ public class CompassMote extends PackerMote {
 		private static final short MO_RFCHAN = 0x40;
 		private static final short MO_RADIORETRIES = 0x80;
 
-		private MoteOptions() {}
+		private MoteOptions() {
+		}
 
 		public void pingNum(int num, int dest) {
 			set_mask((short) (get_mask() | MO_PINGNUM));
@@ -296,7 +302,8 @@ public class CompassMote extends PackerMote {
 		private static final short WC_RT_RAW = 0x01; // Raw values (off|on)
 		private static final short WC_RT_COMP = 0x02; // Compression (off|on)
 
-		private WaveletControl() {}
+		private WaveletControl() {
+		}
 
 		public void cmd(short cmd) {
 			set_mask((short) (get_mask() | WC_CMD));
@@ -353,106 +360,108 @@ public class CompassMote extends PackerMote {
 
 	}
 
-	// TODO: Change to use scale, not level!
-	private WaveletConf dataTransform(WaveletConfigData wc) {
+	private WaveletConf dataTransform(WaveletConfigData wc) throws Exception {
 		WaveletNeighbor neighbors[][];
-		short state[];
-		int predLevel, lastUpdLevel;
-		int maxLevel = 0;
-		// Find the level at which this mote predicts, if any
-		predLevel = (int) wc.mScale[id - 1];
-		// Find motes that we are a predict neighbor for
-		// i.e. we update when they predict
-		for (int mote = 0; mote < wc.mScale.length; mote++) {
-			if (wc.mScale[mote] > maxLevel)
-				maxLevel = (int) wc.mScale[mote];
-		}
-		Vector updInfo[] = new Vector[maxLevel];
-		for (int level = 0; level < maxLevel; level++)
-			updInfo[level] = new Vector();
-		// updInfo holds one Vector for each possible scale.
-		// The Vectors will hold two numbers each time we find we are
-		// someone's predict neighbor: the predict mote's id,
-		// and the index of our position in their neighbor list.
-		for (int mote = 0; mote < wc.mScale.length; mote++) {
-			if (wc.mScale[mote] != 0) {
-				double curNbs[] = (double[]) wc.mPredNB[mote];
-				if (curNbs != null) {
-					for (int nb = 0; nb < curNbs.length; nb++) {
-						if (curNbs[nb] == id)
-							updInfo[(int) wc.mScale[mote] - 1].add(new UpdateNB(mote, nb));
-					}
-				}
-			}
-		}
-		// If this mote predicts (predLevel != 0) then that level is
-		// its last level. Otherwise, we find the last level it updates.
-		if (predLevel != 0) {
-			state = new short[predLevel];
-			// If it has no neighbors at predLevel, then it should really skip.
+		// Find the scale at which this mote predicts, if any
+		int predScale = (int) wc.mScale[id - 1];
+		// Get the largest scale used in this transform
+		int maxScale = wc.mUpdNB.length;
+		// Create state array with same length as number of scales
+		short state[] = new short[maxScale];
+		// Initialize all states to WS_CONFIGURE for now (something non-zero)
+		for (int s = state.length - 1; s >= 0; s--)
+			state[s] = WS_CONFIGURE;
+		// If this mote predicts (predScale != 0) then that scale is
+		// its last scale. Otherwise, we find the last scale it updates.
+		if (predScale != 0) {
+			// If it has no neighbors at predScale, then it should really go to idle.
 			if (wc.mPredNB[id - 1] != null) {
-				state[predLevel - 1] = WS_PREDICTING;
+				state[predScale - 1] = WS_PREDICTING;
 			} else {
-				state[predLevel - 1] = WS_SKIPLEVEL;
+				state[predScale - 1] = WS_IDLE;
 			}
+			// All scales lower than predScale should be idle.
+			for (int s = predScale - 2; s >= 0; s--)
+				state[s] = WS_IDLE;
 		} else {
-			for (lastUpdLevel = maxLevel - 1; lastUpdLevel >= 0; lastUpdLevel--) {
-				if (updInfo[lastUpdLevel].size() != 0)
+			// Since this mote doesn't predict, find the last scale where it updates.
+			int lastUpdScale;
+			for (lastUpdScale = 0; lastUpdScale < state.length; lastUpdScale++) {
+				// Skip empty arrays marked as NaN
+				if (wc.mUpdNB[lastUpdScale] instanceof Double)
+					continue;
+				Object[] updNb = (Object[]) wc.mUpdNB[lastUpdScale];
+				if (updNb[id - 1] != null)
 					break;
 			}
-			// If lastUpdLevel is -1, then the mote never updates or predicts.
-			// Otherwise, we now know how many levels the mote is used in.
-			if (lastUpdLevel < 0) {
-				state = new short[1];
-				state[0] = WS_IDLE;
+			// If lastUpdScale is maxScale, then the mote never updates or predicts.
+			// Otherwise, we now know how many scales the mote is used in.
+			if (lastUpdScale >= state.length) {
+				// Mote is idle for all scales
+				for (int s = state.length - 1; s >= 0; s--)
+					state[s] = WS_IDLE;
 			} else {
-				state = new short[lastUpdLevel + 1];
-				state[lastUpdLevel] = WS_UPDATING;
+				state[lastUpdScale] = WS_UPDATING;
+				// All scales lower than lastUpdScale should be idle.
+				for (int s = predScale - 1; s >= 0; s--)
+					state[s] = WS_IDLE;
 			}
 		}
 		// Allocate neighbors array now that the number of states is known
 		neighbors = new WaveletNeighbor[state.length][];
 		// Now we'll go through and stamp a state on each of the
-		// remaining levels and assemble the neighbors array.
-		for (int levelIdx = 0; levelIdx < state.length; levelIdx++) {
-			if (state[levelIdx] == 0) {
-				if (updInfo[levelIdx].size() == 0) {
-					state[levelIdx] = WS_SKIPLEVEL;
-				} else {
-					state[levelIdx] = WS_UPDATING;
+		// remaining scales and assemble the neighbors array.
+		for (int s = state.length - 1; s >= 0; s--) {
+			if (state[s] == WS_CONFIGURE) {
+				// Skip empty arrays marked as NaN
+				if (wc.mUpdNB[s] instanceof Double)
+					state[s] = WS_SKIPLEVEL;
+				else {
+					Object[] updNb = (Object[]) wc.mUpdNB[s];
+					if (updNb[id - 1] != null)
+						state[s] = WS_UPDATING;
+					else
+						state[s] = WS_SKIPLEVEL;
 				}
 			}
-			switch (state[levelIdx]) {
+			switch (state[s]) {
 			case WS_IDLE:
 			case WS_SKIPLEVEL:
 				// First entry about ourselves
-				neighbors[levelIdx] = new WaveletNeighbor[] { new WaveletNeighbor(id,
-						WS_SKIPLEVEL, 0) };
+				neighbors[s] = new WaveletNeighbor[] { new WaveletNeighbor(id,
+						state[s], 0) };
 				break;
 			case WS_UPDATING:
-				neighbors[levelIdx] = new WaveletNeighbor[updInfo[levelIdx].size() + 1];
+				Object[] updNbAll = (Object[]) wc.mUpdNB[s];
+				double[] updNb = forceDoubleArray(updNbAll[id - 1]);
+				Object[] updCoeffAll = (Object[]) wc.mUpdCoeff[s];
+				double[] updCoeff = forceDoubleArray(updCoeffAll[id - 1]);
+				neighbors[s] = new WaveletNeighbor[updNb.length + 1];
 				// First entry about ourselves
-				neighbors[levelIdx][0] = new WaveletNeighbor(id, WS_UPDATING, 0);
-				for (int nb = 1; nb < neighbors[levelIdx].length; nb++) {
+				neighbors[s][0] = new WaveletNeighbor(id, WS_UPDATING, 0);
+				// Build random indices vector
+				Vector randNb = new Vector();
+				for (int nb = 1; nb < neighbors[s].length; nb++)
+					randNb.add(new Integer(nb - 1));
+				// Begin "randomly" iterating
+				for (int nb = 1; nb < neighbors[s].length; nb++) {
 					// Choose neighbors randomly, to increase chances that other
 					// nodes won't have them in the same order.
-					UpdateNB curNb = (UpdateNB) updInfo[levelIdx].remove((int) (Math.random() * updInfo[levelIdx].size()));
-					// For nb of an update node, look up the coeff based on:
-					// Dim 1: ID of predict node, Dim 2: Index in predict nb
-					// list
-					double[] nbCoeff = (double[]) wc.mUpdCoeff[curNb.predID];
-					neighbors[levelIdx][nb] = new WaveletNeighbor(curNb.predID + 1,
-							WS_UPDATING, (float) nbCoeff[curNb.coeffIndex]);
+					Integer curNbObj = (Integer) randNb.remove((int) (Math.random() * randNb.size()));
+					int curNb = curNbObj.intValue();
+					neighbors[s][nb] = new WaveletNeighbor((int) updNb[curNb],
+							WS_UPDATING, (float) updCoeff[curNb]);
 				}
 				break;
 			case WS_PREDICTING:
-				double[] predNb = (double[]) wc.mPredNB[id - 1];
-				double[] predCoeff = (double[]) wc.mPredCoeff[id - 1];
-				neighbors[levelIdx] = new WaveletNeighbor[predNb.length + 1];
+				double[] predNb = forceDoubleArray(wc.mPredNB[id - 1]);
+				double[] predCoeff = forceDoubleArray(wc.mPredCoeff[id - 1]);
+				neighbors[s] = new WaveletNeighbor[predNb.length + 1];
 				// First entry about ourselves
-				neighbors[levelIdx][0] = new WaveletNeighbor(id, WS_PREDICTING, 0);
-				for (int nb = 1; nb < neighbors[levelIdx].length; nb++)
-					neighbors[levelIdx][nb] = new WaveletNeighbor((int) predNb[nb - 1],
+				neighbors[s][0] = new WaveletNeighbor(id, WS_PREDICTING, 0);
+				// Begin sequential iteration
+				for (int nb = 1; nb < neighbors[s].length; nb++)
+					neighbors[s][nb] = new WaveletNeighbor((int) predNb[nb - 1],
 							WS_PREDICTING, (float) predCoeff[nb - 1]);
 				break;
 			}
@@ -461,6 +470,23 @@ public class CompassMote extends PackerMote {
 		for (int l = 0; l < lvl.length; l++)
 			lvl[l] = new WaveletLevel(neighbors[l]);
 		return new WaveletConf(lvl);
+	}
+
+	/**
+	 * Ensures that you are dealing with a double[] when MATLAB may have produced
+	 * a Double, double[], or null.
+	 */
+	private double[] forceDoubleArray(Object d) throws Exception {
+		double[] a;
+		if (d instanceof double[])
+			a = (double[]) d;
+		else if (d instanceof Double) {
+			a = new double[] { ((Double) d).doubleValue() };
+		} else {
+			throw new Exception(
+					"Found unknown reference where a Double or double[] was expected!");
+		}
+		return a;
 	}
 
 	public boolean isConfigDone() {
