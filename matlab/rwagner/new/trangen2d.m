@@ -200,26 +200,33 @@ scales(gridj)=coarsej;
 % disp(['old coarsej = ' num2str(coarsej)]);
 
 % now, go through and remove the small scales (should be at most
-% scale COARSEJ+1) which have reverted to order m-1 approximation...
-while ordred(coarsej+1)
-    oldcoarse=find(scales==coarsej);
-    oldnext=find(scales==(coarsej+1));
-    
-    % go through and remove scale-(coarsej+1) predicts...
-    for n=1:length(oldnext)
-        predneighbs{oldnext(n)}=[];
-        predcoeffs{oldnext(n)}=[];
+% scale COARSEJ+1) which have reverted to order m-1 approximation
+% (not implemented if there are too few nodes and all scales are 
+% order-reduced)...
+if sum(ordred)/length(ordred)<1     % not all scales have been order-reduced
+    while ordred(coarsej+1)
+        oldcoarse=find(scales==coarsej);
+        oldnext=find(scales==(coarsej+1));
+
+        % go through and remove scale-(coarsej+1) predicts...
+        for n=1:length(oldnext)
+            predneighbs{oldnext(n)}=[];
+            predcoeffs{oldnext(n)}=[];
+        end
+        % now go through and remove all scale-(coarsej+1)
+        % updates...
+        for n=1:length(oldcoarse)
+            upneighbs{coarsej+1}{oldcoarse(n)}=[];
+            upcoeffs{coarsej+1}{oldcoarse(n)}=[];
+        end
+       % finally, set the new coarse scale and 
+       % update the scale vector accordingly... 
+       coarsej=coarsej+1;
+       scales([oldcoarse;oldnext])=coarsej;
     end
-    % now go through and remove all scale-(coarsej+1)
-    % updates...
-    for n=1:length(oldcoarse)
-        upneighbs{coarsej+1}{oldcoarse(n)}=[];
-        upcoeffs{coarsej+1}{oldcoarse(n)}=[];
-    end
-   % finally, set the new coarse scale and 
-   % update the scale vector accordingly... 
-   coarsej=coarsej+1;
-   scales([oldcoarse;oldnext])=coarsej;
+else    % all scales order-reduced (probably due to small node count)
+    % do nothing, but output warning...
+    disp('NOTE: too few nodes to remove order-reduced prediction in coarse scales...');
 end
 
 % disp(['fixed coarsej = ' num2str(coarsej)]);
