@@ -23,7 +23,7 @@ public class CompassMote extends PackerMote {
 	static final short WS_PREDICTING = 5;
 	static final short WS_PREDICTED = 7;
 	static final short WS_UPDATED = 8;
-	static final short WS_SKIPLEVEL = 9;
+	static final short WS_SKIP_SCALE = 9;
 	static final short WS_TRANSMIT = 10;
 	static final short WS_OFFLINE = 11;
 	static final short WS_CLEAR_SENSORS = 12;
@@ -415,61 +415,60 @@ public class CompassMote extends PackerMote {
 			if (state[s] == WS_CONFIGURE) {
 				// Skip empty arrays marked as NaN
 				if (wc.mUpdNB[s] instanceof Double)
-					state[s] = WS_SKIPLEVEL;
+					state[s] = WS_SKIP_SCALE;
 				else {
 					Object[] updNb = (Object[]) wc.mUpdNB[s];
 					if (updNb[id - 1] != null)
 						state[s] = WS_UPDATING;
 					else
-						state[s] = WS_SKIPLEVEL;
+						state[s] = WS_SKIP_SCALE;
 				}
 			}
 			switch (state[s]) {
-			case WS_IDLE:
-			case WS_SKIPLEVEL:
-				// First entry about ourselves
-				neighbors[s] = new WaveletNeighbor[] { new WaveletNeighbor(id,
-						state[s], 0) };
-				break;
+			/*
+			 * case WS_IDLE: case WS_SKIP_SCALE: // First entry about ourselves
+			 * neighbors[s] = new WaveletNeighbor[] { new WaveletNeighbor(id, 0) };
+			 * break;
+			 */
 			case WS_UPDATING:
 				Object[] updNbAll = (Object[]) wc.mUpdNB[s];
 				double[] updNb = forceDoubleArray(updNbAll[id - 1]);
 				Object[] updCoeffAll = (Object[]) wc.mUpdCoeff[s];
 				double[] updCoeff = forceDoubleArray(updCoeffAll[id - 1]);
-				neighbors[s] = new WaveletNeighbor[updNb.length + 1];
+				neighbors[s] = new WaveletNeighbor[updNb.length];
 				// First entry about ourselves
-				neighbors[s][0] = new WaveletNeighbor(id, WS_UPDATING, 0);
+				// neighbors[s][0] = new WaveletNeighbor(id, WS_UPDATING, 0);
 				// Build random indices vector
 				Vector randNb = new Vector();
-				for (int nb = 1; nb < neighbors[s].length; nb++)
-					randNb.add(new Integer(nb - 1));
+				for (int nb = 0; nb < neighbors[s].length; nb++)
+					randNb.add(new Integer(nb));
 				// Begin "randomly" iterating
-				for (int nb = 1; nb < neighbors[s].length; nb++) {
+				for (int nb = 0; nb < neighbors[s].length; nb++) {
 					// Choose neighbors randomly, to increase chances that other
 					// nodes won't have them in the same order.
 					Integer curNbObj = (Integer) randNb.remove((int) (Math.random() * randNb.size()));
 					int curNb = curNbObj.intValue();
 					neighbors[s][nb] = new WaveletNeighbor((int) updNb[curNb],
-							WS_UPDATING, (float) updCoeff[curNb]);
+							(float) updCoeff[curNb]);
 				}
 				break;
 			case WS_PREDICTING:
 				double[] predNb = forceDoubleArray(wc.mPredNB[id - 1]);
 				double[] predCoeff = forceDoubleArray(wc.mPredCoeff[id - 1]);
-				neighbors[s] = new WaveletNeighbor[predNb.length + 1];
+				neighbors[s] = new WaveletNeighbor[predNb.length];
 				// First entry about ourselves
-				neighbors[s][0] = new WaveletNeighbor(id, WS_PREDICTING, 0);
+				// neighbors[s][0] = new WaveletNeighbor(id, WS_PREDICTING, 0);
 				// Begin sequential iteration
-				for (int nb = 1; nb < neighbors[s].length; nb++)
-					neighbors[s][nb] = new WaveletNeighbor((int) predNb[nb - 1],
-							WS_PREDICTING, (float) predCoeff[nb - 1]);
+				for (int nb = 0; nb < neighbors[s].length; nb++)
+					neighbors[s][nb] = new WaveletNeighbor((int) predNb[nb],
+							(float) predCoeff[nb]);
 				break;
 			}
 		}
-		WaveletLevel[] lvl = new WaveletLevel[neighbors.length];
-		for (int l = 0; l < lvl.length; l++)
-			lvl[l] = new WaveletLevel(neighbors[l]);
-		return new WaveletConf(lvl);
+		WaveletScale[] scale = new WaveletScale[neighbors.length];
+		for (int s = 0; s < scale.length; s++)
+			scale[s] = new WaveletScale(neighbors[s], state[s]);
+		return new WaveletConf(scale);
 	}
 
 	/**

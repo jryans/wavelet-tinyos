@@ -172,8 +172,12 @@ public abstract class BigPack extends Message {
 	protected int numChildTypes() {
 		return 0;
 	}
-	
+
 	private static int calcTotalDataLength(int staticLen, Message[] msg) {
+		// Check for null array reference
+		if (msg == null)
+			return staticLen;
+		// Add up dataLength of each message
 		int len = staticLen;
 		for (int i = 0; i < msg.length; i++) {
 			len += msg[i].dataLength();
@@ -190,8 +194,9 @@ public abstract class BigPack extends Message {
 	 */
 	protected BigPack(int staticLen, Message[] msg) {
 		super(calcTotalDataLength(staticLen, msg));
-		for (int i = 0; i < msg.length; i++)
-			dataSet(msg[i], staticLen + msg[0].dataLength() * i);
+		if (msg != null)
+			for (int i = 0; i < msg.length; i++)
+				dataSet(msg[i], staticLen + msg[0].dataLength() * i);
 	}
 
 	/**
@@ -348,7 +353,7 @@ public abstract class BigPack extends Message {
 			}
 		}
 	}
-	
+
 	public static Short getTypeFromClass(Class cClass) throws Exception {
 		if (typeByClassName == null)
 			buildClassTransTables();
@@ -357,7 +362,7 @@ public abstract class BigPack extends Message {
 			throw new Exception("Class not registered!");
 		return cType;
 	}
-	
+
 	public static Class getClassFromType(short cType) throws Exception {
 		if (classNameByType == null)
 			buildClassTransTables();
