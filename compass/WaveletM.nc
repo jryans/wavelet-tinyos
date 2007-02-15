@@ -42,32 +42,30 @@ module WaveletM {
 implementation { 
 #if 0 // TinyOS Plugin Workaround
   typedef char msgData;
-  typedef char WaveletLevel;
+  typedef char WaveletScale;
+  typedef char WaveletLocal;
   typedef char ExtWaveletConf;
-  typedef char ExtWaveletLevel;
+  typedef char ExtWaveletScale;
   typedef char ExtWaveletNeighbor;
 #endif
   
   // Variables and Constants
-  uint8_t curLevel; // The current wavelet transform level
-  uint8_t transmitLevel; // The level holding data to transmit
+  uint8_t curScale; // The current wavelet transform scale
+  //uint8_t transmitLevel; // The level holding data to transmit
   uint8_t dataSet; // Identifies the current data set number
   uint8_t curTime; // Index in time that the current sample will fill
   uint8_t nextTime; // Index in time that the next sample will fill
   
-  uint8_t numLevels; // Total number of wavelet levels
-  WaveletLevel *level; // Array of WaveletLevels
-  bool wlAlloc; // TRUE is level has been allocated, else FALSE.
+  uint8_t numScales; // Largest scale used (J -> 1), also length of scale array
+  WaveletScale *scale; // Array of WaveletScales
+  WaveletLocal my; // Holds transform data specific to this mote
+  bool confAlloc; // TRUE is config storage (scale, my) has been allocated, else FALSE.
   
   // Compression
   bool predicted; // True if mote predicts
   uint8_t matchingBand; // Index of first band that this mote's values are above
   uint8_t numBands; // Number of bands in the following array
   float compTarget[WT_MAX_BANDS]; // Array of compression target values for each band
-  
-#ifdef RAW
-  float rawVals[WT_SENSORS];
-#endif
 
   // Transform Options
   uint32_t sampleTime; // Length of time between samples
@@ -82,7 +80,7 @@ implementation {
     
   // Function Declarations
   task void runState();
-  void levelDone();
+  void scaleDone();
   void sendValuesToNeighbors();
   void calcNewValues();
   void delayNextState();
@@ -124,7 +122,7 @@ implementation {
              sampleTime - WT_COLLECT_SAMPLE_TIME - getTransmitTime());
         call Leds.redOff();
         call Leds.yellowOn();
-        curLevel = 0;
+        curScale = numScales - 1;
         dataSet++;
         clearNeighborState();
         dbg(DBG_USR2, "Wavelet: DS: %i, Starting data set...\n", dataSet);
@@ -134,29 +132,29 @@ implementation {
         call State.toIdle();
         break; }      
       case WS_UPDATING: {
-        dbg(DBG_USR2, "Update: DS: %i, L: %i, Sending values to predict nodes...\n",
+        dbg(DBG_USR2, "Update: DS: %i, S: %i, Sending values to predict nodes...\n",
             dataSet, curLevel + 1);
         sendValuesToNeighbors();
-        dbg(DBG_USR2, "Update: DS: %i, L: %i, Waiting to hear from predict nodes...\n",
+        dbg(DBG_USR2, "Update: DS: %i, S: %i, Waiting to hear from predict nodes...\n",
             dataSet, curLevel + 1);
         break; }
       case WS_PREDICTING: {
-        dbg(DBG_USR2, "Predict: DS: %i, L: %i, Waiting to hear from update nodes...\n",
+        dbg(DBG_USR2, "Predict: DS: %i, S: %i, Waiting to hear from update nodes...\n",
             dataSet, curLevel + 1);
         break; }  
       case WS_PREDICTED: {
         calcNewValues();
-        dbg(DBG_USR2, "Predict: DS: %i, L: %i, Sending values to update nodes...\n",
+        dbg(DBG_USR2, "Predict: DS: %i, S: %i, Sending values to update nodes...\n",
             dataSet, curLevel + 1);
         sendValuesToNeighbors();
-        dbg(DBG_USR2, "Predict: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
+        dbg(DBG_USR2, "Predict: DS: %i, S: %i, Level done!\n", dataSet, curLevel + 1);
         checkData();
         levelDone();
         call State.toIdle();
         break; }
       case WS_UPDATED: {
         calcNewValues();
-        dbg(DBG_USR2, "Update: DS: %i, L: %i, Level done!\n", dataSet, curLevel + 1);
+        dbg(DBG_USR2, "Update: DS: %i, S: %i, Level done!\n", dataSet, curLevel + 1);
         checkData();
         levelDone();
         call State.toIdle();
@@ -166,7 +164,7 @@ implementation {
         call State.toIdle();
         break; }
       case WS_SKIPLEVEL: {
-        dbg(DBG_USR2, "Skip: DS: %i, L: %i, Nothing to do, level done!\n", dataSet, curLevel + 1);
+        dbg(DBG_USR2, "Skip: DS: %i, S: %i, Nothing to do, level done!\n", dataSet, curLevel + 1);
         levelDone();
         call State.toIdle();
         break; }
@@ -194,12 +192,13 @@ implementation {
    */
   void waveletFree() {
     // If there is config data, free it
-    if (wlAlloc) {
+    if (confAlloc) {
       uint8_t l;
       for (l = 0; l < numLevels; l++)
         free(level[l].nb);
       free(level);
-      wlAlloc = FALSE;
+      free(my.state);
+      confAlloc = FALSE;
     }
   }
   
@@ -324,10 +323,10 @@ implementation {
       TOS_MsgPtr m = call MakeData.createCopy(&baseMsg);
       uint16_t dest = level[curLevel].nb[mote].id;
       if (call State.getState() == WS_UPDATING) { // U nodes sending scaling values
-        dbg(DBG_USR2, "Update: DS: %i, L: %i, Sending values to predict node %i...\n",
+        dbg(DBG_USR2, "Update: DS: %i, S: %i, Sending values to predict node %i...\n",
             dataSet, curLevel + 1, dest);
       } else { // P nodes sending update values
-        dbg(DBG_USR2, "Predict: DS: %i, L: %i, Sending values to update node %i...\n",
+        dbg(DBG_USR2, "Predict: DS: %i, S: %i, Sending values to update node %i...\n",
             dataSet, curLevel + 1, dest);
       }
       call SendData.send(dest, sizeof(WaveletData), m);
@@ -346,7 +345,7 @@ implementation {
   void calcNewValues() {
     uint8_t mote, sensor;
     float sign;
-    dbg(DBG_USR2, "Calc: DS: %i, L: %i, Calculating new values...\n",
+    dbg(DBG_USR2, "Calc: DS: %i, S: %i, Calculating new values...\n",
         dataSet, curLevel + 1);
     (call State.getState() == WS_PREDICTED) ? (sign = -1) : (sign = 1);
     for (mote = 1; mote < level[curLevel].nbCount; mote++) {
@@ -359,16 +358,16 @@ implementation {
   /**
    * The simple caching system currently used tries to track if
    * we have received a value from each neighbor we're supposed to
-   * hear from during this level.  This is checked by recording the
-   * neighbor's state during when it is received.  At the beginning
-   * of a new data set, these states are cleared.
+   * hear from during this scale.  This is checked via a stale flag
+   * for each neighbor, at each scale.  At the beginning of a new data 
+   * set, these states are all reset to stale.  
    * Called during WS_START_DATASET.
    */
   void clearNeighborState() {
-    uint8_t lvl, mote;
-    for (lvl = 0; lvl < numLevels; lvl++) {
-      for (mote = 1; mote < level[lvl].nbCount; mote++) {
-        level[lvl].nb[mote].state = WS_START_DATASET;
+    uint8_t s, mote;
+    for (s = numScales - 1; s >= 0; s--) {
+      for (m = 0; m < scale[s].nbCount; m++) {
+        scale[s].nb[m].stale = TRUE;
       }
     }
   }
@@ -481,35 +480,39 @@ implementation {
     if (result == SUCCESS) {
       uint8_t i, l;
       ExtWaveletConf *conf = (ExtWaveletConf *) mainBlock;
-      ExtWaveletLevel **lvl = conf->level;
+      ExtWaveletScale **scl = conf->scale;
       waveletFree();
       dbg(DBG_USR2, "Wavelet: Big Pack Config Test\n");
       predicted = FALSE;
-      numLevels = conf->numLevels;
-      if ((level = malloc(numLevels * sizeof(WaveletLevel))) == NULL) {
-        dbg(DBG_USR2, "Wavelet: Couldn't allocate level!\n");
+      numScales = conf->numScales;
+      if ((scale = malloc(numScales * sizeof(WaveletScale))) == NULL) {
+        dbg(DBG_USR2, "Wavelet: Couldn't allocate scale!\n");
         return;
-      } 
-      for (l = 0; l < numLevels; l++) {
-        dbg(DBG_USR2, "Wavelet: Level #%i\n", l + 1);
-        level[l].nbCount = lvl[l]->nbCount;
-        if ((level[l].nb = malloc(level[l].nbCount * sizeof(WaveletNeighbor))) == NULL) {
-          dbg(DBG_USR2, "Wavelet: Couldn't allocate nb for level #%i!\n", l + 1);
+      }
+      if ((my.state = malloc(numScales * sizeof(uint8_t))) == NULL) {
+        dbg(DBG_USR2, "Wavelet: Couldn't allocate my.state!\n");
+        return;
+      }
+      for (s = numScales - 1; s >= 0; s--) {
+        dbg(DBG_USR2, "Wavelet: Scale #%i\n", s + 1);
+        my.state[s] = scl[s]->myState;
+        dbg(DBG_USR2, "Wavelet:   State: %i\n", my.state[s]);
+        scale[s].nbCount = scl[s]->nbCount;
+        if ((scale[s].nb = malloc(scale[s].nbCount * sizeof(WaveletNeighbor))) == NULL) {
+          dbg(DBG_USR2, "Wavelet: Couldn't allocate nb for scale #%i!\n", s + 1);
           return;
         }
-        for (i = 0; i < lvl[l]->nbCount; i++) {
+        for (i = 0; i < scl[s]->nbCount; i++) {
           dbg(DBG_USR2, "Wavelet:   Neighbor #%i\n", i + 1);
-          level[l].nb[i].id = lvl[l]->nb[i].id;
-          dbg(DBG_USR2, "Wavelet:     ID:    %i\n", level[l].nb[i].id);
-          level[l].nb[i].state = lvl[l]->nb[i].state;
-          dbg(DBG_USR2, "Wavelet:     State: %i\n", level[l].nb[i].state);
-          level[l].nb[i].coeff = lvl[l]->nb[i].coeff;
-          dbg(DBG_USR2, "Wavelet:     Coeff: %f\n", level[l].nb[i].coeff);
+          scale[s].nb[i].id = scl[s]->nb[i].id;
+          dbg(DBG_USR2, "Wavelet:     ID:    %i\n", scale[s].nb[i].id);
+          scale[s].nb[i].coeff = scl[s]->nb[i].coeff;
+          dbg(DBG_USR2, "Wavelet:     Coeff: %f\n", scale[s].nb[i].coeff);
         }
-        if (!predicted && level[l].nb[0].state == WS_PREDICTING)
+        if (!predicted && my.state[s] == WS_PREDICTING)
           predicted = TRUE;
       }
-      wlAlloc = TRUE;
+      confAlloc = TRUE;
       call State.toIdle();
     }
     call BigPackClient.free();
@@ -521,7 +524,7 @@ implementation {
     /* switch (call State.getState()) {
         case WS_UPDATING: {
           if (result == FAIL)
-            dbg(DBG_USR2, "Update: DS: %i, L: %i, Sending values to predict motes failed!\n",
+            dbg(DBG_USR2, "Update: DS: %i, S: %i, Sending values to predict motes failed!\n",
                 dataSet, curLevel + 1);
           break; }
         case WS_DONE: {
@@ -548,13 +551,13 @@ implementation {
             break;
         }
         if (mote < level[curLevel].nbCount) {
-          dbg(DBG_USR2, "Predict: DS: %i, L: %i, Got values from update mote %i\n",
+          dbg(DBG_USR2, "Predict: DS: %i, S: %i, Got values from update mote %i\n",
               dataSet, curLevel + 1, src);
           level[curLevel].nb[mote].state = wd->state;
           for (sens = 0; sens < WT_SENSORS; sens++)
             level[curLevel].nb[mote].value[sens] = wd->value[sens];
         } else {
-          dbg(DBG_USR2, "Predict: DS: %i, L: %i, BAD NEIGHBOR! Got values from update mote %i\n",
+          dbg(DBG_USR2, "Predict: DS: %i, S: %i, BAD NEIGHBOR! Got values from update mote %i\n",
               dataSet, curLevel + 1, src);
         }
       }
@@ -566,13 +569,13 @@ implementation {
             break;
         }
         if (mote < level[curLevel].nbCount) {
-          dbg(DBG_USR2, "Update: DS: %i, L: %i, Got values from predict mote %i\n",
+          dbg(DBG_USR2, "Update: DS: %i, S: %i, Got values from predict mote %i\n",
               dataSet, curLevel + 1, src);
           level[curLevel].nb[mote].state = wd->state;
           for (sens = 0; sens < WT_SENSORS; sens++)
             level[curLevel].nb[mote].value[sens] = wd->value[sens];
         } else {
-          dbg(DBG_USR2, "Update: DS: %i, L: %i, BAD NEIGHBOR! Got values from predict mote %i\n",
+          dbg(DBG_USR2, "Update: DS: %i, S: %i, BAD NEIGHBOR! Got values from predict mote %i\n",
               dataSet, curLevel + 1, src);
         }
       }
