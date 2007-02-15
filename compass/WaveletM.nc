@@ -1,8 +1,8 @@
 /**
  * Manages the motes to perform a wavelet transform on incoming sensor data.
  * Uses the State library to manage graceful state transitions.
+ * @author Ryan Stinnett (Spring 2006 - Present)
  * @author The Moters (Fall 2005 - Spring 2006)
- * @author Ryan Stinnett
  */
 
 includes Sensors;

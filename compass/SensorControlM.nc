@@ -3,8 +3,8 @@
  * caches their values, and sends out the most recent set of data when requested.
  * IMPORTANT: Temp and Light must start and stop with each request. If
  * they are not stopped, the radio will not be able to receive.
+ * @author Ryan Stinnett (Spring 2006 - Present)
  * @author The Moters (Fall 2005 - Spring 2006)
- * @author Ryan Stinnett
  */
  
 includes Sensors;

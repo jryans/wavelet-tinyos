@@ -9,48 +9,55 @@
 #define _WAVELET_H
 
 #include "MessageType.h"
-
 #include "Sensors.h"
 
 /*** Internal Wavelet Data ***/
 
 typedef struct { // Describes each neighbor mote
   uint16_t id; // ID number of the mote 
-  uint8_t state; // State this mote will have in this level
+  bool stale; // Data cache status (1: stale | 0: recent)
   float coeff; // WT coeff for the mote
 	float value[WT_SENSORS];		// Holds one value for each sensor (only two sensors for now)
 } __attribute__ ((packed)) WaveletNeighbor;
 
 typedef struct {
-  uint8_t nbCount; // Number of neighbors at this level
+  uint8_t nbCount; // Number of neighbors at this scale
   WaveletNeighbor *nb; // Array of WaveletNeighbors
-} __attribute__ ((packed)) WaveletLevel;
+} __attribute__ ((packed)) WaveletScale;
+
+typedef struct { // Groups this node's wavelet data together
+  uint8_t *state; // State at each transform scale
+  float value[WT_SENSORS]; // Working value for each sensor
+#ifdef RAW
+  float rawValue[WT_SENSORS]; // Raw value for each sensor
+#endif
+} __attribute__ ((packed)) WaveletLocal;
 
 /*** Transmitted Data ***/
 
 typedef struct WaveletData {
   uint8_t dataSet; // Data set this data belongs to
-	uint8_t level; // Wavelet level this data belongs to
-	uint8_t state; // State this mote has in this level
-	float value[WT_SENSORS];		// Holds one value for each sensor (only two sensors for now)
+	uint8_t scale; // Wavelet scale this data belongs to
+	uint8_t state; // State this mote has at this scale
+	float value[WT_SENSORS]; // Holds one value for each sensor (only two sensors for now)
 } __attribute__ ((packed)) WaveletData;
 
 /*** Big Pack Data ***/
 
 typedef struct wn { // Describes each neighbor mote
   uint16_t id; // ID number of the mote 
-  uint8_t state; // State this mote will have in this level
   float coeff; // WT coeff for the mote
 } __attribute__ ((packed)) ExtWaveletNeighbor;
 
-typedef struct wl {
-  uint8_t nbCount; // Number of neighbors at this level
+typedef struct ws {
+  uint8_t myState; // State this mote has at this scale
+  uint8_t nbCount; // Number of neighbors at this scale
   ExtWaveletNeighbor *nb; // Array of ExtWaveletNeighbors
-} __attribute__ ((packed)) ExtWaveletLevel;
+} __attribute__ ((packed)) ExtWaveletScale;
 
 typedef struct wc {
-  uint8_t numLevels; 
-  ExtWaveletLevel **level; // Array of ExtWaveletLevels
+  uint8_t numScales; 
+  ExtWaveletScale **scale; // Array of ExtWaveletScales
 } __attribute__ ((packed)) ExtWaveletConf;
 
 /*** State Control ***/
@@ -65,7 +72,7 @@ enum { // Wavelet Transform States
   WS_CACHE = 6,
   WS_PREDICTED = 7,
   WS_UPDATED = 8,
-  WS_SKIPLEVEL = 9,
+  WS_SKIP_SCALE = 9,
   WS_TRANSMIT = 10,
   WS_OFFLINE = 11,
   WS_CLEAR_SENSORS = 12,

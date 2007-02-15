@@ -1,8 +1,8 @@
 /**
  * This application takes data readings from various sensors when requested
  * and sends back the values when they arrive.
+ * @author Ryan Stinnett (Spring 2006 - Present)
  * @author The Moters (Fall 2005 - Spring 2006)
- * @author Ryan Stinnett
  */
 
 configuration SensorControlC {
