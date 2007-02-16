@@ -25,21 +25,21 @@ public class MoteStats extends BigPack {
 	}
 
 	protected void initChildren() {
-		wavelet_level = new StatsWTL[get_wavelet_numLevels()];
+		wavelet_scale = new StatsWTS[get_wavelet_numScales()];
 	}
 
 	protected void storeChildren(byte[] rawData, int offset, int[] childBlockNum,
 			List[] childPtr) {
-		if (offset == offset_wavelet_level()) {
-			for (int c = 0; c < get_wavelet_numLevels(); c++)
-				wavelet_level[c] = new StatsWTL(rawData, childBlockNum[c], blocks,
+		if (offset == offset_wavelet_scale()) {
+			for (int c = 0; c < get_wavelet_numScales(); c++)
+				wavelet_scale[c] = new StatsWTS(rawData, childBlockNum[c], blocks,
 						childPtr[c]);
 		}
 	}
 
 	protected int numChildren(int offset) {
-		if (offset == offset_wavelet_level()) {
-			return get_wavelet_numLevels();
+		if (offset == offset_wavelet_scale()) {
+			return get_wavelet_numScales();
 		}
 		return 0;
 	}
@@ -74,12 +74,12 @@ public class MoteStats extends BigPack {
 					+ (get_mDelivered() * 100 / get_mSent()) + "%)");
 			System.out.println("      Avg. Retries: " + get_avgRetries());
 		}
-		StatsWTL level[] = get_wavelet_level();
-		if (level.length > 0) {
+		StatsWTS scale[] = get_wavelet_scale();
+		if (scale.length > 0) {
 			System.out.println("  Wavelet:");
-			for (int l = 0; l < level.length; l++) {
-				StatsWTNB nb[] = level[l].get_nb();
-				System.out.println("    Level " + (l + 1) + ":");
+			for (int s = scale.length - 1; s >= 0; s--) {
+				StatsWTNB nb[] = scale[s].get_nb();
+				System.out.println("    Scale " + (s + 1) + ":");
 				for (int n = 0; n < nb.length; n++) {
 					System.out.println("      Neighbor " + (n + 1) + ":");
 					System.out.println("        ID:         " + nb[n].get_id());
@@ -1108,96 +1108,96 @@ public class MoteStats extends BigPack {
 	}
 
 	// ///////////////////////////////////////////////////////
-	// Accessor methods for field: wavelet.numLevels
+	// Accessor methods for field: wavelet.numScales
 	// Field type: short
 	// Offset (bits): 304
 	// Size (bits): 8
 	// ///////////////////////////////////////////////////////
 
 	/**
-	 * Return whether the field 'wavelet.numLevels' is signed (false).
+	 * Return whether the field 'wavelet.numScales' is signed (false).
 	 */
-	public static boolean isSigned_wavelet_numLevels() {
+	public static boolean isSigned_wavelet_numScales() {
 		return false;
 	}
 
 	/**
-	 * Return whether the field 'wavelet.numLevels' is an array (false).
+	 * Return whether the field 'wavelet.numScales' is an array (false).
 	 */
-	public static boolean isArray_wavelet_numLevels() {
+	public static boolean isArray_wavelet_numScales() {
 		return false;
 	}
 
 	/**
-	 * Return the offset (in bytes) of the field 'wavelet.numLevels'
+	 * Return the offset (in bytes) of the field 'wavelet.numScales'
 	 */
-	public static int offset_wavelet_numLevels() {
+	public static int offset_wavelet_numScales() {
 		return (304 / 8);
 	}
 
 	/**
-	 * Return the offset (in bits) of the field 'wavelet.numLevels'
+	 * Return the offset (in bits) of the field 'wavelet.numScales'
 	 */
-	public static int offsetBits_wavelet_numLevels() {
+	public static int offsetBits_wavelet_numScales() {
 		return 304;
 	}
 
 	/**
-	 * Return the value (as a short) of the field 'wavelet.numLevels'
+	 * Return the value (as a short) of the field 'wavelet.numScales'
 	 */
-	public short get_wavelet_numLevels() {
-		return (short) getUIntElement(offsetBits_wavelet_numLevels(), 8);
+	public short get_wavelet_numScales() {
+		return (short) getUIntElement(offsetBits_wavelet_numScales(), 8);
 	}
 
 	/**
-	 * Set the value of the field 'wavelet.numLevels'
+	 * Set the value of the field 'wavelet.numScales'
 	 */
-	public void set_wavelet_numLevels(short value) {
-		setUIntElement(offsetBits_wavelet_numLevels(), 8, value);
+	public void set_wavelet_numScales(short value) {
+		setUIntElement(offsetBits_wavelet_numScales(), 8, value);
 	}
 
 	/**
-	 * Return the size, in bytes, of the field 'wavelet.numLevels'
+	 * Return the size, in bytes, of the field 'wavelet.numScales'
 	 */
-	public static int size_wavelet_numLevels() {
+	public static int size_wavelet_numScales() {
 		return (8 / 8);
 	}
 
 	/**
-	 * Return the size, in bits, of the field 'wavelet.numLevels'
+	 * Return the size, in bits, of the field 'wavelet.numScales'
 	 */
-	public static int sizeBits_wavelet_numLevels() {
+	public static int sizeBits_wavelet_numScales() {
 		return 8;
 	}
 
 	// ///////////////////////////////////////////////////////
-	// Accessor methods for field: wavelet.level
+	// Accessor methods for field: wavelet.scale
 	// Field type: array
 	// Offset (bits): 312
 	// Size (bits): 16
 	// ///////////////////////////////////////////////////////
 
-	private StatsWTL[] wavelet_level;
+	private StatsWTS[] wavelet_scale;
 
 	/**
-	 * Return the offset (in bytes) of the pointer to array 'wavelet.level'
+	 * Return the offset (in bytes) of the pointer to array 'wavelet.scale'
 	 */
-	public static int offset_wavelet_level() {
+	public static int offset_wavelet_scale() {
 		return (312 / 8);
 	}
 
 	/**
-	 * Return the array 'wavelet.level'
+	 * Return the array 'wavelet.scale'
 	 */
-	public StatsWTL[] get_wavelet_level() {
-		return wavelet_level;
+	public StatsWTS[] get_wavelet_scale() {
+		return wavelet_scale;
 	}
 
 	/**
-	 * Set the array 'wavelet.level'
+	 * Set the array 'wavelet.scale'
 	 */
-	public void set_wavelet_level(StatsWTL[] value) {
-		wavelet_level = value;
+	public void set_wavelet_scale(StatsWTS[] value) {
+		wavelet_scale = value;
 	}
 
 }
