@@ -193,8 +193,8 @@ implementation {
   void waveletFree() {
     // If there is config data, free it
     if (confAlloc) {
-      uint8_t s;
-      for (s = 0; s < numScales; s++)
+      int8_t s;
+      for (s = numScales - 1; s >= 0; s--)
         free(scale[s].nb);
       free(scale);
       free(my.state);
@@ -361,7 +361,8 @@ implementation {
    * Called during WS_START_DATASET.
    */
   void clearNeighborState() {
-    uint8_t s, m;
+    int8_t s;
+    uint8_t m;
     for (s = numScales - 1; s >= 0; s--) {
       for (m = 0; m < scale[s].nbCount; m++) {
         scale[s].nb[m].stale = TRUE;
@@ -475,7 +476,8 @@ implementation {
    */
   event void BigPackClient.requestDone(void *mainBlock, result_t result) {
     if (result == SUCCESS) {
-      uint8_t i, s;
+      int8_t s;
+      uint8_t i;
       ExtWaveletConf *conf = (ExtWaveletConf *) mainBlock;
       ExtWaveletScale **scl = conf->scale;
       waveletFree();

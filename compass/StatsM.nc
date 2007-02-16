@@ -31,9 +31,9 @@ implementation {
   typedef char MoteStats;
   typedef char StatsReport;
   typedef char ExtWaveletConf;
-  typedef char ExtWaveletLevel;
+  typedef char ExtWaveletScale;
   typedef char StatsWT;
-  typedef char StatsWTL;
+  typedef char StatsWTS;
   typedef char StatsWTNB;
   typedef char WaveletData;
   typedef char BigPackEnvelope;
@@ -59,7 +59,7 @@ implementation {
     switch (report.type) {
     case WT_CACHE: {
       CacheReport *c = &report.data.cache;
-      data.wavelet.level[c->level].nb[c->index].cacheHits++;
+      data.wavelet.scale[c->scale].nb[c->index].cacheHits++;
       break; }
     }
   }
@@ -133,15 +133,15 @@ implementation {
       data.mRetriesSum += attemptNum;
       if (type == AM_WAVELETDATA) {
         WaveletData *wd = (WaveletData *)msg->data;
-        if (wd->level < data.wavelet.numLevels) {
+        if (wd->scale < data.wavelet.numScales) {
           uint8_t i;
-          StatsWTL *level = &data.wavelet.level[wd->level];
-          for (i = 0; i < level->nbCount; i++) {
-            if (msg->addr == level->nb[i].id)
+          StatsWTS *scale = &data.wavelet.scale[wd->scale];
+          for (i = 0; i < scale->nbCount; i++) {
+            if (msg->addr == scale->nb[i].id)
               break;
           }
-          if (i < level->nbCount)
-            level->nb[i].retries += attemptNum;
+          if (i < scale->nbCount)
+            scale->nb[i].retries += attemptNum;
         }
       }
     }
@@ -162,31 +162,32 @@ implementation {
    */
   event void WaveletPack.requestDone(void *mainBlock, result_t result) {
     if (result == SUCCESS) {
-      uint8_t l, i;
+      int8_t s;
+      uint8_t i;
       ExtWaveletConf *conf = (ExtWaveletConf *) mainBlock;
-      ExtWaveletLevel **lvl = conf->level;
+      ExtWaveletScale **scl = conf->scale;
       StatsWT *w = &data.wavelet;
       waveletFree();
       dbg(DBG_USR1, "Stats: Big Pack Config Test\n");
-      w->numLevels = conf->numLevels;
-      if ((w->level = malloc(w->numLevels * sizeof(StatsWTL))) == NULL) {
-        dbg(DBG_USR1, "Stats: Couldn't allocate wavelet.level!\n");
+      w->numScales = conf->numScales;
+      if ((w->scale = malloc(w->numScales * sizeof(StatsWTS))) == NULL) {
+        dbg(DBG_USR1, "Stats: Couldn't allocate wavelet.scale!\n");
         return;
       } 
-      for (l = 0; l < w->numLevels; l++) {
-        dbg(DBG_USR1, "Stats: Level #%i\n", l + 1);
-        w->level[l].nbCount = lvl[l]->nbCount;
-        if ((w->level[l].nb = malloc(w->level[l].nbCount * sizeof(StatsWTNB))) == NULL) {
-          dbg(DBG_USR1, "Stats: Couldn't allocate nb for wavelet.level #%i!\n", l + 1);
+      for (s = w->numScales - 1; s >= 0; s--) {
+        dbg(DBG_USR1, "Stats: Scale #%i\n", s + 1);
+        w->scale[s].nbCount = scl[s]->nbCount;
+        if ((w->scale[s].nb = malloc(w->scale[s].nbCount * sizeof(StatsWTNB))) == NULL) {
+          dbg(DBG_USR1, "Stats: Couldn't allocate nb for wavelet.scale #%i!\n", s + 1);
           return;
         } 
-        for (i = 0; i < w->level[l].nbCount; i++) {
+        for (i = 0; i < w->scale[s].nbCount; i++) {
           dbg(DBG_USR1, "Stats:   Neighbor #%i\n", i + 1);
-          (i != 0) ? (w->level[l].nb[i].id = lvl[l]->nb[i].id)
-                   : (w->level[l].nb[i].id = 0);
-          dbg(DBG_USR1, "Stats:     ID:    %i\n", w->level[l].nb[i].id);
-          w->level[l].nb[i].retries = 0;
-          w->level[l].nb[i].cacheHits = 0;
+          (i != 0) ? (w->scale[s].nb[i].id = scl[s]->nb[i].id)
+                   : (w->scale[s].nb[i].id = 0);
+          dbg(DBG_USR1, "Stats:     ID:    %i\n", w->scale[s].nb[i].id);
+          w->scale[s].nb[i].retries = 0;
+          w->scale[s].nb[i].cacheHits = 0;
         }
       }
       wtAlloc = TRUE; 
@@ -235,38 +236,39 @@ implementation {
   result_t populatePack() {
     BigPackEnvelope *env;
     // Find the number of blocks and pointers needed
-    uint8_t numBlks, numPtrs, l, p;
+    uint8_t numBlks, numPtrs, s, p;
     StatsWT *w = &data.wavelet;
-    uint8_t lvls = w->numLevels;
-    if (lvls > 0) {
+    uint8_t scls = w->numScales;
+    if (scls > 0) {
       /* Blocks:
-       *   For each StatsWTL: one block for neighbor data, one block for level statics
+       *   For each StatsWTS: one block for neighbor data, one block for scale statics
        *   For the MoteStats: one block for static data */
-      numBlks = lvls * 2 + 1;
+      numBlks = scls * 2 + 1;
       /* Pointers:
-       *   For each StatsWTL: one pointer to neighbor data
-       *   For the MoteStats: one pointer to StatsWTL array */
-      numPtrs = lvls + 1;
+       *   For each StatsWTS: one pointer to neighbor data
+       *   For the MoteStats: one pointer to StatsWTS array */
+      numPtrs = scls + 1;
       env = call StatsPack.createEnvelope(numBlks, numPtrs);
       if (env == NULL) return FAIL;
-      // StatsWTL
-      for (l = 0; l < lvls; l++) {
-        env->block[l].length = w->level[l].nbCount * sizeof(StatsWTNB);
-        env->blockAddr[l] = (int8_t *) w->level[l].nb;
-        env->block[l + lvls].length = sizeof(StatsWTL);
-        env->blockAddr[l + lvls] = (int8_t *) &w->level[l];
-        env->ptr[l].addrOfBlock = l;
-        env->ptr[l].destBlock = l + lvls;
-        env->ptr[l].destOffset = 1;
-        env->ptr[l].blockArray = FALSE;
+      // StatsWTS
+      // Send with same scale ordering as in memory (1 -> J)
+      for (s = 0; s < scls; s++) {
+        env->block[s].length = w->scale[s].nbCount * sizeof(StatsWTNB);
+        env->blockAddr[s] = (int8_t *) w->scale[s].nb;
+        env->block[s + scls].length = sizeof(StatsWTS);
+        env->blockAddr[s + scls] = (int8_t *) &w->scale[s];
+        env->ptr[s].addrOfBlock = s;
+        env->ptr[s].destBlock = s + scls;
+        env->ptr[s].destOffset = 1;
+        env->ptr[s].blockArray = FALSE;
       }
-      p = l;
-      l += lvls;
+      p = s;
+      s += scls;
       // MoteStats
-      env->block[l].length = sizeof(MoteStats);
-      env->blockAddr[l] = (int8_t *) &data;
-      env->ptr[p].addrOfBlock = lvls;
-      env->ptr[p].destBlock = l;
+      env->block[s].length = sizeof(MoteStats);
+      env->blockAddr[s] = (int8_t *) &data;
+      env->ptr[p].addrOfBlock = scls;
+      env->ptr[p].destBlock = s;
 #ifdef PLATFORM_PC
       env->ptr[p].destOffset = sizeof(MoteStats) - 4;
 #else
@@ -293,10 +295,10 @@ implementation {
     StatsWT *w = &data.wavelet;
     // If there is retry data, free it
     if (wtAlloc) {
-      uint8_t l;
-      for (l = 0; l < w->numLevels; l++)
-        free(w->level[l].nb);
-      free(w->level);
+      int8_t s;
+      for (s = w->numScales - 1; s >= 0; s--)
+        free(w->scale[s].nb);
+      free(w->scale);
       wtAlloc = FALSE;
     }
   }
@@ -371,8 +373,8 @@ implementation {
     wtAlloc = FALSE;
     // Initialize stats data
     clearStats();
-    // Clear wavelet.numLevels in case we don't get any
-    data.wavelet.numLevels = 0;
+    // Clear wavelet.numScales in case we don't get any
+    data.wavelet.numScales = 0;
     return SUCCESS;
   }
   

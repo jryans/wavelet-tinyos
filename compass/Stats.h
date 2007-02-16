@@ -35,14 +35,14 @@ typedef struct swtnb {
   uint8_t cacheHits;
 } __attribute__ ((packed)) StatsWTNB;
 
-typedef struct swtl {
+typedef struct swts {
   uint8_t nbCount;
   StatsWTNB *nb;
-} __attribute__ ((packed)) StatsWTL;
+} __attribute__ ((packed)) StatsWTS;
 
 typedef struct swt {
-  uint8_t numLevels;
-  StatsWTL *level;
+  uint8_t numScales;
+  StatsWTS *scale;
 } __attribute__ ((packed)) StatsWT;
 
 typedef struct ms {
