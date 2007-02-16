@@ -240,34 +240,51 @@ implementation {
     StatsWT *w = &data.wavelet;
     uint8_t scls = w->numScales;
     if (scls > 0) {
-      /* Blocks:
-       *   For each StatsWTS: one block for neighbor data, one block for scale statics
-       *   For the MoteStats: one block for static data */
-      numBlks = scls * 2 + 1;
-      /* Pointers:
-       *   For each StatsWTS: one pointer to neighbor data
-       *   For the MoteStats: one pointer to StatsWTS array */
-      numPtrs = scls + 1;
+      uint8_t sclsWithNbs = scls;
+      // For MoteStats: one block for static data
+      numBlks = 1;
+      // For MoteStats: one pointer to StatsWTS array
+      numPtrs = 1;
+      for (s = 0; s < scls; s++) {
+        // Check if this scale has neighbors
+        if (w->scale[s].nbCount > 0) {
+          // For each StatsWTS: one block for neighbor data, one block for scale statics
+          numBlks += 2;
+          // For each StatsWTS: one pointer to neighbor data
+          numPtrs++;
+        } else {
+          // For each StatsWTS: one block for scale statics
+          numBlks++;
+          // Decrement number of scales with neighbors
+          sclsWithNbs--;
+        }
+      }
       env = call StatsPack.createEnvelope(numBlks, numPtrs);
       if (env == NULL) return FAIL;
       // StatsWTS
       // Send with same scale ordering as in memory (1 -> J)
       for (s = 0; s < scls; s++) {
-        env->block[s].length = w->scale[s].nbCount * sizeof(StatsWTNB);
-        env->blockAddr[s] = (int8_t *) w->scale[s].nb;
-        env->block[s + scls].length = sizeof(StatsWTS);
-        env->blockAddr[s + scls] = (int8_t *) &w->scale[s];
-        env->ptr[s].addrOfBlock = s;
-        env->ptr[s].destBlock = s + scls;
-        env->ptr[s].destOffset = 1;
-        env->ptr[s].blockArray = FALSE;
+        // Check if this scale has neighbors
+        if (w->scale[s].nbCount > 0) {
+          env->block[s].length = w->scale[s].nbCount * sizeof(StatsWTNB);
+          env->blockAddr[s] = (int8_t *) w->scale[s].nb;
+          env->block[s + sclsWithNbs].length = sizeof(StatsWTS);
+          env->blockAddr[s + sclsWithNbs] = (int8_t *) &w->scale[s];
+          env->ptr[s].addrOfBlock = s;
+          env->ptr[s].destBlock = s + sclsWithNbs;
+          env->ptr[s].destOffset = 1;
+          env->ptr[s].blockArray = FALSE;
+        } else {
+          env->block[s + sclsWithNbs].length = sizeof(StatsWTS);
+          env->blockAddr[s + sclsWithNbs] = (int8_t *) &w->scale[s];
+        }
       }
-      p = s;
-      s += scls;
+      p = sclsWithNbs;
+      s += sclsWithNbs;
       // MoteStats
       env->block[s].length = sizeof(MoteStats);
       env->blockAddr[s] = (int8_t *) &data;
-      env->ptr[p].addrOfBlock = scls;
+      env->ptr[p].addrOfBlock = sclsWithNbs;
       env->ptr[p].destBlock = s;
 #ifdef PLATFORM_PC
       env->ptr[p].destOffset = sizeof(MoteStats) - 4;
