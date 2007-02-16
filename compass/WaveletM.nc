@@ -133,39 +133,39 @@ implementation {
         break; }      
       case WS_UPDATING: {
         dbg(DBG_USR2, "Update: DS: %i, S: %i, Sending values to predict nodes...\n",
-            dataSet, curLevel + 1);
+            dataSet, curScale + 1);
         sendValuesToNeighbors();
         dbg(DBG_USR2, "Update: DS: %i, S: %i, Waiting to hear from predict nodes...\n",
-            dataSet, curLevel + 1);
+            dataSet, curScale + 1);
         break; }
       case WS_PREDICTING: {
         dbg(DBG_USR2, "Predict: DS: %i, S: %i, Waiting to hear from update nodes...\n",
-            dataSet, curLevel + 1);
+            dataSet, curScale + 1);
         break; }  
       case WS_PREDICTED: {
         calcNewValues();
         dbg(DBG_USR2, "Predict: DS: %i, S: %i, Sending values to update nodes...\n",
-            dataSet, curLevel + 1);
+            dataSet, curScale + 1);
         sendValuesToNeighbors();
-        dbg(DBG_USR2, "Predict: DS: %i, S: %i, Level done!\n", dataSet, curLevel + 1);
+        dbg(DBG_USR2, "Predict: DS: %i, S: %i, Scale done!\n", dataSet, curScale + 1);
         checkData();
-        levelDone();
+        scaleDone();
         call State.toIdle();
         break; }
       case WS_UPDATED: {
         calcNewValues();
-        dbg(DBG_USR2, "Update: DS: %i, S: %i, Level done!\n", dataSet, curLevel + 1);
+        dbg(DBG_USR2, "Update: DS: %i, S: %i, Scale done!\n", dataSet, curScale + 1);
         checkData();
-        levelDone();
+        scaleDone();
         call State.toIdle();
         break; }
       case WS_TRANSMIT: {
         sendDelayedMsg();
         call State.toIdle();
         break; }
-      case WS_SKIPLEVEL: {
-        dbg(DBG_USR2, "Skip: DS: %i, S: %i, Nothing to do, level done!\n", dataSet, curLevel + 1);
-        levelDone();
+      case WS_SKIP_SCALE: {
+        dbg(DBG_USR2, "Skip: DS: %i, S: %i, Nothing to do, scale done!\n", dataSet, curScale + 1);
+        scaleDone();
         call State.toIdle();
         break; }
       case WS_OFFLINE: {
@@ -193,10 +193,10 @@ implementation {
   void waveletFree() {
     // If there is config data, free it
     if (confAlloc) {
-      uint8_t l;
-      for (l = 0; l < numLevels; l++)
-        free(level[l].nb);
-      free(level);
+      uint8_t s;
+      for (s = 0; s < numScales; s++)
+        free(scale[s].nb);
+      free(scale);
       free(my.state);
       confAlloc = FALSE;
     }
@@ -226,9 +226,9 @@ implementation {
       delay = WSD_RS_TO_ANY;
       break; }
     case WS_START_DATASET: {
-      nextState = level[0].nb[0].state;
+      nextState = my.state[numScales - 1];
       (nextState == WS_UPDATING) ? (delay = WSD_SDS_TO_UING)
-                                : (delay = WSD_SDS_TO_OTHER);
+                                 : (delay = WSD_SDS_TO_OTHER);
       break; }    
     case WS_UPDATING: {
       nextState = WS_UPDATED;
@@ -245,19 +245,19 @@ implementation {
       delay = WSD_PED_TO_IDLE;
       break; }
     case WS_UPDATED: {
-      (curLevel + 1 == numLevels) 
+      (curScale == 0) 
         ? (nextState = WS_IDLE)
-        : (nextState = level[curLevel + 1].nb[0].state);
+        : (nextState = my.state[curScale - 1]);
       if (nextState == WS_UPDATING) {
         delay = WSD_UED_TO_UING;
       } else {
         delay = WSD_UED_TO_OTHER;
       }
       break; }
-    case WS_SKIPLEVEL: {
-      (curLevel + 1 == numLevels) 
+    case WS_SKIP_SCALE: {
+      (curScale == 0) 
         ? (nextState = WS_IDLE)
-        : (nextState = level[curLevel + 1].nb[0].state);
+        : (nextState = my.state[curScale - 1]);
       if (nextState == WS_UPDATING) {
         delay = WSD_SKIP_TO_UING;
       } else if (nextState == WS_IDLE) {
@@ -274,24 +274,21 @@ implementation {
   // Helper Functions
   
   /**
-   * If this mote is not done, then it advances to the next wavelet 
-   * level and copies the calculated values to the next level. If it
-   * is done and compression is enabled, it find which band matches
-   * its values.
-   * Called during WS_UPDATED, WS_PREDICTED, and WS_SKIPLEVEL.
+   * If this mote is not done, then it moves down to the next wavelet 
+   * scale. If it is done and compression is enabled, it determines
+   * which band matches its values.
+   * Called during WS_UPDATED, WS_PREDICTED, and WS_SKIP_SCALE.
    */ 
-  void levelDone() {
+  void scaleDone() {
     uint8_t i;
-    if (nextState != WS_IDLE) { // More levels to go
-      for (i = 0; i < WT_SENSORS; i++) // Carry data over to next level
-        level[curLevel + 1].nb[0].value[i] = level[curLevel].nb[0].value[i];
-      curLevel++;
+    if (nextState != WS_IDLE) { // More scales to go
+      curScale--;
     } else { // Data set complete
       if (resultType & WC_RT_COMP) {
         if (predicted) { 
           // Predicted values are assigned a band based on target values
           for (i = 0; i < numBands; i++) {
-            if (level[curLevel].nb[0].value[0] >= compTarget[i])
+            if (my.value[0] >= compTarget[i])
               break;
           }
           matchingBand = i;
@@ -304,7 +301,7 @@ implementation {
   }
   
   /**
-   * For each level where a mote is not skipped or already done,
+   * For each scale where a mote is not skipped or already done,
    * it will be in one of two states:
    * 1. WS_UPDATING: Sends scaling values to predict motes and waits
    * 2. WS_PREDICTED: Sends its newly calculated predict values
@@ -315,19 +312,19 @@ implementation {
     TOS_Msg baseMsg;
     WaveletData *wd = (WaveletData *)baseMsg.data;
     wd->dataSet = dataSet;
-    wd->level = curLevel;
+    wd->scale = curScale;
     wd->state = call State.getState();
     for (i = 0; i < WT_SENSORS; i++)
-      wd->value[i] = level[curLevel].nb[0].value[i];
-    for (mote = 1; mote < level[curLevel].nbCount; mote++) {
+      wd->value[i] = my.value[i];
+    for (mote = 0; mote < scale[curScale].nbCount; mote++) {
       TOS_MsgPtr m = call MakeData.createCopy(&baseMsg);
-      uint16_t dest = level[curLevel].nb[mote].id;
+      uint16_t dest = scale[curScale].nb[mote].id;
       if (call State.getState() == WS_UPDATING) { // U nodes sending scaling values
         dbg(DBG_USR2, "Update: DS: %i, S: %i, Sending values to predict node %i...\n",
-            dataSet, curLevel + 1, dest);
+            dataSet, curScale + 1, dest);
       } else { // P nodes sending update values
         dbg(DBG_USR2, "Predict: DS: %i, S: %i, Sending values to update node %i...\n",
-            dataSet, curLevel + 1, dest);
+            dataSet, curScale + 1, dest);
       }
       call SendData.send(dest, sizeof(WaveletData), m);
     }
@@ -346,12 +343,12 @@ implementation {
     uint8_t mote, sensor;
     float sign;
     dbg(DBG_USR2, "Calc: DS: %i, S: %i, Calculating new values...\n",
-        dataSet, curLevel + 1);
+        dataSet, curScale + 1);
     (call State.getState() == WS_PREDICTED) ? (sign = -1) : (sign = 1);
-    for (mote = 1; mote < level[curLevel].nbCount; mote++) {
+    for (mote = 0; mote < scale[curScale].nbCount; mote++) {
       for (sensor = 0; sensor < WT_SENSORS; sensor++)
-        level[curLevel].nb[0].value[sensor] += (sign * level[curLevel].nb[mote].coeff
-                                                     * level[curLevel].nb[mote].value[sensor]);
+        my.value[sensor] += (sign * scale[curScale].nb[mote].coeff
+                                  * scale[curScale].nb[mote].value[sensor]);
     }
   }
   
@@ -364,7 +361,7 @@ implementation {
    * Called during WS_START_DATASET.
    */
   void clearNeighborState() {
-    uint8_t s, mote;
+    uint8_t s, m;
     for (s = numScales - 1; s >= 0; s--) {
       for (m = 0; m < scale[s].nbCount; m++) {
         scale[s].nb[m].stale = TRUE;
@@ -374,17 +371,17 @@ implementation {
   
   /**
    * Reports any cache hits to Stats by checking if each neighbor's
-   * state is still the initial state or was changed, indicatng that
+   * stale flag is still set or was cleared, indicatng that
    * new data was received.
    * Called during WS_CACHE.
    */
   void checkData() {
     uint8_t mote;
     StatsReport report;
-    for (mote = 1; mote < level[curLevel].nbCount; mote++) {
-      if (level[curLevel].nb[mote].state == WS_START_DATASET) {
+    for (mote = 0; mote < scale[curScale].nbCount; mote++) {
+      if (scale[curScale].nb[mote].stale) {
         report.type = WT_CACHE;
-        report.data.cache.level = curLevel;
+        report.data.cache.scale = curScale;
         report.data.cache.index = mote;
         call Stats.file(report);
       } 
@@ -441,7 +438,7 @@ implementation {
   // Commands and Events
   
   command result_t StdControl.init() {
-    wlAlloc = FALSE;
+    confAlloc = FALSE;
     call Random.init();
     return SUCCESS;
   }
@@ -464,9 +461,9 @@ implementation {
   event void SensorData.readDone(float *newVals) {
     uint8_t i;
     for (i = 0; i < WT_SENSORS; i++) {
-      level[0].nb[0].value[i] = newVals[i];
+      my.value[i] = newVals[i];
 #ifdef RAW
-      rawVals[i] = newVals[i];
+      my.rawValue[i] = newVals[i];
 #endif      
     }
     call State.toIdle();
@@ -478,7 +475,7 @@ implementation {
    */
   event void BigPackClient.requestDone(void *mainBlock, result_t result) {
     if (result == SUCCESS) {
-      uint8_t i, l;
+      uint8_t i, s;
       ExtWaveletConf *conf = (ExtWaveletConf *) mainBlock;
       ExtWaveletScale **scl = conf->scale;
       waveletFree();
@@ -525,7 +522,7 @@ implementation {
         case WS_UPDATING: {
           if (result == FAIL)
             dbg(DBG_USR2, "Update: DS: %i, S: %i, Sending values to predict motes failed!\n",
-                dataSet, curLevel + 1);
+                dataSet, curScale + 1);
           break; }
         case WS_DONE: {
           if (result == SUCCESS) {
@@ -541,42 +538,42 @@ implementation {
   event TOS_MsgPtr RcvData.receive(uint16_t src, TOS_MsgPtr m) {
     uint8_t mote, sens;
     WaveletData *wd = (WaveletData *)m->data;
-    if (wd->dataSet != dataSet || wd->level != curLevel)
-      return m; // Rejects data for the wrong data set or level
+    if (wd->dataSet != dataSet || wd->scale != curScale)
+      return m; // Rejects data for the wrong data set or scale
     switch (call State.getState()) {
     case WS_PREDICTING: {
       if (wd->state == WS_UPDATING) {
-        for (mote = 1; mote < level[curLevel].nbCount; mote++) {
-          if (level[curLevel].nb[mote].id == src)
+        for (mote = 0; mote < scale[curScale].nbCount; mote++) {
+          if (scale[curScale].nb[mote].id == src)
             break;
         }
-        if (mote < level[curLevel].nbCount) {
+        if (mote < scale[curScale].nbCount) {
           dbg(DBG_USR2, "Predict: DS: %i, S: %i, Got values from update mote %i\n",
-              dataSet, curLevel + 1, src);
-          level[curLevel].nb[mote].state = wd->state;
+              dataSet, curScale + 1, src);
+          scale[curScale].nb[mote].stale = FALSE;
           for (sens = 0; sens < WT_SENSORS; sens++)
-            level[curLevel].nb[mote].value[sens] = wd->value[sens];
+            scale[curScale].nb[mote].value[sens] = wd->value[sens];
         } else {
           dbg(DBG_USR2, "Predict: DS: %i, S: %i, BAD NEIGHBOR! Got values from update mote %i\n",
-              dataSet, curLevel + 1, src);
+              dataSet, curScale + 1, src);
         }
       }
       break; }
     case WS_UPDATING: {
       if (wd->state == WS_PREDICTED) {
-        for (mote = 1; mote < level[curLevel].nbCount; mote++) {
-          if (level[curLevel].nb[mote].id == src)
+        for (mote = 0; mote < scale[curScale].nbCount; mote++) {
+          if (scale[curScale].nb[mote].id == src)
             break;
         }
-        if (mote < level[curLevel].nbCount) {
+        if (mote < scale[curScale].nbCount) {
           dbg(DBG_USR2, "Update: DS: %i, S: %i, Got values from predict mote %i\n",
-              dataSet, curLevel + 1, src);
-          level[curLevel].nb[mote].state = wd->state;
+              dataSet, curScale + 1, src);
+          scale[curScale].nb[mote].stale = FALSE;
           for (sens = 0; sens < WT_SENSORS; sens++)
-            level[curLevel].nb[mote].value[sens] = wd->value[sens];
+            scale[curScale].nb[mote].value[sens] = wd->value[sens];
         } else {
           dbg(DBG_USR2, "Update: DS: %i, S: %i, BAD NEIGHBOR! Got values from predict mote %i\n",
-              dataSet, curLevel + 1, src);
+              dataSet, curScale + 1, src);
         }
       }
       break; }
@@ -728,10 +725,10 @@ implementation {
     TOS_MsgPtr m = call MakeData.create();
     WaveletData *wd = (WaveletData *)m->data;
     wd->dataSet = dataSet;
-    wd->level = transmitLevel;
+    //wd->level = transmitLevel;
     wd->state = WS_TRANSMIT;
     for (i = 0; i < WT_SENSORS; i++)
-      wd->value[i] = level[transmitLevel].nb[0].value[i];
+      wd->value[i] = my.value[i];
     call SendData.send(NET_UART_ADDR, sizeof(WaveletData), m);
     dbg(DBG_USR1, "Transmit: DS: %i, results sent!\n", dataSet);
     return SUCCESS;
@@ -748,10 +745,10 @@ implementation {
     TOS_MsgPtr m = call MakeData.create();
     WaveletData *wd = (WaveletData *)m->data;
     wd->dataSet = dataSet;
-    wd->level = transmitLevel;
+    //wd->level = transmitLevel;
     wd->state = WS_RAW;
     for (i = 0; i < WT_SENSORS; i++)
-      wd->value[i] = rawVals[i];
+      wd->value[i] = my.rawValue[i];
     call SendData.send(NET_UART_ADDR, sizeof(WaveletData), m);
     dbg(DBG_USR1, "Transmit: DS: %i, raw sent!\n", dataSet);
     return SUCCESS;

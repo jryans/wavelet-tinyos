@@ -16,7 +16,7 @@ enum {
 // Report Structs
 
 typedef struct {
-  uint8_t level; // Level when cached data was used
+  uint8_t scale; // Scale when cached data was used
   uint16_t index; // Index of mote whose data was pulled from cache
 } __attribute__ ((packed)) CacheReport;
 
