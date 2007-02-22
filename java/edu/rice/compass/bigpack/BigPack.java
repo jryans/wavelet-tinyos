@@ -105,18 +105,34 @@ public abstract class BigPack extends Message {
 					int childCnt = numChildren(ptr.get_destOffset());
 					int childBlockNum[] = new int[childCnt];
 					List childPtr[] = new List[childCnt];
-					if (ptr.get_blockArray() == BPP_PTR) { // Single source block
+					if (ptr.get_blockArray() == BPP_PTR) {
+						// Single source block
 						List pForC = pointers.subList(0, pointers.size() - numChildTypes());
 						for (int c = 0; c < childCnt; c++) {
 							childBlockNum[c] = ptr.get_addrOfBlock();
 							childPtr[c] = pForC;
 						}
-					} else if (ptr.get_blockArray() == BPP_ARRAY) { // Multiple source
-						// blocks
-						int pPerC = (pointers.size() - numChildTypes()) / childCnt;
+					} else if (ptr.get_blockArray() == BPP_ARRAY) {
+						// Multiple source blocks
 						for (int c = 0; c < childCnt; c++) {
-							childBlockNum[c] = ptr.get_addrOfBlock() + c;
-							childPtr[c] = pointers.subList(c * pPerC, (c + 1) * pPerC);
+							int destChild = ptr.get_addrOfBlock() + c;
+							childBlockNum[c] = destChild;
+							// Find the range of pointers that have
+							// destChild as their destOffset
+							ListIterator li = pointers.listIterator();
+							int from = 0, to = 0;
+							boolean found = false;
+							while (li.hasNext()) {
+								BigPackPtr p = (BigPackPtr) li.next();
+								if (!found && p.get_destBlock() == destChild) {
+									from = li.previousIndex();
+									found = true;
+								} else if (found && p.get_destBlock() != destChild) {
+									to = li.previousIndex();
+									break;
+								}
+							}
+							childPtr[c] = pointers.subList(from, to);
 						}
 					}
 					storeChildren(rawData, ptr.get_destOffset(), childBlockNum, childPtr);
