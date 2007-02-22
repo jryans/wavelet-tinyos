@@ -1,4 +1,4 @@
-function [raw, wt, rawhat, diff, avg] = compareMoteData(scales,predneighbs,predfilts,upneighbs,upfilts,varargin)
+function [raw, wt, rawhat, diff, avg] = compareMoteData(td,varargin)
 
 import edu.rice.compass.*;
 if size(varargin, 2) >= 1
@@ -18,7 +18,7 @@ for j=1:numSets
         raw(j,h,:) = shiftdim(values(j,h*2 - 1,:), 1)';
         wtval = shiftdim(values(j,h*2,:), 1)';
         wt(j,h,:) = wtval;
-        rawhat(j,h,:) = itrecon_meshless(wtval,scales,predneighbs,predfilts,upneighbs,upfilts);
+        rawhat(j,h,:) = idwtmeshless(wtval, td);
         diff(j,h) = sum(abs((raw(j,h,:) / max(raw(j,h,:))) - (rawhat(j,h,:) / max(rawhat(j,h,:)))));
         avg(j,h) = mean(abs((raw(j,h,:) / max(raw(j,h,:))) - (rawhat(j,h,:) / max(rawhat(j,h,:)))));
     end
