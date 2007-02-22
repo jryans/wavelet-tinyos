@@ -297,6 +297,7 @@ implementation {
           matchingBand = 0;
         }  
       }
+      dbg(DBG_USR2, "Wavelet: DS: %i, Data set complete!\n", dataSet);
     }
   }
   

@@ -1,7 +1,6 @@
 /**
  * Transfers various details about the mote's network packets and
  * applications to the computer on request.
- * TODO: Try to eliminate reporting on ourselves in wavelet stats.
  * @author Ryan Stinnett
  */
  
@@ -183,8 +182,7 @@ implementation {
         } 
         for (i = 0; i < w->scale[s].nbCount; i++) {
           dbg(DBG_USR1, "Stats:   Neighbor #%i\n", i + 1);
-          (i != 0) ? (w->scale[s].nb[i].id = scl[s]->nb[i].id)
-                   : (w->scale[s].nb[i].id = 0);
+          w->scale[s].nb[i].id = scl[s]->nb[i].id;
           dbg(DBG_USR1, "Stats:     ID:    %i\n", w->scale[s].nb[i].id);
           w->scale[s].nb[i].retries = 0;
           w->scale[s].nb[i].cacheHits = 0;
@@ -240,7 +238,9 @@ implementation {
     StatsWT *w = &data.wavelet;
     uint8_t scls = w->numScales;
     if (scls > 0) {
-      uint8_t sclsWithNbs = scls;
+      // Initialize free block pointers
+      uint8_t freeScl = 0;
+      uint8_t freeNb = 0;
       // For MoteStats: one block for static data
       numBlks = 1;
       // For MoteStats: one pointer to StatsWTS array
@@ -252,11 +252,11 @@ implementation {
           numBlks += 2;
           // For each StatsWTS: one pointer to neighbor data
           numPtrs++;
+          // Scale blocks go after neighbor blocks, increment scale block pointer
+          freeScl++;
         } else {
           // For each StatsWTS: one block for scale statics
           numBlks++;
-          // Decrement number of scales with neighbors
-          sclsWithNbs--;
         }
       }
       env = call StatsPack.createEnvelope(numBlks, numPtrs);
@@ -266,25 +266,32 @@ implementation {
       for (s = 0; s < scls; s++) {
         // Check if this scale has neighbors
         if (w->scale[s].nbCount > 0) {
-          env->block[s].length = w->scale[s].nbCount * sizeof(StatsWTNB);
-          env->blockAddr[s] = (int8_t *) w->scale[s].nb;
-          env->block[s + sclsWithNbs].length = sizeof(StatsWTS);
-          env->blockAddr[s + sclsWithNbs] = (int8_t *) &w->scale[s];
-          env->ptr[s].addrOfBlock = s;
-          env->ptr[s].destBlock = s + sclsWithNbs;
-          env->ptr[s].destOffset = 1;
-          env->ptr[s].blockArray = FALSE;
+          env->block[freeNb].length = w->scale[s].nbCount * sizeof(StatsWTNB);
+          env->blockAddr[freeNb] = (int8_t *) w->scale[s].nb;
+          env->block[freeScl].length = sizeof(StatsWTS);
+          env->blockAddr[freeScl] = (int8_t *) &w->scale[s];
+          env->ptr[freeNb].addrOfBlock = freeNb;
+          env->ptr[freeNb].destBlock = freeScl;
+          env->ptr[freeNb].destOffset = 1;
+          env->ptr[freeNb].blockArray = FALSE;
+          freeNb++;
+          freeScl++;
         } else {
-          env->block[s + sclsWithNbs].length = sizeof(StatsWTS);
-          env->blockAddr[s + sclsWithNbs] = (int8_t *) &w->scale[s];
+          env->block[freeScl].length = sizeof(StatsWTS);
+          env->blockAddr[freeScl] = (int8_t *) &w->scale[s];
+          freeScl++;
         }
       }
-      p = sclsWithNbs;
-      s += sclsWithNbs;
+      // freeNb has now crossed into the scale region and points at the
+      // first scale, which is what we want for p.
+      p = freeNb;
+      // freeScl now points to the last block available, which is what s
+      // should be.
+      s = freeScl;
       // MoteStats
       env->block[s].length = sizeof(MoteStats);
       env->blockAddr[s] = (int8_t *) &data;
-      env->ptr[p].addrOfBlock = sclsWithNbs;
+      env->ptr[p].addrOfBlock = p;
       env->ptr[p].destBlock = s;
 #ifdef PLATFORM_PC
       env->ptr[p].destOffset = sizeof(MoteStats) - 4;
