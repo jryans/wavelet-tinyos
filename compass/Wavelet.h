@@ -25,13 +25,12 @@ typedef struct {
   WaveletNeighbor *nb; // Array of WaveletNeighbors
 } __attribute__ ((packed)) WaveletScale;
 
-typedef struct { // Groups this node's wavelet data together
-  uint8_t *state; // State at each transform scale
-  float value[WT_SENSORS]; // Working value for each sensor
+typedef struct {
+	float value[WT_SENSORS]; // Working value for each sensor
 #ifdef RAW
   float rawValue[WT_SENSORS]; // Raw value for each sensor
 #endif
-} __attribute__ ((packed)) WaveletLocal;
+} __attribute__ ((packed)) WaveletSample;
 
 /*** Transmitted Data ***/
 
