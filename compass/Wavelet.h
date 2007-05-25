@@ -38,7 +38,7 @@ typedef struct WaveletData {
   uint8_t dataSet; // Data set this data belongs to
 	uint8_t scale; // Wavelet scale this data belongs to
 	uint8_t state; // State this mote has at this scale
-	float value[WT_SENSORS]; // Holds one value for each sensor (only two sensors for now)
+	float value[][WT_SENSORS]; // Array of values per sensor, per time sample
 } __attribute__ ((packed)) WaveletData;
 
 /*** Big Pack Data ***/

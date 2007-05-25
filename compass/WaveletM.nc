@@ -72,6 +72,8 @@ implementation {
   uint8_t resultType; // Controls data sent back to base
   uint8_t numSamples; // Number of time samples
   uint8_t timeScales; // Number of scales of the time transform to perform
+  uint8_t maxTimeScale; // Largest time scale possible (J -> 1)
+  uint8_t stopAtTimeScale; // Last time scale to use time transform on
   
   // State Management
   uint8_t nextState;
@@ -83,6 +85,7 @@ implementation {
   void scaleDone();
   void sendValuesToNeighbors();
   void networkTransform2D();
+  int8_t reflect(int8_t i);
   void timeTransform();
   void delayNextState();
   void clearNeighborState();
@@ -382,6 +385,42 @@ implementation {
   }
   
   /**
+   * Small utility function for the time domain transform that reflects
+   * array indices when they move outside the lower and upper bounds of
+   * the array.
+   */
+  inline int8_t reflect(int8_t i) {
+    if (i < 0)
+      return abs(i);
+    else if (i >= numSamples) {
+      uint8_t max = numSamples - 1;
+      return -abs(i - max) + max;
+    } else
+      return i;
+  }
+  
+  /**
+   * Simplifies indexing the scaling values of the sample array by
+   * moving the index calculations to a separate function.
+   */
+  WaveletSample *scaling(uint8_t j, int8_t l) {
+    if (j > maxTimeScale)
+      return NULL;
+    return &sample[reflect(l * (1 << (maxTimeScale - j)))];
+  }
+  
+  /**
+   * Simplifies indexing the detail values of the sample array by
+   * moving the index calculations to a separate function.
+   */
+  WaveletSample *detail(uint8_t j, int8_t l) {
+    if (j >= maxTimeScale)
+      return NULL;
+    return &sample[reflect(l * (1 << (maxTimeScale - j)) 
+                          + (1 << (maxTimeScale - j - 1)))];
+  }
+  
+  /**
    * Calculates new values for a set of samples using a 1D wavelet transform
    * in the time domain.  These results will then be passed on to the 2D
    * neighbor transform.  Using the lifting scheme, only the update and
@@ -389,17 +428,46 @@ implementation {
    * Called during WS_START_DATASET.
    */
   void timeTransform() {
-    uint8_t j, l, s = 1; 
-    for (j = maxTimeScale; j >= minTimeScale; j--) {
+    int8_t l;
+    uint8_t j, sens;
+    if (transformType == WC_TT_2DRWAGNER)
+      // Nothing to do in the time domain for this case
+      return;
+    for (j = maxTimeScale - 1; j >= stopAtTimeScale; j--) {
       // Predict odd values from even values
-      for (l = 0; l < numSamples / s; l++) {
-        sample.value[2 * s * l + s] -= sample.value[2 * s * l];
+      for (l = 0; l < (1 << j); l++) {
+        for (sens = 0; sens < WT_SENSORS; sens++) {
+          switch (transformType) {
+          case WC_TT_1DHAAR_2DRWAGNER: {
+            //sample[2 * s * samp + s].value[sens] -= sample[2 * s * samp].value[sens];
+            detail(j, l)->value[sens] -= scaling(j, l)->value[sens];
+            break; }
+          case WC_TT_1DLINEAR_2DRWAGNER: {
+            //sample[2 * s * samp + s].value[sens] -= (sample[2 * s * samp].value[sens] 
+            //  + sample[reflect(2 * s * samp + 2 * s)].value[sens]) / 2;
+            detail(j, l)->value[sens] -= (scaling(j, l)->value[sens]
+              + scaling(j, l + 1)->value[sens]) / 2;
+            break; }
+          }
+        }
       }
       // Update even values from odd values
-      for (l = 0; l < numSamples / s; l++) {
-        sample.value[2 * s * l] += sample.value[2 * s * l + s] / 2;
+      for (l = 0; l < (1 << j); l++) {
+        for (sens = 0; sens < WT_SENSORS; sens++) {
+          switch (transformType) {
+          case WC_TT_1DHAAR_2DRWAGNER: {
+            //sample[2 * s * samp].value[sens] += sample[2 * s * samp + s].value[sens] / 2;
+            scaling(j, l)->value[sens] += detail(j, l)->value[sens] / 2;
+            break; }
+          case WC_TT_1DLINEAR_2DRWAGNER: {
+            //sample[2 * s * samp].value[sens] += (sample[reflect(2 * s * samp - s)].value[sens]
+            //  + sample[2 * s * samp + s].value[sens]) / 4;
+            scaling(j, l)->value[sens] += (detail(j, l - 1)->value[sens]
+              + detail(j, l)->value[sens]) / 4;
+            break; }
+          }
+        }
       }
-      spacing *= 2;
     }
   }
    
